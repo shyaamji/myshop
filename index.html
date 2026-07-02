@@ -4,349 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ကောင်းမြတ် - POS</title>
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Barcode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .qty-btn { width: 45px; height: 45px; font-size: 22px; font-weight: bold; }
-        .product-card { border-left: 5px solid #0d6efd; }
+        .qty-btn { width: 40px; height: 40px; font-size: 20px; }
     </style>
-
-    <!-- Service Worker Register (ဖုန်းမှာ App သွင်းလို့ရအောင် တစ်ခါတည်း ထည့်ပေးထားသည်) -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker: အောင်မြင်စွာ ချိတ်ဆက်ပြီးပါပြီ။'))
-                .catch(err => console.log('Service Worker: အမှားရှိနေပါသည် -> ', err));
-            });
-        }
-    </script>
 </head>
 <body class="bg-light">
 
-    <!-- အပေါ်ဘား (Header) -->
-    <nav class="navbar navbar-dark bg-dark sticky-top shadow">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-dark bg-dark sticky-top">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
+            <span class="navbar-brand mb-0 h1">ကောင်းမြတ် (Kaung Myat POS)</span>
         </div>
     </nav>
 
-    <!-- အောက်ခြေ Menu ခလုတ်များ (Tabs) -->
-    <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
-        <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-        <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-        <button id="btn-admin" class="btn btn-outline-primary py-2" onclick="switchTab('admin')">⚙️ Admin</button>
+    <!-- Tab Buttons -->
+    <div class="btn-group w-100 sticky-top bg-white shadow-sm" role="group">
+        <button class="btn btn-outline-primary active" onclick="switchTab('sales')">အရောင်း</button>
+        <button class="btn btn-outline-primary" onclick="switchTab('history')">မှတ်တမ်း</button>
+        <button class="btn btn-outline-primary" onclick="switchTab('admin')">Admin</button>
     </div>
 
-    <div class="container pb-5">
-        
-        <!-- ================= ၁။ အရောင်း TAB ================= -->
+    <div class="container mt-3 pb-5">
+        <!-- ================= အရောင်း TAB ================= -->
         <div id="sales" class="tab-content active">
-            <!-- ကင်မရာ Scanner -->
-            <div class="card p-2 mb-3 shadow-sm border-0">
-                <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
-                <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+            <div class="card p-3 mb-3">
+                <h5 class="card-title">Barcode Scanner</h5>
+                <div id="reader" style="width: 100%"></div>
             </div>
 
-            <!-- ဝယ်ယူနေသော စာရင်း -->
-            <div class="card p-3 shadow-sm border-0">
-                <h5 class="card-title fw-bold mb-3">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
-                <div id="cart-list" class="list-group mb-3">
-                    <!-- ခြင်းတောင်းထဲက ပစ္စည်းများ ဒီနေရာမှာ ပေါ်မည် -->
-                    <div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
-                </div>
-                <hr>
+            <div class="card p-3">
+                <h5 class="card-title">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
+                <div id="cart-list" class="list-group mb-3"></div>
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-muted">စုစုပေါင်း ကျသင့်ငွေ</small>
-                        <h3 class="fw-bold text-primary"><span id="cart-total">0</span> Ks</h3>
-                    </div>
-                    <button class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
+                    <h4>စုစုပေါင်း: <span id="cart-total">0</span> Ks</h4>
+                    <button class="btn btn-success btn-lg" onclick="checkout()">Voucher ထုတ်မည်</button>
                 </div>
             </div>
         </div>
 
-        <!-- ================= ၂။ မှတ်တမ်း TAB ================= -->
+        <!-- ================= မှတ်တမ်း TAB ================= -->
         <div id="history" class="tab-content">
-            <div class="card p-3 shadow-sm border-0 mb-3">
-                <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
-            </div>
-            <div id="history-list">
-                <!-- ရောင်းပြီးသား Voucher များ ဒီနေရာမှာ ပေါ်မည် -->
-            </div>
+            <input type="text" id="search-input" class="form-control mb-3" placeholder="Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+            <div id="history-list" class="list-group"></div>
         </div>
 
-        <!-- ================= ၃။ ADMIN TAB ================= -->
+        <!-- ================= ADMIN TAB ================= -->
         <div id="admin" class="tab-content">
-            <div class="card p-3 shadow-sm border-0">
-                <h5 class="card-title fw-bold mb-3">💰 ဈေးနှုန်းနှင့် ပစ္စည်းစာရင်း ပြင်ဆင်ရန်</h5>
-                <div id="admin-product-list" class="list-group">
-                    <!-- ပစ္စည်းစာရင်း ပြင်ဆင်ရမည့် နေရာ -->
-                </div>
+            <div class="card p-3">
+                <h5 class="card-title">ပစ္စည်းအချက်အလက် ပြင်ဆင်ရန်</h5>
+                <div id="admin-product-list" class="list-group"></div>
             </div>
         </div>
-
     </div>
 
-    <!-- အသံဖိုင် (စကန်ဖတ်ရင် သို့မဟုတ် + - နှိပ်ရင် မြည်မည့်အသံ) -->
+    <!-- Audio Effects -->
     <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
-    <!-- JavaScript စနစ်များ -->
     <script>
+        // Audio & Scanning Configurations
         const beep = document.getElementById('beep-sound');
         let canScan = true;
         let cart = [];
-        
-        // နမူနာပစ္စည်းများ (Google Sheet နှင့် ချိတ်ဆက်လျှင် ၎င်းမှ Data များ ဝင်လာမည်)
-        let productsDB = [
-            { barcode: "11111", name: "မားမား ခေါက်ဆွဲခြောက်", price: 600, stock: 50 },
-            { barcode: "22222", name: "Coca Cola ဘူး", price: 1200, stock: 30 },
-            { barcode: "33333", name: "Lifebuoy ဆပ်ပြာ", price: 1500, stock: 20 }
-        ];
+        let productsDB = []; // ဤနေရာတွင် Google Sheet မှ data များဝင်လာမည်
 
-        let salesHistory = [];
-
-        // အသံမြည်စေသည့် စနစ်
         function playBeep() {
             beep.currentTime = 0;
-            beep.play().catch(e => console.log("အသံဖွင့်ရန် User နှိပ်ဖို့လိုသည်"));
+            beep.play();
         }
 
-        // Tab ပြောင်းသည့် စနစ်
+        // Tab Switching
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
-            
-            if(tabId === 'admin') renderAdminProducts();
-            if(tabId === 'history') renderHistory();
         }
 
-        // --- အဆင့်မြင့် ကင်မရာ Barcode Scanner စနစ် ---
-        function onScanSuccess(decodedText, decodedResult) {
+        // --- အဆင့်မြင့် Barcode Scanner စနစ် ---
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render((decodedText, decodedResult) => {
             if (canScan) {
-                playBeep(); // စကန်ဖတ်မိပါက အသံမြည်မည်
+                playBeep();
                 addToCart(decodedText);
                 
-                // ပစ္စည်းတစ်ခုကို အကြိမ်ကြိမ် ဖတ်မိခြင်းမှ ကာကွယ်ရန် ၅ စက္ကန့် ပိတ်ထားမည်
+                // ၅ စက္ကန့် စောင့်ပြီးမှ ပြန်ဖတ်မည့် စနစ် (Duplicate Scan မဖြစ်စေရန်)
                 canScan = false;
                 setTimeout(() => { canScan = true; }, 5000); 
             }
-        }
+        });
 
-        // Scanner ကို စတင်မောင်းနှင်ခြင်း
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
-
-        // --- ခြင်းတောင်းထဲ ပစ္စည်းထည့်ခြင်း ---
+        // --- Cart Operations (+ - စနစ်) ---
         function addToCart(barcode) {
-            let product = productsDB.find(p => p.barcode === barcode);
-            
-            // Database ထဲမရှိသော ပစ္စည်းအသစ်ဖြစ်ပါက တန်းဆောက်ပေးမည်
-            if (!product) {
-                product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0, stock: 99 };
-                productsDB.push(product);
-            }
-
             let item = cart.find(i => i.barcode === barcode);
             if (item) {
                 item.qty++;
             } else {
-                cart.push({ ...product, qty: 1 });
+                // နမူနာပစ္စည်း (တကယ်သုံးလျှင် productsDB ထဲမှ ရှာရမည်)
+                cart.push({ barcode: barcode, name: "ပစ္စည်း-" + barcode, price: 1500, qty: 1 });
             }
             renderCart();
         }
 
-        // --- အရေအတွက် အတိုး/အလျှော့ (+ -) လုပ်ပြီး အသံမြည်မည့်စနစ် ---
         function changeQty(index, change) {
-            playBeep(); // နှိပ်လိုက်တိုင်း အသံမြည်မည်
+            playBeep(); // နှိပ်လိုက်တိုင်း အသံမြည်ရန်
             cart[index].qty += change;
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
+            if (cart[index].qty <= 0) cart.splice(index, 1);
             renderCart();
         }
 
-        // --- ခြင်းတောင်းကို UI ပေါ်တွင် ပြသခြင်း ---
         function renderCart() {
             const list = document.getElementById('cart-list');
             let total = 0;
-            
-            if(cart.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>';
-                document.getElementById('cart-total').innerText = 0;
-                return;
-            }
-
             list.innerHTML = '';
             cart.forEach((item, index) => {
-                let itemTotal = item.price * item.qty;
-                total += itemTotal;
+                total += item.price * item.qty;
                 list.innerHTML += `
-                    <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded border-0 product-card">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="fw-bold mb-1">${item.name}</h6>
-                            <small class="text-primary fw-bold">${item.price} Ks</small>
-                            <small class="text-muted ms-2">(${itemTotal} Ks)</small>
+                            <h6>${item.name}</h6>
+                            <small class="text-muted">${item.price} Ks</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-danger qty-btn shadow-sm" onclick="changeQty(${index}, -1)">-</button>
-                            <span class="mx-3 fw-bold fs-5">${item.qty}</span>
-                            <button class="btn btn-success qty-btn shadow-sm" onclick="changeQty(${index}, 1)">+</button>
+                            <button class="btn btn-sm btn-danger qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                            <span class="mx-3 font-weight-bold">${item.qty}</span>
+                            <button class="btn btn-sm btn-success qty-btn" onclick="changeQty(${index}, 1)">+</button>
                         </div>
                     </div>`;
             });
-            document.getElementById('cart-total').innerText = total.toLocaleString();
+            document.getElementById('cart-total').innerText = total;
         }
 
-        // --- ဘောက်ချာထုတ်ခြင်းနှင့် သိမ်းဆည်းခြင်း ---
+        // --- Print & Save Voucher ---
         function checkout() {
-            if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
+            if(cart.length === 0) return alert("Cart ထဲမှာ ပစ္စည်းမရှိပါ။");
             playBeep();
             
-            let voucherId = "KM-" + Date.now().toString().slice(-6);
-            let total = document.getElementById('cart-total').innerText;
+            // Print Window ဖွင့်ခြင်း
+            let printWindow = window.open('', '', 'height=600,width=400');
+            printWindow.document.write('<html><head><title>ကောင်းမြတ် POS</title></head><body>');
+            printWindow.document.write('<h2>ကောင်းမြတ် (Kaung Myat)</h2>');
+            cart.forEach(i => {
+                printWindow.document.write(`<p>${i.name} x ${i.qty} = ${i.price * i.qty} Ks</p>`);
+            });
+            printWindow.document.write(`<hr><h4>စုစုပေါင်း: ${document.getElementById('cart-total').innerText} Ks</h4>`);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
             
-            let saleData = {
-                voucherId: voucherId,
-                date: new Date().toLocaleString('mm-MM', { hour12: true }),
-                items: [...cart],
-                total: total
-            };
-            
-            salesHistory.unshift(saleData); // မှတ်တမ်းထဲ ထည့်မည်
-            
-            // Print ထုတ်ရန် Window အသေးလေး ဖွင့်ခြင်း
-            printVoucher(saleData);
-
-            // Clear Cart
+            // ဒီနေရာတွင် Google Sheet API သို့ လှမ်းပို့ရန် Code ထည့်ရမည်
             cart = [];
             renderCart();
-            alert("Voucher သိမ်းဆည်းပြီးပါပြီ။");
-        }
-
-        function printVoucher(sale) {
-            let printWindow = window.open('', '', 'height=600,width=400');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Print Voucher</title>
-                    <style>
-                        body { font-family: sans-serif; padding: 20px; text-align: center; }
-                        .left { text-align: left; }
-                        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
-                        th, td { padding: 5px; text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    <h3>ကောင်းမြတ် (Kaung Myat)</h3>
-                    <p>POS ပြေစာ</p>
-                    <div class="left">
-                        <small>Voucher: ${sale.voucherId}</small><br>
-                        <small>နေ့ရက်: ${sale.date}</small>
-                    </div>
-                    <hr>
-                    <table>
-                        <thead><tr><th>ပစ္စည်း</th><th>ခုရေ</th><th>သင့်ငွေ</th></tr></thead>
-                        <tbody>
-                            ${sale.items.map(i => `<tr><td>${i.name}</td><td>${i.qty}</td><td>${(i.price * i.qty)} Ks</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                    <hr>
-                    <h3 class="left">စုစုပေါင်း: ${sale.total} Ks</h3>
-                    <p>~ ကျေးဇူးတင်ပါသည် ~</p>
-                    <script>window.onload = function() { window.print(); window.close(); }</script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-        }
-
-        // --- မှတ်တမ်းပြသခြင်းနှင့် Search၊ Delete စနစ် ---
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            if(salesHistory.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-5">ရောင်းရသည့် မှတ်တမ်း မရှိသေးပါ။</div>';
-                return;
-            }
-            displayHistory(salesHistory);
-        }
-
-        function displayHistory(data) {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            data.forEach((sale, index) => {
-                list.innerHTML += `
-                    <div class="card p-3 mb-3 shadow-sm border-0">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold text-primary">ID: ${sale.voucherId}</h6>
-                            <small class="text-muted">${sale.date}</small>
-                        </div>
-                        <div class="mb-2">
-                            ${sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('')}
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold text-success mb-0">${sale.total} Ks</h5>
-                            <div>
-                                <button class="btn btn-sm btn-outline-dark me-2" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ထပ်ထုတ်မည်</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteHistory(${index})">🗑️ ဖျက်မည်</button>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function searchHistory() {
-            let text = document.getElementById('search-input').value.toLowerCase();
-            let filtered = salesHistory.filter(s => s.voucherId.toLowerCase().includes(text));
-            displayHistory(filtered);
-        }
-
-        function deleteHistory(index) {
-            if(confirm("ဤဘောက်ချာမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?")) {
-                salesHistory.splice(index, 1);
-                renderHistory();
-            }
-        }
-
-        // --- Admin စနစ် (ဈေးနှုန်း အလွယ်တကူ ပြင်ရန်) ---
-        function renderAdminProducts() {
-            const list = document.getElementById('admin-product-list');
-            list.innerHTML = '';
-            productsDB.forEach((prod, index) => {
-                list.innerHTML += `
-                    <div class="list-group-item p-3 mb-2 rounded border shadow-sm">
-                        <div class="row g-2 align-items-center">
-                            <div class="col-12 col-md-4">
-                                <h6 class="fw-bold mb-1">${prod.name}</h6>
-                                <small class="text-muted">Barcode: ${prod.barcode}</small>
-                            </div>
-                            <div class="col-6">
-                                <label class="small text-muted">ဈေးနှုန်း (Ks)</label>
-                                <input type="number" class="form-control" value="${prod.price}" onchange="updatePrice(${index}, this.value)">
-                            </div>
-                            <div class="col-6">
-                                <label class="small text-muted">လက်ကျန် (ခု)</label>
-                                <input type="number" class="form-control" value="${prod.stock}" onchange="updateStock(${index}, this.value)">
-                            </div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function updatePrice(index, val) {
-            productsDB[index].price = Number(val);
-        }
-
-        function updateStock(index, val) {
-            productsDB[index].stock = Number(val);
         }
     </script>
 </body>
