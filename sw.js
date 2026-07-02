@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kaungmyat-pos';
+const CACHE_NAME = 'kaungmyat-pos-v1';
 const ASSETS = [
   'index.html',
   'manifest.json',
