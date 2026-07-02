@@ -1,585 +1,352 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ဝင်းသီရိ ကုန်စုံဆိုင် - POS စနစ် (v19.1)</title>
+    <title>ကောင်းမြတ် - POS</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Barcode Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
     <style>
-        body { background-color: #f8f9fa; font-family: sans-serif; }
-        .navbar-brand { font-weight: bold; }
-        .loading { display: flex; justify-content: center; align-items: center; padding: 20px; font-weight: bold; color: #6c757d; }
-        .admin-section { display: none; }
-        .qty-input { width: 60px; text-align: center; font-weight: bold; }
-        
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .qty-btn { width: 45px; height: 45px; font-size: 22px; font-weight: bold; }
+        .product-card { border-left: 5px solid #0d6efd; }
     </style>
-</head>
-<body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark no-print">
+    <!-- Service Worker Register (ဖုန်းမှာ App သွင်းလို့ရအောင် တစ်ခါတည်း ထည့်ပေးထားသည်) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker: အောင်မြင်စွာ ချိတ်ဆက်ပြီးပါပြီ။'))
+                .catch(err => console.log('Service Worker: အမှားရှိနေပါသည် -> ', err));
+            });
+        }
+    </script>
+</head>
+<body class="bg-light">
+
+    <!-- အပေါ်ဘား (Header) -->
+    <nav class="navbar navbar-dark bg-dark sticky-top shadow">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">🏪 ဝင်းသီရိ ကုန်စုံဆိုင် <span class="badge bg-secondary fs-6">v19.1</span></a>
-            <button class="btn btn-outline-light btn-sm" onclick="logout()">ထွက်ရန်</button>
+            <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
         </div>
     </nav>
 
-    <div class="container my-4 no-print">
+    <!-- အောက်ခြေ Menu ခလုတ်များ (Tabs) -->
+    <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
+        <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
+        <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
+        <button id="btn-admin" class="btn btn-outline-primary py-2" onclick="switchTab('admin')">⚙️ Admin</button>
+    </div>
+
+    <div class="container pb-5">
         
-        <!-- Login Section -->
-        <div id="login-section" class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card shadow-sm mt-5">
-                    <div class="card-body">
-                        <h4 class="card-title text-center mb-4">စနစ်ထဲသို့ ဝင်ရန်</h4>
-                        <div class="mb-3">
-                            <label for="user-password" class="form-label">ဝင်ခွင့် Password ရိုက်ထည့်ပါ</label>
-                            <input type="password" id="user-password" class="form-control" placeholder="****">
-                        </div>
-                        <button onclick="checkLogin()" class="btn btn-primary w-100">Sign In</button>
+        <!-- ================= ၁။ အရောင်း TAB ================= -->
+        <div id="sales" class="tab-content active">
+            <!-- ကင်မရာ Scanner -->
+            <div class="card p-2 mb-3 shadow-sm border-0">
+                <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
+                <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+            </div>
+
+            <!-- ဝယ်ယူနေသော စာရင်း -->
+            <div class="card p-3 shadow-sm border-0">
+                <h5 class="card-title fw-bold mb-3">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
+                <div id="cart-list" class="list-group mb-3">
+                    <!-- ခြင်းတောင်းထဲက ပစ္စည်းများ ဒီနေရာမှာ ပေါ်မည် -->
+                    <div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">စုစုပေါင်း ကျသင့်ငွေ</small>
+                        <h3 class="fw-bold text-primary"><span id="cart-total">0</span> Ks</h3>
                     </div>
+                    <button class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
                 </div>
             </div>
         </div>
 
-        <!-- Main App Section -->
-        <div id="app-section" style="display: none;">
-            
-            <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-sales-tab" data-bs-toggle="pill" data-bs-target="#pills-sales" type="button">🛒 အရောင်းကောင်တာ</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" type="button" onclick="loadVouchers()">📋 အရောင်းမှတ်တမ်း</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-admin-tab" data-bs-toggle="pill" data-bs-target="#pills-admin" type="button" onclick="promptAdmin()">⚙️ Admin Panel</button>
-                </li>
-            </ul>
-
-            <div class="tab-content" id="pills-tabContent">
-                
-                <!-- Sales Tab -->
-                <div class="tab-pane fade show active" id="pills-sales" role="tabpanel">
-                    <div class="row">
-                        <div class="col-md-7">
-                            <h5 class="mb-3">ပစ္စည်းများ စာရင်း</h5>
-                            <div id="product-list-loading" class="loading">ပစ္စည်းစာရင်းကို ဆွဲယူနေပါသည်...</div>
-                            <div class="row g-3" id="products-container"></div>
-                        </div>
-                        <div class="col-md-5 mt-4 mt-md-0">
-                            <h5 class="mb-3">ခြင်းတောင်း (Current Cart)</h5>
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <ul class="list-group mb-3" id="cart-items">
-                                        <li class="list-group-item text-center text-muted">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။</li>
-                                    </ul>
-                                    
-                                    <div class="mb-3">
-                                        <label for="customer-name" class="form-label fw-bold">👤 Customer အမည် (ဝယ်သူနာမည်)</label>
-                                        <input type="text" id="customer-name" class="form-control" placeholder="ဦးလှ / အထွေထွေ (မဖြစ်မနေ ရိုက်ရန်မလိုပါ)">
-                                    </div>
-
-                                    <div class="d-flex justify-content-between mb-3 fw-bold fs-5">
-                                        <span>စုစုပေါင်းငွေ:</span>
-                                        <span><span id="cart-total">0</span> ကျပ်</span>
-                                    </div>
-                                    <button class="btn btn-success w-100 fs-5" onclick="reviewCheckoutModal()">🧾 ဘောက်ချာပိတ်မည်</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- History Tab -->
-                <div class="tab-pane fade" id="pills-history" role="tabpanel">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
-                        <h5>📋 အရောင်းမှတ်တမ်း (Vouchers)</h5>
-                        <div style="max-width: 300px; width: 100%;">
-                            <input type="text" id="search-customer" class="form-control" placeholder="🔍 Customer နာမည်ဖြင့် ရှာရန်..." oninput="filterVouchers()">
-                        </div>
-                    </div>
-                    
-                    <div class="card shadow-sm">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ရက်စွဲ/အချိန်</th>
-                                        <th>ဝယ်သူအမည်</th>
-                                        <th class="text-end">စုစုပေါင်းငွေ</th>
-                                        <th class="text-center">လုပ်ဆောင်ချက်</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="voucher-list-table"></tbody>
-                            </table>
-                        </div>
-                        <div id="voucher-loading-status"></div>
-                    </div>
-                </div>
-
-                <!-- Admin Tab -->
-                <div class="tab-pane fade" id="pills-admin" role="tabpanel">
-                    <div id="admin-lock-msg" class="alert alert-warning text-center">
-                        Admin Password မှန်ကန်မှသာ ဤအပိုင်းကို ကြည့်ရှုခွင့်ရပါမည်။
-                    </div>
-                    
-                    <div id="admin-content" class="admin-section">
-                        <div class="card mb-4">
-                            <div class="card-header bg-primary text-white">➕ ပစ္စည်းအသစ်ထည့်ရန် / ဈေးနှုန်းပြင်ရန်</div>
-                            <div class="card-body">
-                                <form id="product-form" onsubmit="saveProduct(event)">
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <input type="text" id="prod-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="number" id="prod-price" class="form-control" placeholder="ဈေးနှုန်း (ကျပ်)" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="submit" class="btn btn-primary w-100">သိမ်းဆည်းမည်</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        
-                        <h5>လက်ရှိ ဆိုင်ရှိ ပစ္စည်းစာရင်းစုစုပေါင်း</h5>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered mt-2">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ပစ္စည်းအမည်</th>
-                                        <th>ဈေးနှုန်း (ကျပ်)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-product-table"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
+        <!-- ================= ၂။ မှတ်တမ်း TAB ================= -->
+        <div id="history" class="tab-content">
+            <div class="card p-3 shadow-sm border-0 mb-3">
+                <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+            </div>
+            <div id="history-list">
+                <!-- ရောင်းပြီးသား Voucher များ ဒီနေရာမှာ ပေါ်မည် -->
             </div>
         </div>
+
+        <!-- ================= ၃။ ADMIN TAB ================= -->
+        <div id="admin" class="tab-content">
+            <div class="card p-3 shadow-sm border-0">
+                <h5 class="card-title fw-bold mb-3">💰 ဈေးနှုန်းနှင့် ပစ္စည်းစာရင်း ပြင်ဆင်ရန်</h5>
+                <div id="admin-product-list" class="list-group">
+                    <!-- ပစ္စည်းစာရင်း ပြင်ဆင်ရမည့် နေရာ -->
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Voucher Modal -->
-    <div class="modal fade" id="voucherModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="voucherModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header no-print">
-                    <h5 class="modal-title" id="voucherModalLabel">🧾 ဘောက်ချာအသေးစိတ်</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="print-area">
-                    <div class="text-center mb-3">
-                        <h4 class="fw-bold m-0">ဝင်းသီရိ ကုန်စုံဆိုင်</h4>
-                        <small class="text-muted">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်</small>
-                    </div>
-                    <hr>
-                    <p class="mb-1"><strong>ရက်စွဲ:</strong> <span id="modal-date"></span></p>
-                    <p class="mb-1"><strong>ဝယ်သူအမည်:</strong> <span id="modal-customer" class="fw-bold text-primary"></span></p>
-                    <hr>
-                    <table class="table table-sm table-borderless">
-                        <thead>
-                            <tr class="border-bottom">
-                                <th>ပစ္စည်းအမည်</th>
-                                <th class="text-center">ခုရေ</th>
-                                <th class="text-end">သင့်ငွေ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-items-body"></tbody>
-                    </table>
-                    <hr>
-                    <div class="d-flex justify-content-between fw-bold fs-5">
-                        <span>စုစုပေါင်းကျသင့်ငွေ:</span>
-                        <span><span id="modal-total">0</span> ကျပ်</span>
-                    </div>
-                </div>
-                <div class="modal-footer no-print" id="modal-footer-buttons"></div>
-            </div>
-        </div>
-    </div>
+    <!-- အသံဖိုင် (စကန်ဖတ်ရင် သို့မဟုတ် + - နှိပ်ရင် မြည်မည့်အသံ) -->
+    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    <!-- JavaScript စနစ်များ -->
     <script>
-        // ==========================================
-        // ⚠️ ဤနေရာတွင် သင်၏ GOOGLE WEB APP URL ကို ထည့်ပါ ⚠️
-        // ==========================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMMuIL-rjYFd4OoCicZ5NALkQRilXpkK834WDZuAPiWoJgDvFQok-eAhnqFzSVg73t/exec"; 
-
-        let allProducts = [];
+        const beep = document.getElementById('beep-sound');
+        let canScan = true;
         let cart = [];
-        let fetchedVouchers = []; 
+        
+        // နမူနာပစ္စည်းများ (Google Sheet နှင့် ချိတ်ဆက်လျှင် ၎င်းမှ Data များ ဝင်လာမည်)
+        let productsDB = [
+            { barcode: "11111", name: "မားမား ခေါက်ဆွဲခြောက်", price: 600, stock: 50 },
+            { barcode: "22222", name: "Coca Cola ဘူး", price: 1200, stock: 30 },
+            { barcode: "33333", name: "Lifebuoy ဆပ်ပြာ", price: 1500, stock: 20 }
+        ];
 
-        document.addEventListener("DOMContentLoaded", function() {
-            if (localStorage.getItem("isLoggedIn") === "true") {
-                showApp();
+        let salesHistory = [];
+
+        // အသံမြည်စေသည့် စနစ်
+        function playBeep() {
+            beep.currentTime = 0;
+            beep.play().catch(e => console.log("အသံဖွင့်ရန် User နှိပ်ဖို့လိုသည်"));
+        }
+
+        // Tab ပြောင်းသည့် စနစ်
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+            
+            if(tabId === 'admin') renderAdminProducts();
+            if(tabId === 'history') renderHistory();
+        }
+
+        // --- အဆင့်မြင့် ကင်မရာ Barcode Scanner စနစ် ---
+        function onScanSuccess(decodedText, decodedResult) {
+            if (canScan) {
+                playBeep(); // စကန်ဖတ်မိပါက အသံမြည်မည်
+                addToCart(decodedText);
+                
+                // ပစ္စည်းတစ်ခုကို အကြိမ်ကြိမ် ဖတ်မိခြင်းမှ ကာကွယ်ရန် ၅ စက္ကန့် ပိတ်ထားမည်
+                canScan = false;
+                setTimeout(() => { canScan = true; }, 5000); 
             }
-        });
+        }
 
-        function checkLogin() {
-            const pass = document.getElementById("user-password").value;
-            if (pass === "1234") {
-                localStorage.setItem("isLoggedIn", "true");
-                showApp();
+        // Scanner ကို စတင်မောင်းနှင်ခြင်း
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+
+        // --- ခြင်းတောင်းထဲ ပစ္စည်းထည့်ခြင်း ---
+        function addToCart(barcode) {
+            let product = productsDB.find(p => p.barcode === barcode);
+            
+            // Database ထဲမရှိသော ပစ္စည်းအသစ်ဖြစ်ပါက တန်းဆောက်ပေးမည်
+            if (!product) {
+                product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0, stock: 99 };
+                productsDB.push(product);
+            }
+
+            let item = cart.find(i => i.barcode === barcode);
+            if (item) {
+                item.qty++;
             } else {
-                alert("❌ Password မှားယွင်းနေပါသည်။");
+                cart.push({ ...product, qty: 1 });
             }
+            renderCart();
         }
 
-        function showApp() {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("app-section").style.display = "block";
-            loadProducts();
-        }
-
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        function promptAdmin() {
-            if (sessionStorage.getItem("isAdmin") === "true") {
-                showAdminPanel();
-                return;
-            }
-            const adminPass = prompt("Admin Password ကို ရိုက်ထည့်ပါ:");
-            if (adminPass === "5678") {
-                sessionStorage.setItem("isAdmin", "true");
-                showAdminPanel();
-            } else {
-                alert("❌ Admin Password မမှန်ပါ။");
-                const salesTab = new bootstrap.Tab(document.getElementById('pills-sales-tab'));
-                salesTab.show();
-            }
-        }
-
-        function showAdminPanel() {
-            document.getElementById("admin-lock-msg").style.display = "none";
-            document.getElementById("admin-content").style.display = "block";
-            renderAdminProducts();
-        }
-
-        async function loadProducts() {
-            const loadingEl = document.getElementById("product-list-loading");
-            const container = document.getElementById("products-container");
-            try {
-                loadingEl.style.display = "block";
-                container.innerHTML = "";
-                const response = await fetch(`${WEB_APP_URL}?action=getProducts`);
-                allProducts = await response.json();
-                loadingEl.style.display = "none";
-                renderProducts();
-            } catch (error) {
-                loadingEl.innerHTML = "⚠️ ပစ္စည်းစာရင်းဆွဲယူ၍မရပါ။ အင်တာနက်စစ်ဆေးပြီး စာမျက်နှာကို Refresh လုပ်ပေးပါ။";
-                console.error(error);
-            }
-        }
-
-        function renderProducts() {
-            const container = document.getElementById("products-container");
-            container.innerHTML = "";
-            allProducts.forEach((prod) => {
-                container.innerHTML += `
-                    <div class="col-6 col-md-4">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body d-flex flex-column justify-content-between p-2 p-md-3">
-                                <h6 class="card-title fw-bold text-truncate">${prod.name}</h6>
-                                <p class="card-text text-primary small mb-2">${prod.price} ကျပ်</p>
-                                <button onclick="addToCart('${prod.name}', ${prod.price})" class="btn btn-sm btn-outline-primary w-100 mt-auto">➕ ထည့်မည်</button>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function renderAdminProducts() {
-            const tbody = document.getElementById("admin-product-table");
-            tbody.innerHTML = "";
-            allProducts.forEach(prod => {
-                tbody.innerHTML += `<tr><td>${prod.name}</td><td>${prod.price} ကျပ်</td></tr>`;
-            });
-        }
-
-        function addToCart(name, price) {
-            const exist = cart.find(item => item.name === name);
-            if (exist) {
-                exist.qty++;
-            } else {
-                cart.push({ name, price, qty: 1 });
-            }
-            updateCartUI();
-        }
-
-        function increaseQty(index) {
-            cart[index].qty++;
-            updateCartUI();
-        }
-
-        function decreaseQty(index) {
-            if (cart[index].qty > 1) {
-                cart[index].qty--;
-            } else {
+        // --- အရေအတွက် အတိုး/အလျှော့ (+ -) လုပ်ပြီး အသံမြည်မည့်စနစ် ---
+        function changeQty(index, change) {
+            playBeep(); // နှိပ်လိုက်တိုင်း အသံမြည်မည်
+            cart[index].qty += change;
+            if (cart[index].qty <= 0) {
                 cart.splice(index, 1);
             }
-            updateCartUI();
+            renderCart();
         }
 
-        function changeQtyDirect(index, value) {
-            let inputQty = parseInt(value);
-            if (isNaN(inputQty) || inputQty < 1) {
-                cart[index].qty = 1; 
-            } else {
-                cart[index].qty = inputQty;
-            }
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const cartList = document.getElementById("cart-items");
-            const totalEl = document.getElementById("cart-total");
-            cartList.innerHTML = "";
+        // --- ခြင်းတောင်းကို UI ပေါ်တွင် ပြသခြင်း ---
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            let total = 0;
             
-            if (cart.length === 0) {
-                cartList.innerHTML = `<li class="list-group-item text-center text-muted">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။</li>`;
-                totalEl.innerText = "0";
+            if(cart.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>';
+                document.getElementById('cart-total').innerText = 0;
                 return;
             }
 
-            let total = 0;
-            cart.forEach((item, idx) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
-                cartList.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center p-2">
-                        <div style="max-width: 45%;">
-                            <span class="fw-bold text-truncate d-block small">${item.name}</span>
-                            <small class="text-muted">${item.price} ကျပ်</small>
+            list.innerHTML = '';
+            cart.forEach((item, index) => {
+                let itemTotal = item.price * item.qty;
+                total += itemTotal;
+                list.innerHTML += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded border-0 product-card">
+                        <div>
+                            <h6 class="fw-bold mb-1">${item.name}</h6>
+                            <small class="text-primary fw-bold">${item.price} Ks</small>
+                            <small class="text-muted ms-2">(${itemTotal} Ks)</small>
                         </div>
                         <div class="d-flex align-items-center">
-                            <button onclick="decreaseQty(${idx})" class="btn btn-sm btn-secondary px-2 py-0 fw-bold">-</button>
-                            <input type="number" class="form-control form-control-sm qty-input mx-1" value="${item.qty}" min="1" onchange="changeQtyDirect(${idx}, this.value)">
-                            <button onclick="increaseQty(${idx})" class="btn btn-sm btn-secondary px-2 py-0 fw-bold">+</button>
-                            <span class="badge bg-primary ms-2 d-none d-sm-inline">${subtotal} ကျပ်</span>
+                            <button class="btn btn-danger qty-btn shadow-sm" onclick="changeQty(${index}, -1)">-</button>
+                            <span class="mx-3 fw-bold fs-5">${item.qty}</span>
+                            <button class="btn btn-success qty-btn shadow-sm" onclick="changeQty(${index}, 1)">+</button>
                         </div>
-                    </li>`;
+                    </div>`;
             });
-            totalEl.innerText = total;
+            document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
-        function reviewCheckoutModal() {
-            if (cart.length === 0) {
-                alert("⚠️ ခြင်းတောင်းထဲမှာ ပစ္စည်းမရှိပါ။");
-                return;
-            }
-
-            let cName = document.getElementById("customer-name").value.trim();
-            if(cName === "") cName = "အထွေထွေ";
-
-            document.getElementById("modal-date").innerText = new Date().toLocaleString();
-            document.getElementById("modal-customer").innerText = cName;
+        // --- ဘောက်ချာထုတ်ခြင်းနှင့် သိမ်းဆည်းခြင်း ---
+        function checkout() {
+            if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
+            playBeep();
             
-            const itemsBody = document.getElementById("modal-items-body");
-            itemsBody.innerHTML = "";
-            let total = 0;
-
-            cart.forEach(item => {
-                let sub = item.price * item.qty;
-                total += sub;
-                itemsBody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td class="text-center">${item.qty}</td>
-                        <td class="text-end">${sub} ကျပ်</td>
-                    </tr>`;
-            });
-
-            document.getElementById("modal-total").innerText = total;
-
-            const footerButtons = document.getElementById("modal-footer-buttons");
-            footerButtons.innerHTML = `
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">နောက်သို့</button>
-                <button type="button" class="btn btn-info text-white" onclick="window.print()">🖨️ Voucher Print</button>
-                <button type="button" class="btn btn-success px-4" onclick="executeCheckout()">✅ Confirm (ဒေတာသိမ်းမည်)</button>`;
-
-            const myModal = new bootstrap.Modal(document.getElementById('voucherModal'));
-            myModal.show();
-        }
-
-        async function executeCheckout() {
-            const total = document.getElementById("modal-total").innerText;
-            const dateStr = document.getElementById("modal-date").innerText;
-            const customerName = document.getElementById("modal-customer").innerText;
+            let voucherId = "KM-" + Date.now().toString().slice(-6);
+            let total = document.getElementById('cart-total').innerText;
             
-            const voucherData = {
-                date: dateStr,
-                items: JSON.stringify(cart),
-                total: total,
-                customer: customerName
+            let saleData = {
+                voucherId: voucherId,
+                date: new Date().toLocaleString('mm-MM', { hour12: true }),
+                items: [...cart],
+                total: total
             };
+            
+            salesHistory.unshift(saleData); // မှတ်တမ်းထဲ ထည့်မည်
+            
+            // Print ထုတ်ရန် Window အသေးလေး ဖွင့်ခြင်း
+            printVoucher(saleData);
 
-            const currentModal = bootstrap.Modal.getInstance(document.getElementById('voucherModal'));
-            currentModal.hide();
-
-            try {
-                alert("ဘောက်ချာ ဒေတာကို Google Sheet သို့ သိမ်းဆည်းနေပါသည်...");
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    cache: "no-cache",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "addVoucher", data: voucherData })
-                });
-
-                alert("✅ ဘောက်ချာ သိမ်းဆည်းမှု အောင်မြင်ပြီးပါပြီ။");
-                cart = [];
-                document.getElementById("customer-name").value = ""; 
-                updateCartUI();
-            } catch (error) {
-                alert("❌ အမှားအယွင်းရှိ၍ မအောင်မြင်ပါ။ အင်တာနက်လိုင်းကို စစ်ဆေးပေးပါ။");
-                console.error(error);
-            }
+            // Clear Cart
+            cart = [];
+            renderCart();
+            alert("Voucher သိမ်းဆည်းပြီးပါပြီ။");
         }
 
-        async function saveProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById("prod-name").value;
-            const price = document.getElementById("prod-price").value;
-
-            try {
-                alert("ပစ္စည်းစာရင်း သိမ်းဆည်းနေပါသည်...");
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "saveProduct", data: { name, price } })
-                });
-
-                alert("✅ သိမ်းဆည်းပြီးပါပြီ။");
-                document.getElementById("product-form").reset();
-                loadProducts();
-            } catch (error) {
-                alert("❌ ပစ္စည်းထည့်သွင်းမှု မအောင်မြင်ပါ။");
-                console.error(error);
-            }
+        function printVoucher(sale) {
+            let printWindow = window.open('', '', 'height=600,width=400');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Voucher</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; text-align: center; }
+                        .left { text-align: left; }
+                        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
+                        th, td { padding: 5px; text-align: left; }
+                    </style>
+                </head>
+                <body>
+                    <h3>ကောင်းမြတ် (Kaung Myat)</h3>
+                    <p>POS ပြေစာ</p>
+                    <div class="left">
+                        <small>Voucher: ${sale.voucherId}</small><br>
+                        <small>နေ့ရက်: ${sale.date}</small>
+                    </div>
+                    <hr>
+                    <table>
+                        <thead><tr><th>ပစ္စည်း</th><th>ခုရေ</th><th>သင့်ငွေ</th></tr></thead>
+                        <tbody>
+                            ${sale.items.map(i => `<tr><td>${i.name}</td><td>${i.qty}</td><td>${(i.price * i.qty)} Ks</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <hr>
+                    <h3 class="left">စုစုပေါင်း: ${sale.total} Ks</h3>
+                    <p>~ ကျေးဇူးတင်ပါသည် ~</p>
+                    <script>window.onload = function() { window.print(); window.close(); }</script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
 
-        async function loadVouchers() {
-            const statusDiv = document.getElementById("voucher-loading-status");
-            try {
-                statusDiv.innerHTML = `
-                    <div class="loading">
-                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-                        <span>ဒေတာများ ဆွဲယူနေပါသည်...</span>
-                    </div>`;
-
-                const response = await fetch(`${WEB_APP_URL}?action=getVouchers`);
-                fetchedVouchers = await response.json();
-                statusDiv.innerHTML = "";
-
-                renderVouchersTable(fetchedVouchers);
-                
-            } catch (error) {
-                console.error(error);
-                statusDiv.innerHTML = `
-                    <div class="alert alert-danger m-3 text-center">
-                        <h6>⚠️ အော်ဖ့်လိုင်းစနစ် ဖြစ်နေသည်</h6>
-                        <button onclick="loadVouchers()" class="btn btn-sm btn-outline-danger mt-2">🔄 ပြန်လည်ကြိုးစားမည်</button>
-                    </div>`;
-            }
-        }
-
-        function renderVouchersTable(vouchersArray) {
-            const tableBody = document.getElementById("voucher-list-table");
-            tableBody.innerHTML = "";
-
-            if (vouchersArray.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-3 text-muted">ရှာဖွေထားသော စာရင်းမရှိသေးပါ။</td></tr>`;
+        // --- မှတ်တမ်းပြသခြင်းနှင့် Search၊ Delete စနစ် ---
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            if(salesHistory.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted py-5">ရောင်းရသည့် မှတ်တမ်း မရှိသေးပါ။</div>';
                 return;
             }
+            displayHistory(salesHistory);
+        }
 
-            let displayList = [...vouchersArray].reverse();
-
-            displayList.forEach((vouch, idx) => {
-                let finalTotal = vouch.total;
-                if(vouch.total.toString().includes("[")) {
-                    finalTotal = "အသေးစိတ်တွင်ကြည့်ရန်";
-                }
-                
-                let originalIndex = vouchersArray.length - 1 - idx;
-
-                tableBody.innerHTML += `
-                    <tr>
-                        <td><small class="text-muted">📅</small> ${vouch.date}</td>
-                        <td class="fw-bold text-dark">${vouch.customer || "အထွေထွေ"}</td>
-                        <td class="text-end fw-bold text-success">${finalTotal} ကျပ်</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-primary px-3" onclick="viewVoucherDetail(${originalIndex})">👁️ ကြည့်မည်</button>
-                        </td>
-                    </tr>`;
+        function displayHistory(data) {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            data.forEach((sale, index) => {
+                list.innerHTML += `
+                    <div class="card p-3 mb-3 shadow-sm border-0">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold text-primary">ID: ${sale.voucherId}</h6>
+                            <small class="text-muted">${sale.date}</small>
+                        </div>
+                        <div class="mb-2">
+                            ${sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('')}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold text-success mb-0">${sale.total} Ks</h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-dark me-2" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ထပ်ထုတ်မည်</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteHistory(${index})">🗑️ ဖျက်မည်</button>
+                            </div>
+                        </div>
+                    </div>`;
             });
         }
 
-        function filterVouchers() {
-            const keyword = document.getElementById("search-customer").value.toLowerCase().trim();
-            if (keyword === "") {
-                renderVouchersTable(fetchedVouchers);
-            } else {
-                const filtered = fetchedVouchers.filter(v => 
-                    v.customer && v.customer.toLowerCase().includes(keyword)
-                );
-                renderVouchersTable(filtered);
+        function searchHistory() {
+            let text = document.getElementById('search-input').value.toLowerCase();
+            let filtered = salesHistory.filter(s => s.voucherId.toLowerCase().includes(text));
+            displayHistory(filtered);
+        }
+
+        function deleteHistory(index) {
+            if(confirm("ဤဘောက်ချာမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?")) {
+                salesHistory.splice(index, 1);
+                renderHistory();
             }
         }
 
-        function viewVoucherDetail(originalIndex) {
-            const vouch = fetchedVouchers[originalIndex];
-            document.getElementById("modal-date").innerText = vouch.date;
-            document.getElementById("modal-customer").innerText = vouch.customer || "အထွေထွေ";
-            
-            const itemsBody = document.getElementById("modal-items-body");
-            itemsBody.innerHTML = "";
-            let calculatedTotal = 0;
+        // --- Admin စနစ် (ဈေးနှုန်း အလွယ်တကူ ပြင်ရန်) ---
+        function renderAdminProducts() {
+            const list = document.getElementById('admin-product-list');
+            list.innerHTML = '';
+            productsDB.forEach((prod, index) => {
+                list.innerHTML += `
+                    <div class="list-group-item p-3 mb-2 rounded border shadow-sm">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-12 col-md-4">
+                                <h6 class="fw-bold mb-1">${prod.name}</h6>
+                                <small class="text-muted">Barcode: ${prod.barcode}</small>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted">ဈေးနှုန်း (Ks)</label>
+                                <input type="number" class="form-control" value="${prod.price}" onchange="updatePrice(${index}, this.value)">
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted">လက်ကျန် (ခု)</label>
+                                <input type="number" class="form-control" value="${prod.stock}" onchange="updateStock(${index}, this.value)">
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
 
-            try {
-                let itemList = [];
-                if (vouch.items.startsWith("[")) {
-                    itemList = JSON.parse(vouch.items);
-                } else if (vouch.total.startsWith("[")) {
-                    itemList = JSON.parse(vouch.total);
-                }
+        function updatePrice(index, val) {
+            productsDB[index].price = Number(val);
+        }
 
-                itemList.forEach(item => {
-                    let itemSubtotal = item.price * item.qty;
-                    calculatedTotal += itemSubtotal;
-                    itemsBody.innerHTML += `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td class="text-center">${item.qty}</td>
-                            <td class="text-end">${itemSubtotal} ကျပ်</td>
-                        </tr>`;
-                });
-            } catch(e) {
-                itemsBody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">ဤဘောက်ချာသည် စာရင်းပုံစံဟောင်းဖြစ်၍ အသေးစိတ်ပြသ၍မရပါ။</td></tr>`;
-                calculatedTotal = isNaN(Number(vouch.total)) ? 0 : Number(vouch.total);
-            }
-
-            document.getElementById("modal-total").innerText = calculatedTotal > 0 ? calculatedTotal : vouch.total;
-
-            const footerButtons = document.getElementById("modal-footer-buttons");
-            footerButtons.innerHTML = `
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ပိတ်မည်</button>
-                <button type="button" class="btn btn-success" onclick="window.print()">🖨️ Voucher Print ထုတ်မည်</button>`;
-
-            const myModal = new bootstrap.Modal(document.getElementById('voucherModal'));
-            myModal.show();
+        function updateStock(index, val) {
+            productsDB[index].stock = Number(val);
         }
     </script>
 </body>
