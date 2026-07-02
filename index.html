@@ -2,617 +2,581 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ဝင်းသီရိ ကုန်စုံဆိုင် - Premium POS v18.6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ဆိုင်သုံး POS - Barcode</title>
     
-    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ဝင်းသီရိ POS">
-    <meta name="mobile-web-app-capable" content="yes">
     
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIuဝင်းသီရိ ကုန်စုံဆိုင် POSIiwKICAic2hvcnRfbmFtZSI6ICLဝင်းသီရိ POSIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8xMTczLzExNzM3MzgucG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1173/1173738.png">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Barcode Scanner Library (html5-qrcode) -->
     <script src="https://unpkg.com/html5-qrcode"></script>
+    
     <style>
-        :root {
-            --primary-color: #3b82f6;
-            --dark-navy: #0f172a;
-            --tab-bg: #e2e8f0;
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --border-color: #e2e8f0;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; 
+            background: #f0f2f5; 
+            padding: 10px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
-        body { background-color: var(--bg-body); font-family: system-ui, -apple-system, sans-serif; color: var(--text-main); padding-top: env(safe-area-inset-top); }
-        .premium-header { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); padding: 16px; border-radius: 0 0 15px 15px; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); background-color: var(--bg-card); margin-bottom: 16px; }
-        .nav-pills .nav-link { color: #475569; font-weight: 700; background-color: var(--tab-bg); font-size: 14px; margin: 0 4px; border-radius: 20px; }
-        .nav-pills .nav-link.active { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white; }
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 { 
+            text-align: center; 
+            font-size: 24px; 
+            color: #1a1a2e; 
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        h1 span { background: #e94560; color: white; padding: 2px 12px; border-radius: 20px; font-size: 14px; }
         
-        .product-list-item { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 6px; cursor: pointer; }
-        .products-bottom-box { max-height: 350px; overflow-y: auto; }
+        /* Barcode Search Area */
+        .barcode-area {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .barcode-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        .barcode-area input:focus {
+            border-color: #16213e;
+        }
+        .barcode-area button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            background: #16213e;
+            color: white;
+            touch-action: manipulation;
+        }
+        .barcode-area button:active { transform: scale(0.95); }
+        .barcode-area button.scanner-btn { background: #e94560; }
         
-        .table-responsive-custom { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-card); }
-        .table-responsive-custom th { background-color: #1e293b !important; color: #ffffff !important; font-size: 13px; padding: 10px; }
-        .table-responsive-custom td { font-size: 13px; padding: 10px; vertical-align: middle; }
+        /* Scanner Modal */
+        .scanner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanner-modal.active {
+            display: flex;
+        }
+        .scanner-modal #reader {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .scanner-modal .close-scanner {
+            margin-top: 20px;
+            padding: 14px 40px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .scanner-modal .close-scanner:active { transform: scale(0.95); }
         
-        .search-highlighted-row { background-color: #fef08a !important; border-left: 4px solid #eab308 !important; }
-        #reader { width: 100% !important; min-height: 200px; border-radius: 12px; overflow: hidden; border: 3px solid var(--primary-color); background: #000; }
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin: 15px 0; 
+        }
+        .product-item { 
+            background: #16213e; 
+            color: white; 
+            padding: 18px 5px; 
+            text-align: center; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.1s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+        }
+        .product-item:active { 
+            transform: scale(0.94); 
+            background: #0f3460; 
+        }
+        .product-item .price { 
+            font-size: 13px; 
+            font-weight: normal; 
+            opacity: 0.9;
+            display: block;
+            margin-top: 4px;
+        }
+        .product-item .stock-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .product-item.out-of-stock {
+            opacity: 0.4;
+            pointer-events: none;
+        }
         
-        @media print {
-            html, body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-            #main-app-content, .modal-backdrop, .modal-header, .modal-footer, .btn-close { display: none !important; }
-            .modal { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; opacity: 1 !important; visibility: visible !important; }
-            .modal-dialog { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .modal-content { border: none !important; background: #fff !important; }
-            #print-area { display: block !important; width: 100% !important; opacity: 1 !important; visibility: visible !important; padding: 10px !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .cart-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 15px 0;
+            min-height: 80px;
+        }
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 10px 0; 
+            border-bottom: 1px solid #e9ecef; 
+        }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item .name { font-weight: 500; }
+        .cart-item .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .cart-item .qty-control button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: #e94560;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .cart-item .qty-control button:active { background: #c73652; }
+        .cart-item .qty-control .qty { font-weight: 600; min-width: 20px; text-align: center; }
+        
+        .total { 
+            font-size: 22px; 
+            font-weight: 700; 
+            text-align: right; 
+            padding: 12px 0; 
+            color: #16213e;
+        }
+        
+        .checkout-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            touch-action: manipulation;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+        .checkout-btn:active { 
+            transform: scale(0.97); 
+            background: #1e7e34; 
+        }
+        .checkout-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        #status { 
+            margin: 12px 0; 
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center; 
+            font-weight: 600;
+            display: none;
+        }
+        #status.success { background: #d4edda; color: #155724; display: block; }
+        #status.error { background: #f8d7da; color: #721c24; display: block; }
+        #status.loading { background: #cce5ff; color: #004085; display: block; }
+        
+        .empty-cart { text-align: center; color: #6c757d; padding: 20px 0; font-size: 15px; }
+        
+        .install-banner {
+            background: #16213e;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .install-banner button {
+            background: #e94560;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .install-banner button:active { background: #c73652; }
+        
+        /* Barcode found highlight */
+        .barcode-found {
+            border-color: #28a745 !important;
+            background: #d4edda !important;
+        }
+        
+        @media (max-width: 400px) {
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { padding: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="main-app-content">
-        <header id="main-header" class="premium-header mb-3" style="display: none;">
-            <div class="container d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold text-white m-0">ဝင်းသီရိ ကုန်စုံဆိုင်</h5>
-                <button class="btn btn-sm btn-outline-light rounded-pill" onclick="logout()">ထွက်ရန်</button>
-            </div>
-        </header>
-
-        <div class="container" style="max-width: 600px;">
-            <div id="pwa-install-banner" class="alert alert-dark d-flex justify-content-between align-items-center mb-3" style="display: none !important; border-radius: 12px;">
-                <span class="small fw-bold text-white">📱 POS ကို ဖုန်းထဲတွင် App အဖြစ် ထည့်သွင်းအသုံးပြုမလား?</span>
-                <button id="pwa-btn-install" class="btn btn-primary btn-sm rounded-pill fw-bold px-3">Install လုပ်မည်</button>
-            </div>
-
-            <div id="login-section" class="row justify-content-center mt-5">
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body p-4 text-center">
-                            <h6 class="fw-bold mb-3">စနစ်ထဲသို့ ဝင်ရန်</h6>
-                            <input type="password" id="user-password" class="form-control form-control-lg text-center mb-3" placeholder="Password ရိုက်ပါ">
-                            <button onclick="checkLogin()" class="btn btn-dark w-100 rounded-pill fw-bold">ဝင်မည်</button>
-                            <div id="login-error-log" class="text-danger small mt-3 fw-bold" style="display: none; word-break: break-all;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="app-section" style="display: none;">
-                <ul class="nav nav-pills justify-content-center mb-3" id="pills-tab" role="tablist">
-                    <li class="nav-item"><button class="nav-link active" id="pills-sales-tab" data-bs-toggle="pill" data-bs-target="#pills-sales" onclick="switchTabTo('sales')">🛒 အရောင်း</button></li>
-                    <li class="nav-item"><button class="nav-link" id="pills-history-tab" data-bs-toggle="pill" data-bs-target="#pills-history" onclick="switchTabTo('history')">📋 မှတ်တမ်း</button></li>
-                    <li class="nav-item"><button class="nav-link" id="pills-admin-tab" data-bs-toggle="pill" data-bs-target="#pills-admin" onclick="switchTabTo('admin')">⚙️ Admin</button></li>
-                </ul>
-
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="pills-sales">
-                        <div class="card p-3 text-center">
-                            <div id="reader" class="mb-2" style="display: none;"></div>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-primary btn-sm rounded-pill" onclick="startScanner()">📷 ကင်မရာဖွင့်</button>
-                                <button class="btn btn-secondary btn-sm rounded-pill" onclick="stopScanner()">❌ ပိတ်</button>
-                            </div>
-                            <div id="scan-result-msg" class="text-success fw-bold small mt-2"></div>
-                        </div>
-
-                        <div class="card p-3">
-                            <h6 class="fw-bold mb-2">🛒 ဝယ်ယူမည့်ပစ္စည်းများ</h6>
-                            <ul class="list-group list-group-flush mb-3 border rounded" id="cart-items">
-                                <li class="list-group-item text-center text-muted py-2 small">ခြင်းတောင်းထဲမှာ ပစ္စည်းမရှိသေးပါ။</li>
-                            </ul>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <input type="text" id="customer-name" class="form-control form-control-sm w-50" placeholder="ဝယ်သူနာမည်">
-                                <span class="fw-bold text-primary fs-6">စုစုပေါင်း: <span id="cart-total">0</span> K</span>
-                            </div>
-                            <button class="btn btn-success w-100 rounded-pill fw-bold py-2" onclick="reviewCheckoutModal()">🧾 ဘောက်ချာပိတ်မည်</button>
-                        </div>
-
-                        <div class="card p-2">
-                            <input type="text" id="search-product-pos" class="form-control form-control-sm mb-2" placeholder="🔍 ပစ္စည်းရှာရန်..." onkeyup="filterPOSProducts()">
-                            <div class="products-bottom-box" id="products-container"></div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="pills-history">
-                        <h6 class="fw-bold mb-2">📋 အရောင်းမှတ်တမ်း</h6>
-                        <div class="input-group input-group-sm mb-2">
-                            <input type="text" id="search-voucher-history" class="form-control" placeholder="ဝယ်သူနာမည်အပြည့်အစုံ ရိုက်ပါ...">
-                            <button class="btn btn-primary fw-bold" type="button" onclick="filterVoucherHistory()">🔍 ရှာမည်</button>
-                            <button class="btn btn-secondary" type="button" onclick="resetVoucherHistory()">🔄 အကုန်ပြ</button>
-                        </div>
-                        <div id="voucher-loading-status" class="small text-primary mb-2"></div>
-                        <div class="table-responsive-custom shadow-sm">
-                            <table class="table align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>ရက်စွဲ</th>
-                                        <th>ဝယ်သူ</th>
-                                        <th class="text-end">စုစုပေါင်း</th>
-                                        <th class="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="voucher-list-table"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="pills-admin">
-                        <div id="admin-login-box" class="card p-4 text-center mt-3">
-                            <h6 class="fw-bold text-danger mb-3">🔐 Admin Password အရင်ရိုက်ပါ</h6>
-                            <input type="password" id="admin-pass-input" class="form-control text-center mb-3" placeholder="Admin Password ရိုက်ပါ">
-                            <button onclick="verifyAdminLogin()" class="btn btn-danger w-100 rounded-pill btn-sm fw-bold">အတည်ပြုမည်</button>
-                        </div>
-
-                        <div id="admin-content" style="display: none;">
-                            <div class="card p-3">
-                                <div class="fw-bold text-primary mb-2" id="form-title">➕ ပစ္စည်းအသစ်ထည့်ရန် / ဈေးနှုန်းပြင်ရန်</div>
-                                <form id="product-form" onsubmit="saveProduct(event)">
-                                    <div class="row g-2">
-                                        <div class="col-12"><input type="text" id="prod-name" class="form-control form-control-sm" placeholder="ပစ္စည်းအမည်" oninput="onProductInput(this.value)" required></div>
-                                        <div class="col-6"><input type="number" id="prod-price" class="form-control form-control-sm" placeholder="ဈေးနှုန်း (ကျပ်)" required></div>
-                                        <div class="col-6"><input type="text" id="prod-barcode" class="form-control form-control-sm" placeholder="Barcode နံပါတ်"></div>
-                                        <div class="col-12">
-                                            <button type="submit" id="prod-submit-btn" class="btn btn-primary btn-sm w-100 rounded-pill fw-bold mt-2">💾 ဒေတာသိမ်းဆည်းမည်</button>
-                                            <button type="button" id="prod-cancel-btn" class="btn btn-light btn-sm w-100 rounded-pill border mt-1" style="display:none;" onclick="resetAdminForm()">❌ ပြင်ဆင်မှုပယ်ဖျက်မည်</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <h6 class="fw-bold text-secondary mb-2">📦 ဆိုင်ရှိ ပစ္စည်းစာရင်းစုစုပေါင်း</h6>
-                            <div class="table-responsive-custom shadow-sm">
-                                <table class="table table-striped table-bordered align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>ပစ္စည်းအမည်</th>
-                                            <th class="text-end">ဈေးနှုန်း</th>
-                                            <th class="text-center">လုပ်ဆောင်ချက်</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="admin-product-table"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="voucherModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background-color: #fff !important;">
-                <div class="modal-header bg-light py-2">
-                    <h6 class="modal-title fw-bold text-dark">Voucher Detail</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="clearCartAfterPrint()"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div id="print-area">
-                        <div class="text-center mb-2">
-                            <h5 class="fw-bold m-0" style="color:#000 !important;">ဝင်းသီရိ ကုန်စုံဆိုင်</h5>
-                            <small style="color:#444 !important; font-size:12px;">လူကြီးမင်းတို့ စိတ်ချမ်းသာမှု ဆိုင်ရဲ့ဂုဏ်ဒြပ်ပါ</small>
-                        </div>
-                        <hr style="border-top:1px dashed #000; opacity:1; margin:8px 0;">
-                        <div class="small" style="color:#000 !important;"><b>📅 ရက်စွဲ:</b> <span id="modal-date"></span></div>
-                        <div class="small" style="color:#000 !important;"><b>👤 ဝယ်သူ:</b> <span id="modal-customer"></span></div>
-                        <hr style="border-top:1px dashed #000; opacity:1; margin:8px 0;">
-                        <table class="table table-sm table-borderless small" style="color:#000 !important; width:100%;">
-                            <thead><tr style="border-bottom:1px dashed #000 !important;"><th>ပစ္စည်း</th><th class="text-end">ဈေး</th><th class="text-center">ခု</th><th class="text-end">စုစုပေါင်း</th></tr></thead>
-                            <tbody id="modal-items-body"></tbody>
-                        </table>
-                        <hr style="border-top:1px dashed #000; opacity:1; margin:8px 0;">
-                        <div class="d-flex justify-content-between fw-bold fs-6" style="color:#000 !important;"><span>ကျသင့်ငွေစုစုပေါင်း:</span><span><span id="modal-total">0</span> K</span></div>
-                        <div class="text-center mt-3 small" style="font-size:11px; color:#444 !important;">--- ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည် ---</div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light p-2" id="modal-footer-buttons"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ⚠️ ဤနေရာတွင် အစ်ကိုကြီး လက်ရှိသုံးနေသော (အရောင်းနှင့် မှတ်တမ်း OK သော) URL ကို ပြန်ထည့်ပါ
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwOx7vRB1DkpwxGBA4h_FFQwE9dLZ3urfAZucPOzwDpLb7ZCWNZc3opI2d7F4hsvTyy/exec"; 
-
-        let allProducts = []; let cart = []; let fetchedVouchers = []; let currentDisplayVouchers = []; let html5QrcodeScanner = null; let needCartClear = false;
-        let isSearching = false; let deferredPrompt = null;
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playBeepSound() {
-            try {
-                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-                osc.type = "sine"; osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-            } catch(e) {}
-        }
-
-        if (localStorage.getItem("isLoggedIn") === "true") { showApp(); }
-
-        function checkLogin() {
-            document.getElementById("login-error-log").style.display = "none";
-            if (document.getElementById("user-password").value === "1234") {
-                localStorage.setItem("isLoggedIn", "true"); 
-                showApp();
-            } else { alert("Password မှားယွင်းနေပါသည်။"); }
-        }
-        
-        async function showApp() {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("main-header").style.display = "block";
-            document.getElementById("app-section").style.display = "block";
-            await loadProducts();
-        }
-        
-        function logout() { localStorage.clear(); sessionStorage.clear(); location.reload(); }
-
-        function switchTabTo(tabName) {
-            if (tabName === "admin") {
-                if (sessionStorage.getItem("isAdmin") === "true") {
-                    document.getElementById("admin-login-box").style.display = "none";
-                    document.getElementById("admin-content").style.display = "block";
-                    renderAdminProducts();
-                } else {
-                    document.getElementById("admin-login-box").style.display = "block";
-                    document.getElementById("admin-content").style.display = "none";
-                }
-            }
-            if (tabName === "history") { loadVouchers(); }
-        }
-
-        function verifyAdminLogin() {
-            let pass = document.getElementById("admin-pass-input").value;
-            if (pass === "5678") {
-                sessionStorage.setItem("isAdmin", "true");
-                document.getElementById("admin-login-box").style.display = "none";
-                document.getElementById("admin-content").style.display = "block";
-                renderAdminProducts();
-            } else { alert("Admin Password မှားယွင်းနေပါသည်။"); }
-        }
-
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${WEB_APP_URL}?action=getProducts&t=${new Date().getTime()}`);
-                allProducts = await response.json();
-                renderProductsList(allProducts);
-                if(sessionStorage.getItem("isAdmin") === "true") renderAdminProducts();
-            } catch (e) { console.log(e); }
-        }
-
-        function renderProductsList(arr) {
-            const container = document.getElementById("products-container"); container.innerHTML = "";
-            if(arr.length === 0) { container.innerHTML = `<div class="text-center text-muted small py-3">ပစ္စည်းစာရင်းမရှိသေးပါ။ Admin တွင် ပေါင်းထည့်ပါ။</div>`; return; }
-            arr.forEach((p, idx) => {
-                container.innerHTML += `<div class="product-list-item shadow-sm" onclick="addCartByIdx(${idx})">
-                    <span class="fw-bold">${p.name}</span><span class="text-primary fw-bold">${p.price} K</span>
-                </div>`;
-            });
-        }
-
-        function addCartByIdx(idx) {
-            let p = allProducts[idx];
-            if(p) addToCart(p.name, p.price);
-        }
-
-        function filterPOSProducts() {
-            let kw = document.getElementById("search-product-pos").value.toLowerCase().trim();
-            renderProductsList(allProducts.filter(p => p.name.toLowerCase().includes(kw)));
-        }
-
-        // 🚀 JavaScript Error ကင်းစင်အောင် ပြင်ဆင်ထားသော Safe Admin List Renderer
-        function renderAdminProducts() {
-            const tbody = document.getElementById("admin-product-table"); tbody.innerHTML = "";
-            if(!allProducts || allProducts.length === 0) return;
-            allProducts.forEach((p, idx) => {
-                let row = document.createElement("tr");
-                
-                let tdName = document.createElement("td");
-                tdName.className = "fw-bold";
-                tdName.innerText = p.name;
-                
-                let tdPrice = document.createElement("td");
-                tdPrice.className = "text-end text-primary fw-bold";
-                tdPrice.innerText = p.price + " K";
-                
-                let tdAction = document.createElement("td");
-                tdAction.className = "text-center";
-                
-                let btnEdit = document.createElement("button");
-                btnEdit.className = "btn btn-sm btn-warning py-0 px-2 text-dark fw-bold me-1";
-                btnEdit.innerText = "✏️ ပြင်";
-                btnEdit.onclick = function() { quickEditProductByIdx(idx); };
-                
-                let btnDel = document.createElement("button");
-                btnDel.className = "btn btn-sm btn-danger py-0 px-2";
-                btnDel.innerText = "🗑️ ဖျက်";
-                btnDel.onclick = function() { deleteProductDirect(p.name); };
-                
-                tdAction.appendChild(btnEdit);
-                tdAction.appendChild(btnDel);
-                row.appendChild(tdName);
-                row.appendChild(tdPrice);
-                row.appendChild(tdAction);
-                tbody.appendChild(row);
-            });
-        }
-
-        function quickEditProductByIdx(idx) {
-            let p = allProducts[idx];
-            if(!p) return;
-            document.getElementById("form-title").innerText = "✏️ ဈေးနှုန်း/ဒေတာ ပြင်ဆင်ခြင်း";
-            document.getElementById("prod-name").value = p.name;
-            document.getElementById("prod-price").value = p.price;
-            document.getElementById("prod-barcode").value = p.barcode || "";
-            document.getElementById("prod-cancel-btn").style.display = "block";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetAdminForm() {
-            document.getElementById("form-title").innerText = "➕ ပစ္စည်းအသစ်ထည့်ရန် / ဈေးနှုန်းပြင်ရန်";
-            document.getElementById("product-form").reset();
-            document.getElementById("prod-cancel-btn").style.display = "none";
-        }
-
-        function onProductInput(val) {
-            let m = allProducts.find(p => p.name.toLowerCase() === val.toLowerCase().trim());
-            if(m) {
-                document.getElementById("form-title").innerText = "✏️ ဈေးနှုန်း/ဒေတာ ပြင်ဆင်ခြင်း";
-                document.getElementById("prod-price").value = m.price;
-                document.getElementById("prod-barcode").value = m.barcode || "";
-                document.getElementById("prod-cancel-btn").style.display = "block";
-            } else {
-                document.getElementById("form-title").innerText = "➕ ပစ္စည်းအသစ်ထည့်ရန် / ဈေးနှုန်းပြင်ရန်";
-                document.getElementById("prod-cancel-btn").style.display = "none";
-            }
-        }
-
-        function addToCart(name, price) {
-            playBeepSound(); 
-            let exist = cart.find(i => i.name === name);
-            if (exist) { exist.qty++; } else { cart.push({ name, price, qty: 1 }); }
-            updateCartUI();
-        }
-
-        function changeCartQty(idx, amount) {
-            playBeepSound();
-            cart[idx].qty += amount;
-            if(cart[idx].qty <= 0) { cart.splice(idx, 1); }
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const cartList = document.getElementById("cart-items");
-            const totalEl = document.getElementById("cart-total");
-            cartList.innerHTML = ""; let total = 0;
-            if(cart.length === 0) {
-                cartList.innerHTML = `<li class="list-group-item text-center text-muted py-2 small">ခြင်းတောင်းထဲမှာ ပစ္စည်းမရှိသေးပါ။</li>`;
-                totalEl.innerText = 0; return;
-            }
-            cart.forEach((item, idx) => {
-                let subTotal = item.price * item.qty;
-                total += subTotal;
-                cartList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center p-2 small">
-                    <div>
-                        <b class="text-dark">${item.name}</b><br>
-                        <small class="text-muted">${item.price} K × ${item.qty} = <span class="text-primary fw-bold">${subTotal} K</span></small>
-                    </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <button class="btn btn-sm btn-light border py-0 px-2 fw-bold" onclick="changeCartQty(${idx}, -1)">-</button>
-                        <span class="fw-bold px-1">${item.qty}</span>
-                        <button class="btn btn-sm btn-light border py-0 px-2 fw-bold" onclick="changeCartQty(${idx}, 1)">+</button>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-1 ms-1" onclick="cart.splice(${idx},1); updateCartUI();">🗑️</button>
-                    </div>
-                </li>`;
-            });
-            totalEl.innerText = total;
-        }
-
-        function reviewCheckoutModal() {
-            if (cart.length === 0) return;
-            needCartClear = false;
-            let cName = document.getElementById("customer-name").value.trim() || "customer";
-            document.getElementById("modal-date").innerText = new Date().toLocaleString();
-            document.getElementById("modal-customer").innerText = cName;
-            const body = document.getElementById("modal-items-body"); body.innerHTML = ""; let total = 0;
-            cart.forEach(i => { total += (i.price * i.qty); body.innerHTML += `<tr><td>${i.name}</td><td class="text-end">${i.price}</td><td class="text-center">${i.qty}</td><td class="text-end">${i.price*i.qty}</td></tr>`; });
-            document.getElementById("modal-total").innerText = total;
-            
-            document.getElementById("modal-footer-buttons").innerHTML = `
-                <button class="btn btn-sm btn-secondary rounded-pill" data-bs-dismiss="modal">ပိတ်</button>
-                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" onclick="executeCheckout(true)">🧾 သိမ်းမည် + Print ထုတ်မည်</button>
-                <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="executeCheckout(false)">💾 သိမ်းရုံသာသိမ်းမည်</button>`;
-            new bootstrap.Modal(document.getElementById('voucherModal')).show();
-        }
-
-        async function executeCheckout(shouldPrint) {
-            let voucherData = { date: document.getElementById("modal-date").innerText, items: JSON.stringify(cart), total: document.getElementById("modal-total").innerText, customer: document.getElementById("modal-customer").innerText };
-            needCartClear = true;
-            
-            if(shouldPrint) {
-                setTimeout(() => {
-                    window.print();
-                    try { bootstrap.Modal.getInstance(document.getElementById('voucherModal')).hide(); } catch(e){}
-                    clearCartAfterPrint();
-                }, 800);
-            } else {
-                try { bootstrap.Modal.getInstance(document.getElementById('voucherModal')).hide(); } catch(e){}
-                clearCartAfterPrint();
-            }
-            
-            let formData = new URLSearchParams();
-            formData.append("action", "addVoucher");
-            formData.append("data", JSON.stringify(voucherData));
-            await fetch(WEB_APP_URL, { method: "POST", body: formData });
-        }
-
-        function clearCartAfterPrint() {
-            if(needCartClear) {
-                cart = []; 
-                document.getElementById("customer-name").value = ""; 
-                updateCartUI();
-                needCartClear = false;
-            }
-        }
-
-        async function saveProduct(e) {
-            e.preventDefault();
-            let name = document.getElementById("prod-name").value.trim();
-            let price = Number(document.getElementById("prod-price").value);
-            let barcode = document.getElementById("prod-barcode").value.trim();
-            
-            let btn = document.getElementById("prod-submit-btn");
-            btn.disabled = true;
-            btn.innerText = "⏳ ဒေတာသိမ်းဆည်းနေပါသည်...";
-            
-            try {
-                let params = new URLSearchParams();
-                params.append("action", "saveProduct");
-                params.append("name", name);
-                params.append("price", price);
-                params.append("barcode", barcode);
-                params.append("image", "");
-                
-                await fetch(WEB_APP_URL, { method: "POST", body: params });
-                alert("✅ ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ဆင်သိမ်းဆည်းမှု အောင်မြင်ပါသည်။");
-                resetAdminForm();
-                await loadProducts();
-            } catch(err) {
-                alert("❌ ချိတ်ဆက်မှု အမှားအယွင်း ဖြစ်သွားပါသည်။ ကွန်ရက်ကို ပြန်စစ်ပေးပါ။");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "💾 ဒေတာသိမ်းဆည်းမည်";
-            }
-        }
-
-        async function deleteProductDirect(name) {
-            if(!confirm(`"${name}" ကို စာရင်းထဲမှ ဖျက်မှာ သေချာပါသလား?`)) return;
-            try {
-                let params = new URLSearchParams();
-                params.append("action", "deleteProduct");
-                params.append("name", name);
-                await fetch(WEB_APP_URL, { method: "POST", body: params });
-                alert("✅ ပစ္စည်းကို ဖျက်ပြီးပါပြီ");
-                await loadProducts();
-            } catch(e){ alert("❌ ဖျက်ရတာ မအောင်မြင်ပါ"); }
-        }
-
-        async function loadVouchers() {
-            document.getElementById("voucher-loading-status").innerText = "⏳ မှတ်တမ်းများ ဆွဲယူနေသည်...";
-            try {
-                const response = await fetch(`${WEB_APP_URL}?action=getVouchers&t=${new Date().getTime()}`);
-                fetchedVouchers = await response.json();
-                document.getElementById("voucher-loading-status").innerText = "";
-                isSearching = false; 
-                currentDisplayVouchers = [...fetchedVouchers].reverse();
-                renderVouchersTable();
-            } catch(e) { document.getElementById("voucher-loading-status").innerText = "❌ ဒေတာဆွဲမရပါ"; }
-        }
-
-        function renderVouchersTable() {
-            const tbody = document.getElementById("voucher-list-table"); tbody.innerHTML = "";
-            currentDisplayVouchers.forEach((v, idx) => {
-                let vString = encodeURIComponent(JSON.stringify(v));
-                let highlightClass = isSearching ? "search-highlighted-row" : "";
-                tbody.innerHTML += `<tr class="${highlightClass}">
-                    <td><small>${v.date.split(",")[0]}</small></td>
-                    <td class="fw-bold">${v.customer || "အမည်မသိ"}</td>
-                    <td class="text-end fw-bold text-success">${v.total} K</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-dark py-0 px-2 rounded-pill me-1" onclick="viewVoucherDetailDirect('${vString}')">👁️</button>
-                        <button class="btn btn-sm btn-danger py-0 px-1" onclick="deleteVoucher('${v.date}')">🗑️</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        function filterVoucherHistory() {
-            let kw = document.getElementById("search-voucher-history").value.toLowerCase().trim();
-            if (kw === "") { resetVoucherHistory(); return; }
-            isSearching = true; 
-            currentDisplayVouchers = [...fetchedVouchers].reverse().filter(v => (v.customer || "အမည်မသိ").toLowerCase().includes(kw));
-            renderVouchersTable();
-        }
-
-        function resetVoucherHistory() {
-            document.getElementById("search-voucher-history").value = "";
-            isSearching = false; 
-            currentDisplayVouchers = [...fetchedVouchers].reverse();
-            renderVouchersTable();
-        }
-
-        async function deleteVoucher(dateStr) {
-            if(!confirm("ဤဘောက်ချာမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?")) return;
-            try {
-                let params = new URLSearchParams();
-                params.append("action", "deleteVoucher");
-                params.append("date", dateStr);
-                await fetch(WEB_APP_URL, { method: "POST", body: params });
-                alert("✅ မှတ်တမ်းကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။"); 
-                await loadVouchers(); 
-            } catch(e){ alert("❌ ဖျက်ရတာ မအောင်မြင်ပါ၊ ကွန်ရက်ကို ပြန်စစ်ပေးပါ။"); }
-        }
-
-        function viewVoucherDetailDirect(voucherString) {
-            needCartClear = false;
-            let v = JSON.parse(decodeURIComponent(voucherString));
-            document.getElementById("modal-date").innerText = v.date; 
-            document.getElementById("modal-customer").innerText = v.customer || "အမည်မသိ"; 
-            document.getElementById("modal-total").innerText = v.total;
-            const body = document.getElementById("modal-items-body"); body.innerHTML = "";
-            try { 
-                JSON.parse(v.items).forEach(i => { 
-                    body.innerHTML += `<tr><td>${i.name}</td><td class="text-end">${i.price}</td><td class="text-center">${i.qty}</td><td class="text-end">${i.price*i.qty}</td></tr>`; 
-                }); 
-            } catch(e){}
-            document.getElementById("modal-footer-buttons").innerHTML = `
-                <button class="btn btn-sm btn-secondary rounded-pill" data-bs-dismiss="modal">ပိတ်မည်</button>
-                <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="printExistingVoucher()">🖨️ Print ပြန်ထုတ်မည်</button>`;
-            new bootstrap.Modal(document.getElementById('voucherModal')).show();
-        }
-
-        function printExistingVoucher() { setTimeout(() => { window.print(); try { bootstrap.Modal.getInstance(document.getElementById('voucherModal')).hide(); } catch(e){} }, 800); }
-        function startScanner() {
-            document.getElementById("reader").style.display = "block";
-            if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); }
-            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 250, height: 150 } }, (text) => {
-                let p = allProducts.find(x => x.barcode === text.trim());
-                if(p) { addToCart(p.name, p.price); document.getElementById("scan-result-msg").innerText = `✅ ${p.name}`; }
-            }).catch(()=>{ alert("ကင်မရာဖွင့်မရပါ"); });
-        }
-        function stopScanner() { if(html5QrcodeScanner) html5QrcodeScanner.stop().then(()=>{ document.getElementById("reader").style.display="none"; }); }
-    </script>
+<div class="container">
+    <h1>🧾 POS <span>v2.0</span></h1>
     
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiBzZWxmLnNraXBXYWl0aW5nKCkpOwpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2FjdGl2YXRlJywgZSA9PiBlLndhaXRVbnRilyhzZWxmLmNsaWVudHMuY2xhaW0oKSkpOwpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2ZldGNoJywgZSA9PiBlLnJlc3BvbmRXaXRoKGZldGNoKGUucmVxdWVzdCkpKTs=')
-                .then(reg => console.log('PWA SW Ok'))
-                .catch(err => console.log('SW Fail', err));
-            });
+    <div class="install-banner" id="installBanner">
+        <span>📲 App အနေနဲ့ ထည့်သုံးပါ</span>
+        <button id="installBtn">Install</button>
+    </div>
+    
+    <!-- Barcode Search -->
+    <div class="barcode-area">
+        <input type="text" id="barcodeInput" placeholder="📷 Barcode ရိုက်ထည့်ပါ" autocomplete="off">
+        <button class="scanner-btn" id="scanBtn">📷</button>
+        <button id="searchBtn">🔍</button>
+    </div>
+    
+    <div id="productArea" class="product-grid">🔄 ကုန်ပစ္စည်းများ ရယူနေသည်...</div>
+    
+    <div class="cart-section">
+        <h3 style="margin-bottom: 10px; font-size: 16px;">🛒 ဝယ်ယူမှုစာရင်း</h3>
+        <div id="cartItems"><div class="empty-cart">ကုန်ပစ္စည်းမရွေးရသေးပါ</div></div>
+        <div id="totalAmount" class="total">Total: 0 MMK</div>
+    </div>
+    
+    <button class="checkout-btn" id="checkoutBtn" disabled>✅ ငွေရှင်းမည်</button>
+    <div id="status"></div>
+</div>
+
+<!-- Scanner Modal -->
+<div class="scanner-modal" id="scannerModal">
+    <div id="reader"></div>
+    <button class="close-scanner" id="closeScanner">✕ ပိတ်မည်</button>
+</div>
+
+<script>
+    // 🔥 အရေးကြီး: မင်းရဲ့ Google Apps Script Web App URL ကို ဒီမှာထည့်ပါ
+    const API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'; 
+    
+    let products = [];
+    let cart = [];
+    let isProcessing = false;
+    let html5QrCode = null;
+
+    // ---------- PWA Install Logic ----------
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBanner.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            if (result.outcome === 'accepted') {
+                installBanner.style.display = 'none';
+            }
+            deferredPrompt = null;
         }
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            const banner = document.getElementById('pwa-install-banner');
-            if(banner) banner.style.setProperty('display', 'flex', 'important');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installBanner.style.display = 'none';
+    });
+
+    // ---------- Barcode Scanner ----------
+    function startScanner() {
+        const modal = document.getElementById('scannerModal');
+        modal.classList.add('active');
+        
+        if (html5QrCode) {
+            html5QrCode.clear();
+            html5QrCode = null;
+        }
+        
+        html5QrCode = new Html5Qrcode("reader");
+        
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanError
+        ).catch(err => {
+            console.error("Scanner error:", err);
+            showStatus('📷 ကင်မရာဖွင့်မရပါ။ ခွင့်ပြုချက်စစ်ပါ။', 'error');
+            closeScanner();
         });
-        const btnInstall = document.getElementById('pwa-btn-install');
-        if(btnInstall) {
-            btnInstall.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice; deferredPrompt = null;
-                const banner = document.getElementById('pwa-install-banner');
-                if(banner) banner.style.setProperty('display', 'none', 'important');
-            });
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        document.getElementById('barcodeInput').value = decodedText;
+        document.getElementById('barcodeInput').classList.add('barcode-found');
+        setTimeout(() => {
+            document.getElementById('barcodeInput').classList.remove('barcode-found');
+        }, 1000);
+        searchByBarcode(decodedText);
+        closeScanner();
+    }
+
+    function onScanError(err) {
+        // ဆိုင်းငံ့ထားပါ (စကင်န်လုပ်နေဆဲ)
+    }
+
+    function closeScanner() {
+        const modal = document.getElementById('scannerModal');
+        modal.classList.remove('active');
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                html5QrCode = null;
+            }).catch(err => console.error('Stop scanner error:', err));
         }
-    </script>
+    }
+
+    document.getElementById('scanBtn').addEventListener('click', startScanner);
+    document.getElementById('closeScanner').addEventListener('click', closeScanner);
+
+    // ---------- Barcode Search ----------
+    function searchByBarcode(barcode) {
+        if (!barcode || barcode.trim() === '') {
+            showStatus('⚠️ Barcode ထည့်ပါ။', 'error');
+            return;
+        }
+        
+        const product = products.find(p => p[4] && p[4].toString() === barcode.trim());
+        if (product) {
+            addToCart(product);
+            document.getElementById('barcodeInput').value = '';
+            showStatus(`✅ ${product[1]} ကို ဈေးခြင်းထဲထည့်ပြီးပါပြီ။`, 'success');
+        } else {
+            showStatus('❌ ဒီ Barcode နဲ့ ကုန်ပစ္စည်းမရှိပါ။', 'error');
+        }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+        const barcode = document.getElementById('barcodeInput').value;
+        searchByBarcode(barcode);
+    });
+
+    document.getElementById('barcodeInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const barcode = document.getElementById('barcodeInput').value;
+            searchByBarcode(barcode);
+        }
+    });
+
+    // ---------- Main POS Logic ----------
+    function showStatus(msg, type = 'loading') {
+        const el = document.getElementById('status');
+        el.textContent = msg;
+        el.className = type;
+        el.style.display = 'block';
+        if (type !== 'loading') {
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        }
+    }
+
+    function updateCheckoutBtn() {
+        const btn = document.getElementById('checkoutBtn');
+        btn.disabled = cart.length === 0 || isProcessing;
+    }
+
+    // Load Products
+    fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+            products = data.slice(1);
+            displayProducts();
+        })
+        .catch(err => {
+            document.getElementById('productArea').innerHTML = '❌ ကုန်ပစ္စည်းများ ရယူမရပါ';
+            console.error(err);
+        });
+
+    function displayProducts() {
+        const area = document.getElementById('productArea');
+        area.innerHTML = '';
+        products.forEach(item => {
+            const id = item[0], name = item[1], price = item[2], stock = item[3];
+            const btn = document.createElement('button');
+            btn.className = `product-item ${stock <= 0 ? 'out-of-stock' : ''}`;
+            btn.innerHTML = `
+                ${name}
+                <span class="price">${price.toLocaleString()} MMK</span>
+                <span class="stock-badge">${stock} လက်</span>
+            `;
+            if (stock > 0) {
+                btn.onclick = () => addToCart(item);
+            }
+            area.appendChild(btn);
+        });
+    }
+
+    function addToCart(item) {
+        const existing = cart.find(c => c[0] === item[0]);
+        if (existing) {
+            if (existing[3] < item[3]) {
+                existing[3] += 1;
+            } else {
+                showStatus('လက်ကျန်မလုံလောက်ပါ', 'error');
+                return;
+            }
+        } else {
+            cart.push([item[0], item[1], item[2], 1]);
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const cartDiv = document.getElementById('cartItems');
+        let total = 0;
+        
+        if (cart.length === 0) {
+            cartDiv.innerHTML = '<div class="empty-cart">ကုန်ပစ္စည်းမရွေးရသေးပါ</div>';
+            document.getElementById('totalAmount').innerText = 'Total: 0 MMK';
+            updateCheckoutBtn();
+            return;
+        }
+
+        cartDiv.innerHTML = '';
+        cart.forEach((item, index) => {
+            const itemTotal = item[2] * item[3];
+            total += itemTotal;
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <span class="name">${item[1]}</span>
+                <div class="qty-control">
+                    <button onclick="changeQty(${index}, -1)">−</button>
+                    <span class="qty">${item[3]}</span>
+                    <button onclick="changeQty(${index}, 1)">+</button>
+                    <span style="min-width:50px;text-align:right;font-weight:600;">${itemTotal.toLocaleString()}</span>
+                </div>
+            `;
+            cartDiv.appendChild(div);
+        });
+        
+        document.getElementById('totalAmount').innerText = `Total: ${total.toLocaleString()} MMK`;
+        updateCheckoutBtn();
+    }
+
+    function changeQty(index, delta) {
+        const item = cart[index];
+        const product = products.find(p => p[0] === item[0]);
+        const newQty = item[3] + delta;
+        
+        if (newQty < 1) {
+            cart.splice(index, 1);
+        } else if (newQty > product[3]) {
+            showStatus('လက်ကျန်မလုံလောက်ပါ', 'error');
+            return;
+        } else {
+            item[3] = newQty;
+        }
+        renderCart();
+    }
+
+    // Checkout
+    document.getElementById('checkoutBtn').addEventListener('click', function() {
+        if (cart.length === 0 || isProcessing) return;
+        isProcessing = true;
+        updateCheckoutBtn();
+        showStatus('⏳ လုပ်ဆောင်နေသည်...', 'loading');
+
+        const payload = cart.map(item => ({
+            id: item[0],
+            name: item[1],
+            price: item[2],
+            quantity: item[3]
+        }));
+
+        fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: payload })
+        })
+        .then(() => {
+            showStatus('✅ ငွေရှင်းခြင်းအောင်မြင်ပါသည်!', 'success');
+            cart = [];
+            renderCart();
+            return fetch(API_URL);
+        })
+        .then(res => res.json())
+        .then(data => {
+            products = data.slice(1);
+            displayProducts();
+            isProcessing = false;
+            updateCheckoutBtn();
+        })
+        .catch(err => {
+            showStatus('❌ အမှားရှိပါသည်။ နောက်တစ်ကြိမ်ကြိုးစားပါ။', 'error');
+            console.error(err);
+            isProcessing = false;
+            updateCheckoutBtn();
+        });
+    });
+
+</script>
 </body>
 </html>
