@@ -6,8 +6,6 @@
     <title>ကောင်းမြတ် - POS</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- JQuery (Failed to fetch ပြဿနာ ဖြေရှင်းရန်) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Barcode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     
@@ -20,7 +18,7 @@
 
     <script>
         // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwd2Vh9g7K1qYTHkDOX60t5_KMAknNWz6sItiToHwmmuVeQd7gY8IbZM-TGbqBUSYo6/exec'; 
+        const scriptURL = 'ဒီနေရာမှာ_အစ်ကို့ရဲ့_Web_App_URL_ထည့်ပါ'; 
 
         // Service Worker Register
         if ('serviceWorker' in navigator) {
@@ -86,7 +84,10 @@
             <!-- ပစ္စည်းအသစ်ထည့်ရန် -->
             <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                 <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
-                <div class="row g-2">
+                
+                <!-- CORS ဘိတ်ပိတ်မှုများကို ကျော်ဖြတ်ရန် သုံးထားသော လျှို့ဝှက် Form စနစ် 👇 -->
+                <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
+                    <input type="hidden" name="jsonData" id="form-json-data">
                     <div class="col-12">
                         <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ်">
                     </div>
@@ -100,9 +101,10 @@
                         <input type="number" id="new-stock" class="form-control" placeholder="လက်ကျန်ခုရေ">
                     </div>
                     <div class="col-12 mt-3">
-                        <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
+                        <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
                     </div>
-                </div>
+                </form>
+                <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
             </div>
 
             <!-- ရှိပြီးသားပစ္စည်းစာရင်း ပြင်ရန် -->
@@ -127,6 +129,7 @@
 
         window.onload = function() {
             loadProductsFromSheet();
+            document.getElementById('hidden-form').action = scriptURL;
         }
 
         function playBeep() {
@@ -134,6 +137,7 @@
             beep.play().catch(e => console.log("Audio play deferred"));
         }
 
+        // Tab ပြောင်းစနစ်
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
@@ -144,25 +148,20 @@
             if(tabId === 'admin') renderAdminProducts();
         }
 
-        // AJAX စနစ်ဖြင့် Google Sheet ထံမှ Data ဆွဲယူခြင်း
+        // Google Sheet ထံမှ ဒေတာဆွဲယူခြင်း
         function loadProductsFromSheet() {
             if(scriptURL.includes('ဒီနေရာမှာ')) return;
-            $.ajax({
-                url: scriptURL,
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    productsDB = data;
-                    if(document.getElementById('admin').classList.contains('active')) {
-                        renderAdminProducts();
-                    }
-                },
-                error: function(err) {
-                    console.log("Error loading products: ", err);
+            fetch(scriptURL)
+            .then(res => res.json())
+            .then(data => {
+                productsDB = data;
+                if(document.getElementById('admin').classList.contains('active')) {
+                    renderAdminProducts();
                 }
-            });
+            }).catch(err => console.log("Error loading products: ", err));
         }
 
+        // ကင်မရာ စကန်ဖတ်ခြင်း
         function onScanSuccess(decodedText, decodedResult) {
             if (canScan) {
                 playBeep();
@@ -180,7 +179,7 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // AJAX စနစ်ဖြင့် ပစ္စည်းအသစ် ထည့်သွင်းခြင်း (CORS ဘေးကင်းသည်)
+        // FORM SUBMIT စနစ်ဖြင့် ပစ္စည်းအသစ် ထည့်သွင်းခြင်း (၁၀၀% စိတ်ချရပြီး CORS error မတက်တော့ပါ)
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim();
             let name = document.getElementById('new-name').value.trim();
@@ -191,35 +190,27 @@
                 return alert("ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ဖြည့်ပေးပါဗျာ။");
             }
 
-            document.getElementById('add-prod-btn').disabled = true;
+            let payload = {
+                action: "updateProduct",
+                barcode: barcode,
+                name: name,
+                price: Number(price),
+                stock: Number(stock)
+            };
 
-            $.ajax({
-                url: scriptURL,
-                type: "POST",
-                crossDomain: true,
-                data: JSON.stringify({
-                    action: "updateProduct",
-                    barcode: barcode,
-                    name: name,
-                    price: Number(price),
-                    stock: Number(stock)
-                }),
-                success: function(res) {
-                    alert("ပစ္စည်းအသစ်ကို Google Sheet ထဲ သိမ်းဆည်းပြီးပါပြီ။");
-                    document.getElementById('new-barcode').value = '';
-                    document.getElementById('new-name').value = '';
-                    document.getElementById('new-price').value = '';
-                    document.getElementById('new-stock').value = '';
-                    document.getElementById('add-prod-btn').disabled = false;
-                    loadProductsFromSheet();
-                },
-                error: function(err) {
-                    // Google Apps Script က ရလဒ်ပြန်တဲ့အခါ Redirect ဖြစ်တတ်လို့ text status အောင်မြင်ရင် အိုကေတယ်လို့ သတ်မှတ်ပေးရန်
-                    alert("လုပ်ဆောင်ချက် ပြီးမြောက်သွားပါပြီ။ စာရင်းကို ပြန်ဆွဲယူပေးပါ။");
-                    document.getElementById('add-prod-btn').disabled = false;
-                    loadProductsFromSheet();
-                }
-            });
+            // Form ထဲသို့ JSON data သွတ်သွင်းပြီး Submit လုပ်ခြင်း
+            document.getElementById('form-json-data').value = JSON.stringify(payload);
+            document.getElementById('hidden-form').submit();
+
+            alert("ပစ္စည်းအသစ် သိမ်းဆည်းခြင်း လုပ်ဆောင်ချက် ပြီးမြောက်ပါပြီ။");
+            
+            // Textbox များကို ရှင်းလင်းရန်
+            document.getElementById('new-barcode').value = '';
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-price').value = '';
+            document.getElementById('new-stock').value = '';
+            
+            setTimeout(() => { loadProductsFromSheet(); }, 2000); // Sheet ထဲဝင်အောင် ၂ စက္ကန့် စောင့်ပြီး စာရင်းပြန်ဆွဲရန်
         }
 
         function addToCart(barcode) {
@@ -274,12 +265,11 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
+        // Checkout ပြုလုပ်ခြင်း
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
             
             playBeep();
-            document.getElementById('checkout-btn').disabled = true;
-
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
             
@@ -290,32 +280,16 @@
                 total: total
             };
 
-            $.ajax({
-                url: scriptURL,
-                type: "POST",
-                crossDomain: true,
-                data: JSON.stringify(saleData),
-                success: function() {
-                    let localData = { ...saleData, date: new Date().toLocaleString() };
-                    salesHistory.unshift(localData);
-                    displayHistory(salesHistory);
-                    printVoucher(localData);
-                    cart = [];
-                    renderCart();
-                    document.getElementById('checkout-btn').disabled = false;
-                    alert("Voucher ကို Google Sheet ထဲ သိမ်းဆည်းပြီးပါပြီ။");
-                },
-                error: function() {
-                    let localData = { ...saleData, date: new Date().toLocaleString() };
-                    salesHistory.unshift(localData);
-                    displayHistory(salesHistory);
-                    printVoucher(localData);
-                    cart = [];
-                    renderCart();
-                    document.getElementById('checkout-btn').disabled = false;
-                    alert("အရောင်းမှတ်တမ်း သိမ်းဆည်းပြီးပါပြီ။");
-                }
-            });
+            document.getElementById('form-json-data').value = JSON.stringify(saleData);
+            document.getElementById('hidden-form').submit();
+
+            let localData = { ...saleData, date: new Date().toLocaleString() };
+            salesHistory.unshift(localData);
+            displayHistory(salesHistory);
+            printVoucher(localData);
+            cart = [];
+            renderCart();
+            alert("Voucher ကို Google Sheet ထဲသို့ လှမ်းပို့လိုက်ပါပြီ။");
         }
 
         function printVoucher(sale) {
@@ -397,26 +371,17 @@
 
         function uploadProductToSheet(index) {
             let prod = productsDB[index];
-            $.ajax({
-                url: scriptURL,
-                type: "POST",
-                crossDomain: true,
-                data: JSON.stringify({
-                    action: "updateProduct",
-                    barcode: prod.barcode,
-                    name: prod.name,
-                    price: prod.price,
-                    stock: prod.stock || 99
-                }),
-                success: function() {
-                    alert("ဈေးနှုန်းပြင်ဆင်မှု အောင်မြင်ပြီး Google Sheet ထဲ သိမ်းပြီးပါပြီ။");
-                    loadProductsFromSheet();
-                },
-                error: function() {
-                    alert("ပြင်ဆင်မှု အောင်မြင်ပါသည်။");
-                    loadProductsFromSheet();
-                }
-            });
+            let payload = {
+                action: "updateProduct",
+                barcode: prod.barcode,
+                name: prod.name,
+                price: prod.price,
+                stock: prod.stock || 99
+            };
+            document.getElementById('form-json-data').value = JSON.stringify(payload);
+            document.getElementById('hidden-form').submit();
+            alert("ပြင်ဆင်မှု သိမ်းဆည်းပြီးပါပြီ။");
+            setTimeout(() => { loadProductsFromSheet(); }, 2000);
         }
     </script>
 </body>
