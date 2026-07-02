@@ -17,8 +17,8 @@
     </style>
 
     <script>
-        // 👇 အောက်က စာသားနေရာမှာ အစ်ကို့ရဲ့ Google Script Link ကို အစားထိုးထည့်ပါ
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwd2Vh9g7K1qYTHkDOX60t5_KMAknNWz6sItiToHwmmuVeQd7gY8IbZM-TGbqBUSYo6/exec"; 
+        // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwd2Vh9g7K1qYTHkDOX60t5_KMAknNWz6sItiToHwmmuVeQd7gY8IbZM-TGbqBUSYo6/exec'; 
 
         // Service Worker Register
         if ('serviceWorker' in navigator) {
@@ -39,7 +39,7 @@
         </div>
     </nav>
 
-    <!-- အောက်ခြေ Menu ခလုတ်များ -->
+    <!-- Menu ခလုတ်များ -->
     <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
         <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
         <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
@@ -79,17 +79,17 @@
             <div id="history-list"></div>
         </div>
 
-        <!-- ================= ၃။ ADMIN TAB (ပစ္စည်း Add ဖို့ ဖြည့်စွက်ထားသည်) ================= -->
+        <!-- ================= ၃။ ADMIN TAB ================= -->
         <div id="admin" class="tab-content">
-            <!-- ➕ ပစ္စည်းအသစ်ထည့်ရန် ပုံစံခွက် -->
+            <!-- ပစ္စည်းအသစ်ထည့်ရန် -->
             <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                 <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                 <div class="row g-2">
                     <div class="col-12">
-                        <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ် (စကန်ဖတ်ပါ သို့မဟုတ် ရိုက်ထည့်ပါ)">
+                        <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ်">
                     </div>
                     <div class="col-12">
-                        <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည် (ဥပမာ - တီးမစ်)" required>
+                        <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
                     </div>
                     <div class="col-6">
                         <input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း (Ks)">
@@ -103,7 +103,7 @@
                 </div>
             </div>
 
-            <!-- 💰 ရှိပြီးသားပစ္စည်းစာရင်း ပြင်ဆင်ရန် -->
+            <!-- ရှိပြီးသားပစ္စည်းစာရင်း ပြင်ရန် -->
             <div class="card p-3 shadow-sm border-0">
                 <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h5>
                 <button class="btn btn-primary mb-3 w-100" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
@@ -154,16 +154,13 @@
             }).catch(err => console.log("Error loading products: ", err));
         }
 
-        // ကင်မရာ စကန်ဖတ်စနစ်
         function onScanSuccess(decodedText, decodedResult) {
             if (canScan) {
                 playBeep();
-                // အကယ်၍ Admin Tab ဖွင့်ထားရင် စကန်ဖတ်လိုက်တဲ့ Barcode ကို Add Form ထဲ တန်းထည့်ပေးမည်
                 if(document.getElementById('admin').classList.contains('active')) {
                     document.getElementById('new-barcode').value = decodedText;
-                    alert("Barcode ရပါပြီ။ နာမည်နှင့် ဈေးနှုန်းဖြည့်ပြီး သိမ်းဆည်းပါ။");
+                    alert("Barcode ဖတ်မိပါပြီ။ အချက်အလက်ဖြည့်ပြီး သိမ်းဆည်းပါ။");
                 } else {
-                    // အရောင်း Tab ဆိုလျှင် ခြင်းတောင်းထဲ ထည့်မည်
                     addToCart(decodedText);
                 }
                 canScan = false;
@@ -174,7 +171,6 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // ➕ ပစ္စည်းအသစ် ထည့်သွင်းသည့် Function
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim();
             let name = document.getElementById('new-name').value.trim();
@@ -182,15 +178,14 @@
             let stock = document.getElementById('new-stock').value.trim() || 99;
 
             if(!barcode || !name || !price) {
-                return alert("ကျေးဇူးပြု၍ Barcode၊ ပစ္စည်းအမည်နှင့် ဈေးနှုန်းတို့ကို မဖြစ်မနေ ဖြည့်ပေးပါဗျာ။");
+                return alert("ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ဖြည့်ပေးပါဗျာ။");
             }
-
-            if(scriptURL.includes('ဒီနေရာမှာ')) return alert("Google Script Link ချိတ်ပေးဖို့ လိုပါသေးတယ်။");
 
             fetch(scriptURL, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify({
-                    action: "updateProduct", // Google Script ဘက်က updateProduct ကိုပဲ သုံးနိုင်ရန်
+                    action: "updateProduct",
                     barcode: barcode,
                     name: name,
                     price: Number(price),
@@ -198,21 +193,19 @@
                 })
             })
             .then(() => {
-                alert("পစ္စည်းအသစ်ကို Google Sheet ထဲသို့ အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီဗျာ။");
-                // ဖြည့်ထားတာတွေကို ရှင်းထုတ်ရန်
+                alert("ပစ္စည်းအသစ်ကို Google Sheet ထဲ သိမ်းဆည်းပြီးပါပြီ။");
                 document.getElementById('new-barcode').value = '';
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = '';
                 document.getElementById('new-stock').value = '';
-                loadProductsFromSheet(); // စာရင်းပြန်ဆွဲယူရန်
+                loadProductsFromSheet();
             })
-            .catch(err => alert("အမှားအယွင်းရှိပါသည်: " + err.message));
+            .catch(err => alert("Error: " + err.message));
         }
 
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
-                // မရှိသေးရင် တန်းဆောက်ပေးမည့် စနစ်
                 product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0, stock: 99 };
                 productsDB.push(product);
             }
@@ -264,7 +257,6 @@
 
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
-            if(scriptURL.includes('ဒီနေရာမှာ')) return alert("ကျေးဇူးပြု၍ ပထမဦးစွာ Google Script URL ချိတ်ပေးပါဦးဗျာ။");
             
             playBeep();
             document.getElementById('checkout-btn').disabled = true;
@@ -281,6 +273,7 @@
 
             fetch(scriptURL, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify(saleData)
             })
             .then(() => {
@@ -380,6 +373,7 @@
             let prod = productsDB[index];
             fetch(scriptURL, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify({
                     action: "updateProduct",
                     barcode: prod.barcode,
