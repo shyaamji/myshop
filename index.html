@@ -16,27 +16,30 @@
         .product-card { border-left: 5px solid #0d6efd; }
     </style>
 
-    <!-- Service Worker Register (ဖုန်းမှာ App သွင်းလို့ရအောင် တစ်ခါတည်း ထည့်ပေးထားသည်) -->
     <script>
+        // Google Apps Script မှ ရလာသော Web App URL Link ကို အောက်က မျက်တောင်အမွှာထဲတွင် ထည့်ပေးပါ 👇
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxecniUqFgnnBK27WoZws-u2y2V5JvqkTUNIeJSHLIRkS0XcRftXekrAwtQ6cRY6Fmx/exec'; 
+
+        // Service Worker Register
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker: အောင်မြင်စွာ ချိတ်ဆက်ပြီးပါပြီ။'))
-                .catch(err => console.log('Service Worker: အမှားရှိနေပါသည် -> ', err));
+                .then(reg => console.log('Service Worker: Ready!'))
+                .catch(err => console.log('Service Worker Error: ', err));
             });
         }
     </script>
 </head>
 <body class="bg-light">
 
-    <!-- အပေါ်ဘား (Header) -->
+    <!-- Header ဘား -->
     <nav class="navbar navbar-dark bg-dark sticky-top shadow">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
         </div>
     </nav>
 
-    <!-- အောက်ခြေ Menu ခလုတ်များ (Tabs) -->
+    <!-- အောက်ခြေ Menu ခလုတ်များ -->
     <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
         <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
         <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
@@ -47,17 +50,14 @@
         
         <!-- ================= ၁။ အရောင်း TAB ================= -->
         <div id="sales" class="tab-content active">
-            <!-- ကင်မရာ Scanner -->
             <div class="card p-2 mb-3 shadow-sm border-0">
                 <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
                 <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
             </div>
 
-            <!-- ဝယ်ယူနေသော စာရင်း -->
             <div class="card p-3 shadow-sm border-0">
                 <h5 class="card-title fw-bold mb-3">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
                 <div id="cart-list" class="list-group mb-3">
-                    <!-- ခြင်းတောင်းထဲက ပစ္စည်းများ ဒီနေရာမှာ ပေါ်မည် -->
                     <div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
                 </div>
                 <hr>
@@ -66,7 +66,7 @@
                         <small class="text-muted">စုစုပေါင်း ကျသင့်ငွေ</small>
                         <h3 class="fw-bold text-primary"><span id="cart-total">0</span> Ks</h3>
                     </div>
-                    <button class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
+                    <button id="checkout-btn" class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
                 </div>
             </div>
         </div>
@@ -76,48 +76,40 @@
             <div class="card p-3 shadow-sm border-0 mb-3">
                 <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
             </div>
-            <div id="history-list">
-                <!-- ရောင်းပြီးသား Voucher များ ဒီနေရာမှာ ပေါ်မည် -->
-            </div>
+            <div id="history-list"></div>
         </div>
 
         <!-- ================= ၃။ ADMIN TAB ================= -->
         <div id="admin" class="tab-content">
             <div class="card p-3 shadow-sm border-0">
                 <h5 class="card-title fw-bold mb-3">💰 ဈေးနှုန်းနှင့် ပစ္စည်းစာရင်း ပြင်ဆင်ရန်</h5>
-                <div id="admin-product-list" class="list-group">
-                    <!-- ပစ္စည်းစာရင်း ပြင်ဆင်ရမည့် နေရာ -->
-                </div>
+                <button class="btn btn-primary mb-3 w-100" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်းသစ်များဆွဲယူရန်</button>
+                <div id="admin-product-list" class="list-group"></div>
             </div>
         </div>
 
     </div>
 
-    <!-- အသံဖိုင် (စကန်ဖတ်ရင် သို့မဟုတ် + - နှိပ်ရင် မြည်မည့်အသံ) -->
+    <!-- အသံဖိုင် -->
     <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
-    <!-- JavaScript စနစ်များ -->
     <script>
         const beep = document.getElementById('beep-sound');
         let canScan = true;
         let cart = [];
-        
-        // နမူနာပစ္စည်းများ (Google Sheet နှင့် ချိတ်ဆက်လျှင် ၎င်းမှ Data များ ဝင်လာမည်)
-        let productsDB = [
-            { barcode: "11111", name: "မားမား ခေါက်ဆွဲခြောက်", price: 600, stock: 50 },
-            { barcode: "22222", name: "Coca Cola ဘူး", price: 1200, stock: 30 },
-            { barcode: "33333", name: "Lifebuoy ဆပ်ပြာ", price: 1500, stock: 20 }
-        ];
-
+        let productsDB = []; 
         let salesHistory = [];
 
-        // အသံမြည်စေသည့် စနစ်
-        function playBeep() {
-            beep.currentTime = 0;
-            beep.play().catch(e => console.log("အသံဖွင့်ရန် User နှိပ်ဖို့လိုသည်"));
+        // App ပွင့်လာတာနဲ့ Google Sheet ထဲက ပစ္စည်းတွေကို လှမ်းယူမည်
+        window.onload = function() {
+            loadProductsFromSheet();
         }
 
-        // Tab ပြောင်းသည့် စနစ်
+        function playBeep() {
+            beep.currentTime = 0;
+            beep.play().catch(e => console.log("Audio play deferred"));
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
@@ -126,30 +118,34 @@
             document.getElementById('btn-' + tabId).classList.add('active');
             
             if(tabId === 'admin') renderAdminProducts();
-            if(tabId === 'history') renderHistory();
         }
 
-        // --- အဆင့်မြင့် ကင်မရာ Barcode Scanner စနစ် ---
+        // Google Sheet မှ ပစ္စည်းစာရင်း ဆွဲယူခြင်း
+        function loadProductsFromSheet() {
+            if(scriptURL.includes('ဒီနေရာမှာ')) return;
+            fetch(scriptURL)
+            .then(res => res.json())
+            .then(data => {
+                productsDB = data;
+                alert("Google Sheet မှ ပစ္စည်းစာရင်း အပ်ဒိတ်ဖြစ်သွားပါပြီ။");
+            }).catch(err => console.log("Error loading products: ", err));
+        }
+
+        // Barcode Scanner စနစ်
         function onScanSuccess(decodedText, decodedResult) {
             if (canScan) {
-                playBeep(); // စကန်ဖတ်မိပါက အသံမြည်မည်
+                playBeep();
                 addToCart(decodedText);
-                
-                // ပစ္စည်းတစ်ခုကို အကြိမ်ကြိမ် ဖတ်မိခြင်းမှ ကာကွယ်ရန် ၅ စက္ကန့် ပိတ်ထားမည်
                 canScan = false;
-                setTimeout(() => { canScan = true; }, 5000); 
+                setTimeout(() => { canScan = true; }, 5000); // ၅ စက္ကန့် စောင့်စနစ်
             }
         }
 
-        // Scanner ကို စတင်မောင်းနှင်ခြင်း
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // --- ခြင်းတောင်းထဲ ပစ္စည်းထည့်ခြင်း ---
         function addToCart(barcode) {
-            let product = productsDB.find(p => p.barcode === barcode);
-            
-            // Database ထဲမရှိသော ပစ္စည်းအသစ်ဖြစ်ပါက တန်းဆောက်ပေးမည်
+            let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
                 product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0, stock: 99 };
                 productsDB.push(product);
@@ -164,27 +160,21 @@
             renderCart();
         }
 
-        // --- အရေအတွက် အတိုး/အလျှော့ (+ -) လုပ်ပြီး အသံမြည်မည့်စနစ် ---
         function changeQty(index, change) {
-            playBeep(); // နှိပ်လိုက်တိုင်း အသံမြည်မည်
+            playBeep();
             cart[index].qty += change;
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
+            if (cart[index].qty <= 0) cart.splice(index, 1);
             renderCart();
         }
 
-        // --- ခြင်းတောင်းကို UI ပေါ်တွင် ပြသခြင်း ---
         function renderCart() {
             const list = document.getElementById('cart-list');
             let total = 0;
-            
             if(cart.length === 0) {
                 list.innerHTML = '<div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>';
                 document.getElementById('cart-total').innerText = 0;
                 return;
             }
-
             list.innerHTML = '';
             cart.forEach((item, index) => {
                 let itemTotal = item.price * item.qty;
@@ -206,79 +196,60 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
-        // --- ဘောက်ချာထုတ်ခြင်းနှင့် သိမ်းဆည်းခြင်း ---
+        // ဘောက်ချာထုတ်ပြီး Google Sheet ထဲ လှမ်းသိမ်းသည့် စနစ်
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
-            playBeep();
+            if(scriptURL.includes('ဒီနေရာမှာ')) return alert("ကျေးဇူးပြု၍ ပထမဦးစွာ Google Script URL ချိတ်ပေးပါဦးဗျာ။");
             
+            playBeep();
+            document.getElementById('checkout-btn').disabled = true;
+
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
             
             let saleData = {
+                action: "addSale",
                 voucherId: voucherId,
-                date: new Date().toLocaleString('mm-MM', { hour12: true }),
-                items: [...cart],
+                items: cart,
                 total: total
             };
-            
-            salesHistory.unshift(saleData); // မှတ်တမ်းထဲ ထည့်မည်
-            
-            // Print ထုတ်ရန် Window အသေးလေး ဖွင့်ခြင်း
-            printVoucher(saleData);
 
-            // Clear Cart
-            cart = [];
-            renderCart();
-            alert("Voucher သိမ်းဆည်းပြီးပါပြီ။");
+            // Google Sheet သို့ ပို့ခြင်း
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(saleData)
+            })
+            .then(() => {
+                let localData = { ...saleData, date: new Date().toLocaleString() };
+                salesHistory.unshift(localData);
+                printVoucher(localData);
+                cart = [];
+                renderCart();
+                document.getElementById('checkout-btn').disabled = false;
+                alert("Voucher ကို Google Sheet ထဲ သိမ်းဆည်းပြီးပါပြီ။");
+            })
+            .catch(err => {
+                alert("ချိတ်ဆက်မှု အမှားအယွင်းရှိပါသည်- " + err.message);
+                document.getElementById('checkout-btn').disabled = false;
+            });
         }
 
         function printVoucher(sale) {
             let printWindow = window.open('', '', 'height=600,width=400');
             printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Print Voucher</title>
-                    <style>
-                        body { font-family: sans-serif; padding: 20px; text-align: center; }
-                        .left { text-align: left; }
-                        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
-                        th, td { padding: 5px; text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    <h3>ကောင်းမြတ် (Kaung Myat)</h3>
-                    <p>POS ပြေစာ</p>
-                    <div class="left">
-                        <small>Voucher: ${sale.voucherId}</small><br>
-                        <small>နေ့ရက်: ${sale.date}</small>
-                    </div>
-                    <hr>
-                    <table>
-                        <thead><tr><th>ပစ္စည်း</th><th>ခုရေ</th><th>သင့်ငွေ</th></tr></thead>
-                        <tbody>
-                            ${sale.items.map(i => `<tr><td>${i.name}</td><td>${i.qty}</td><td>${(i.price * i.qty)} Ks</td></tr>`).join('')}
-                        </tbody>
-                    </table>
-                    <hr>
-                    <h3 class="left">စုစုပေါင်း: ${sale.total} Ks</h3>
-                    <p>~ ကျေးဇူးတင်ပါသည် ~</p>
+                <html><body>
+                    <center><h3>ကောင်းမြတ် (Kaung Myat)</h3><p>POS ပြေစာ</p></center>
+                    <p><small>Voucher: ${sale.voucherId}<br>နေ့ရက်: ${sale.date || new Date().toLocaleString()}</small></p><hr>
+                    <ul>${sale.items.map(i => `<li>${i.name} x ${i.qty} = ${(i.price * i.qty)} Ks</li>`).join('')}</ul><hr>
+                    <h4>စုစုပေါင်း: ${sale.total} Ks</h4>
+                    <center><p>~ ကျေးဇူးတင်ပါသည် ~</p></center>
                     <script>window.onload = function() { window.print(); window.close(); }</script>
-                </body>
-                </html>
+                </body></html>
             `);
             printWindow.document.close();
         }
 
-        // --- မှတ်တမ်းပြသခြင်းနှင့် Search၊ Delete စနစ် ---
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            if(salesHistory.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-5">ရောင်းရသည့် မှတ်တမ်း မရှိသေးပါ။</div>';
-                return;
-            }
-            displayHistory(salesHistory);
-        }
-
+        // မှတ်တမ်း ရှာဖွေ/ဖျက်ခြင်း
         function displayHistory(data) {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
@@ -289,14 +260,12 @@
                             <h6 class="fw-bold text-primary">ID: ${sale.voucherId}</h6>
                             <small class="text-muted">${sale.date}</small>
                         </div>
-                        <div class="mb-2">
-                            ${sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('')}
-                        </div>
+                        <div class="mb-2">${sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('')}</div>
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-success mb-0">${sale.total} Ks</h5>
                             <div>
-                                <button class="btn btn-sm btn-outline-dark me-2" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ထပ်ထုတ်မည်</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteHistory(${index})">🗑️ ဖျက်မည်</button>
+                                <button class="btn btn-sm btn-outline-dark me-2" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ပြန်ထုတ်ရန်</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteHistory(${index})">🗑️ ဖျက်ရန်</button>
                             </div>
                         </div>
                     </div>`;
@@ -310,43 +279,51 @@
         }
 
         function deleteHistory(index) {
-            if(confirm("ဤဘောက်ချာမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?")) {
+            if(confirm("ဤမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?")) {
                 salesHistory.splice(index, 1);
-                renderHistory();
+                displayHistory(salesHistory);
             }
         }
 
-        // --- Admin စနစ် (ဈေးနှုန်း အလွယ်တကူ ပြင်ရန်) ---
+        // Admin ပြင်ဆင်ခြင်း စနစ်
         function renderAdminProducts() {
             const list = document.getElementById('admin-product-list');
             list.innerHTML = '';
             productsDB.forEach((prod, index) => {
                 list.innerHTML += `
                     <div class="list-group-item p-3 mb-2 rounded border shadow-sm">
-                        <div class="row g-2 align-items-center">
-                            <div class="col-12 col-md-4">
-                                <h6 class="fw-bold mb-1">${prod.name}</h6>
-                                <small class="text-muted">Barcode: ${prod.barcode}</small>
+                        <h6>${prod.name} (Barcode: ${prod.barcode})</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" class="form-control" value="${prod.price}" onchange="saveAdminChanges(${index}, 'price', this.value)">
                             </div>
                             <div class="col-6">
-                                <label class="small text-muted">ဈေးနှုန်း (Ks)</label>
-                                <input type="number" class="form-control" value="${prod.price}" onchange="updatePrice(${index}, this.value)">
-                            </div>
-                            <div class="col-6">
-                                <label class="small text-muted">လက်ကျန် (ခု)</label>
-                                <input type="number" class="form-control" value="${prod.stock}" onchange="updateStock(${index}, this.value)">
+                                <button class="btn btn-warning w-100" onclick="uploadProductToSheet(${index})">💾 Sheet သို့ သိမ်းမည်</button>
                             </div>
                         </div>
                     </div>`;
             });
         }
 
-        function updatePrice(index, val) {
-            productsDB[index].price = Number(val);
+        function saveAdminChanges(index, field, value) {
+            productsDB[index][field] = Number(value);
         }
 
-        function updateStock(index, val) {
-            productsDB[index].stock = Number(val);
+        // ဈေးနှုန်းပြင်ပြီးတာကို Google Sheet ထဲ တိုက်ရိုက်သိမ်းပေးမည့်စနစ်
+        function uploadProductToSheet(index) {
+            let prod = productsDB[index];
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "updateProduct",
+                    barcode: prod.barcode,
+                    name: prod.name,
+                    price: prod.price,
+                    stock: prod.stock || 99
+                })
+            })
+            .then(() => alert("ဈေးနှုန်းပြင်ဆင်မှု အောင်မြင်ပြီး Google Sheet ထဲ သိမ်းပြီးပါပြီ။"))
+            .catch(err => alert("အမှားအယွင်းရှိပါသည်: " + err.message));
         }
     </script>
 </body>
