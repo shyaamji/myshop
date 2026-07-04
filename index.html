@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ကောင်းမြတ် - POSLSO</title>
+    <title>ကောင်းမြတ် - POS</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Barcode Scanner Library -->
@@ -14,6 +14,10 @@
         .tab-content.active { display: block; }
         .qty-btn { width: 45px; height: 45px; font-size: 22px; font-weight: bold; }
         .product-card { border-left: 5px solid #0d6efd; }
+        /* Suggestion Dropdown List Design */
+        .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
+        .search-item:hover { background-color: #f8f9fa; }
     </style>
 
     <script>
@@ -48,9 +52,18 @@
         
         <!-- ================= ၁။ အရောင်း TAB ================= -->
         <div id="sales" class="tab-content active">
+            <!-- 📷 Barcode Scanner -->
             <div class="card p-2 mb-3 shadow-sm border-0">
                 <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
                 <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
+            </div>
+
+            <!-- 🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်ကွက် (အသစ်ထည့်သွင်းထားသည်) -->
+            <div class="card p-3 mb-3 shadow-sm border-0 position-relative">
+                <h6 class="card-title fw-bold text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာရန် (Barcode မပါသောပစ္စည်းများ)</h6>
+                <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ပစ္စည်းအမည် ရိုက်ထည့်ပါ..." onkeyup="filterProductNames()">
+                <!-- နီးစပ်ရာ စာလုံးပြသမည့် Dropdown နေရာ -->
+                <div id="search-suggestions" class="search-results" style="display: none;"></div>
             </div>
 
             <div class="card p-3 shadow-sm border-0">
@@ -83,11 +96,10 @@
             <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                 <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                 
-                <!-- Google Sheet ထံသို့ တိုက်ရိုက် Data ဝင်စေမည့် Native Form စနစ် -->
                 <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
                     <input type="hidden" name="jsonData" id="form-json-data">
                     <div class="col-12">
-                        <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ်">
+                        <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ် (မရှိပါက လွတ်ထားနိုင်ပါသည်)">
                     </div>
                     <div class="col-12">
                         <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
@@ -102,7 +114,6 @@
                         <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
                     </div>
                 </form>
-                <!-- Form Submit ပြီးလျှင် Page မပြောင်းသွားစေရန် ကြားခံထားသော iframe -->
                 <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
             </div>
 
@@ -127,7 +138,6 @@
         let salesHistory = [];
 
         window.onload = function() {
-            // Form ရဲ့ action url ကို သတ်မှတ်ပေးခြင်း
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet();
         }
@@ -147,7 +157,6 @@
             if(tabId === 'admin') renderAdminProducts();
         }
 
-        // Google Sheet ထံမှ ဒေတာဆွဲယူခြင်း
         function loadProductsFromSheet() {
             if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             
@@ -158,6 +167,49 @@
                 renderAdminProducts();
             }).catch(err => console.log("Error loading products: ", err));
         }
+
+        // 🔍 ပစ္စည်းအမည်ဖြင့် ရိုက်ရှာပြီး နီးစပ်ရာ စာလုံးပြသပေးသည့် စနစ်သစ်
+        function filterProductNames() {
+            let input = document.getElementById('name-search-input').value.toLowerCase().trim();
+            let suggestionsBox = document.getElementById('search-suggestions');
+            
+            if (input === '') {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // ရိုက်လိုက်သော စာလုံးနှင့် ကိုက်ညီသည့် ပစ္စည်းများကို DB ထဲတွင် ရှာဖွေခြင်း
+            let filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
+            
+            if (filtered.length === 0) {
+                suggestionsBox.innerHTML = '<div class="search-item text-muted">ရှာမတွေ့ပါ...</div>';
+                suggestionsBox.style.display = 'block';
+                return;
+            }
+
+            suggestionsBox.innerHTML = '';
+            filtered.forEach(prod => {
+                let div = document.createElement('div');
+                div.className = 'search-item d-flex justify-content-between align-items-center';
+                div.innerHTML = `<div><strong>${prod.name}</strong></div> <div class="text-primary fw-bold">${prod.price} Ks</div>`;
+                // ကလစ်နှိပ်လိုက်လျှင် Cart ထဲသို့ တိုက်ရိုက်ထည့်ခြင်း
+                div.onclick = function() {
+                    playBeep();
+                    addByProductObject(prod);
+                    document.getElementById('name-search-input').value = '';
+                    suggestionsBox.style.display = 'none';
+                };
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.style.display = 'block';
+        }
+
+        // စာရိုက်ကွက် ပြင်ပကို နှိပ်လျှင် Dropdown ပိတ်သွားစေရန်
+        document.addEventListener('click', function(e) {
+            if (e.target.id !== 'name-search-input') {
+                document.getElementById('search-suggestions').style.display = 'none';
+            }
+        });
 
         function onScanSuccess(decodedText, decodedResult) {
             if (canScan) {
@@ -176,14 +228,18 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // ပစ္စည်းအသစ် ထည့်သွင်းခြင်း (ဝင်းသီရိ POS စနစ်အတိုင်း သေချာသော နည်းလမ်းဟောင်း)
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim();
             let name = document.getElementById('new-name').value.trim();
             let price = document.getElementById('new-price').value.trim();
             let stock = document.getElementById('new-stock').value.trim() || 99;
 
-            if(!barcode || !name || !price) {
+            // Barcode မပါခဲ့လျှင် အချိန်ပေါ်မူတည်ပြီး ID တစ်ခု အလိုအလျောက် သတ်မှတ်ပေးမည်
+            if(!barcode) {
+                barcode = "NO-BARCODE-" + Date.now().toString().slice(-5);
+            }
+
+            if(!name || !price) {
                 return alert("ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ဖြည့်ပေးပါဗျာ။");
             }
 
@@ -199,11 +255,9 @@
                 stock: Number(stock)
             };
 
-            // Form ရဲ့ Hidden Input ထဲသို့ ဒေတာထည့်သွင်းပြီး တိုက်ရိုက် Submit လုပ်ခြင်း
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
 
-            // ခဏစောင့်ပြီး အခြေအနေကို ပြန်ပြင်ရန်
             setTimeout(() => {
                 alert("ပစ္စည်းအသစ်ကို Google Sheet ထဲသို့ လှမ်းပို့လိုက်ပါပြီဗျာ။");
                 btn.disabled = false;
@@ -214,19 +268,23 @@
                 document.getElementById('new-price').value = '';
                 document.getElementById('new-stock').value = '';
                 
-                // ဒေတာဝင်သွားအောင် ၃ စက္ကန့်စောင့်ပြီး စာရင်းပြန်ဆွဲခြင်း
                 loadProductsFromSheet();
             }, 2000);
         }
 
+        // Barcode စကန်ဖတ်ပြီး ကတ်ထဲထည့်ခြင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
                 product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0, stock: 99 };
                 productsDB.push(product);
             }
+            addByProductObject(product);
+        }
 
-            let item = cart.find(i => i.barcode === barcode);
+        // Object အလိုက် ကတ်ထဲတိုက်ရိုက်ထည့်ခြင်း စနစ် (စာရိုက်ရှာဖွေမှုအတွက်)
+        function addByProductObject(product) {
+            let item = cart.find(i => i.barcode === product.barcode);
             if (item) {
                 item.qty++;
             } else {
