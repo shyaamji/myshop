@@ -14,17 +14,24 @@
         .tab-content.active { display: block; }
         .qty-btn { width: 45px; height: 45px; font-size: 22px; font-weight: bold; }
         .product-card { border-left: 5px solid #0d6efd; }
-        /* Suggestion Dropdown List Design */
         .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
+
+        /* ================= ပရင်တာထုတ်ရန် သီးသန့် CSS စနစ် (အသစ်) ================= */
+        #print-receipt-zone { display: none; } /* ပုံမှန်အချိန်တွင် ဖုံးထားမည် */
+
+        @media print {
+            body * { display: none !important; } /* တစ်ပြင်လုံးရှိ အရာအားလုံးကို ဖျောက်မည် */
+            #print-receipt-zone, #print-receipt-zone * { display: block !important; } /* ဘောင်ကိုသာ ပြမည် */
+            #print-receipt-zone { position: absolute; left: 0; top: 0; width: 100%; padding: 10px; font-family: monospace; }
+        }
     </style>
 
     <script>
-        // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
+        // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ အစ်ကို့ရဲ့ Google Web App URL ကို ထည့်ပေးပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzsgaXFfRctzx7dBAsQJPcta_MZJxiNE_3awjLBxlVY-BJucvTne9QQ6tYSdoyqUO21/exec'; 
 
-        // Cache မမိစေရန် Service Worker ဖျက်သိမ်းခြင်း
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) { registration.unregister(); }
@@ -34,97 +41,98 @@
 </head>
 <body class="bg-light">
 
-    <!-- Header ဘား -->
-    <nav class="navbar navbar-dark bg-dark sticky-top shadow">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
+    <!-- 🌟 ဖုန်းထဲတွင် တန်းပြီး Print ထွက်စေရန် ကြားခံတည်ဆောက်ထားသော ဘောင်အကွက် (အသစ်) -->
+    <div id="print-receipt-zone"></div>
+
+    <!-- ပုံမှန် App မျက်နှာပြင်တစ်ခုလုံး -->
+    <div id="app-main-content">
+        <!-- Header ဘား -->
+        <nav class="navbar navbar-dark bg-dark sticky-top shadow">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
+            </div>
+        </nav>
+
+        <!-- Menu ခလုတ်များ -->
+        <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
+            <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
+            <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
+            <button id="btn-admin" class="btn btn-outline-primary py-2" onclick="switchTab('admin')">⚙️ Admin</button>
         </div>
-    </nav>
 
-    <!-- Menu ခလုတ်များ -->
-    <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
-        <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-        <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-        <button id="btn-admin" class="btn btn-outline-primary py-2" onclick="switchTab('admin')">⚙️ Admin</button>
-    </div>
-
-    <div class="container pb-5">
-        
-        <!-- ================= ၁။ အရောင်း TAB ================= -->
-        <div id="sales" class="tab-content active">
-            <!-- 📷 Barcode Scanner -->
-            <div class="card p-2 mb-3 shadow-sm border-0">
-                <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
-                <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
-            </div>
-
-            <!-- 🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်ကွက် (အသစ်ထည့်သွင်းထားသည်) -->
-            <div class="card p-3 mb-3 shadow-sm border-0 position-relative">
-                <h6 class="card-title fw-bold text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာရန် (Barcode မပါသောပစ္စည်းများ)</h6>
-                <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ပစ္စည်းအမည် ရိုက်ထည့်ပါ..." onkeyup="filterProductNames()">
-                <!-- နီးစပ်ရာ စာလုံးပြသမည့် Dropdown နေရာ -->
-                <div id="search-suggestions" class="search-results" style="display: none;"></div>
-            </div>
-
-            <div class="card p-3 shadow-sm border-0">
-                <h5 class="card-title fw-bold mb-3">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
-                <div id="cart-list" class="list-group mb-3">
-                    <div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+        <div class="container pb-5">
+            
+            <!-- ================= ၁။ အရောင်း TAB ================= -->
+            <div id="sales" class="tab-content active">
+                <div class="card p-2 mb-3 shadow-sm border-0">
+                    <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
+                    <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
                 </div>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-muted">စုစုပေါင်း ကျသင့်ငွေ</small>
-                        <h3 class="fw-bold text-primary"><span id="cart-total">0</span> Ks</h3>
+
+                <div class="card p-3 mb-3 shadow-sm border-0 position-relative">
+                    <h6 class="card-title fw-bold text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာရန် (Barcode မပါသောပစ္စည်းများ)</h6>
+                    <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ပစ္စည်းအမည် ရိုက်ထည့်ပါ..." onkeyup="filterProductNames()">
+                    <div id="search-suggestions" class="search-results" style="display: none;"></div>
+                </div>
+
+                <div class="card p-3 shadow-sm border-0">
+                    <h5 class="card-title fw-bold mb-3">ဝယ်ယူနေသော ပစ္စည်းများ</h5>
+                    <div id="cart-list" class="list-group mb-3">
+                        <div class="text-center text-muted py-4">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
                     </div>
-                    <button id="checkout-btn" class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">စုစုပေါင်း ကျသင့်ငွေ</small>
+                            <h3 class="fw-bold text-primary"><span id="cart-total">0</span> Ks</h3>
+                        </div>
+                        <button id="checkout-btn" class="btn btn-success btn-lg px-4 shadow" onclick="checkout()">Voucher ထုတ်မည်</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= ၂။ မှတ်တမ်း TAB ================= -->
-        <div id="history" class="tab-content">
-            <div class="card p-3 shadow-sm border-0 mb-3">
-                <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
-            </div>
-            <div id="history-list"></div>
-        </div>
-
-        <!-- ================= ၃။ ADMIN TAB ================= -->
-        <div id="admin" class="tab-content">
-            <!-- ပစ္စည်းအသစ်ထည့်ရန် -->
-            <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
-                <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
-                
-                <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
-                    <input type="hidden" name="jsonData" id="form-json-data">
-                    <div class="col-12">
-                        <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ် (မရှိပါက လွတ်ထားနိုင်ပါသည်)">
-                    </div>
-                    <div class="col-12">
-                        <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
-                    </div>
-                    <div class="col-6">
-                        <input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း (Ks)">
-                    </div>
-                    <div class="col-6">
-                        <input type="number" id="new-stock" class="form-control" placeholder="လက်ကျန်ခုရေ">
-                    </div>
-                    <div class="col-12 mt-3">
-                        <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
-                    </div>
-                </form>
-                <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+            <!-- ================= ၂။ မှတ်တမ်း TAB ================= -->
+            <div id="history" class="tab-content">
+                <div class="card p-3 shadow-sm border-0 mb-3">
+                    <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                </div>
+                <div id="history-list"></div>
             </div>
 
-            <!-- ရှိပြီးသားပစ္စည်းစာရင်း ပြင်ရန် -->
-            <div class="card p-3 shadow-sm border-0">
-                <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h5>
-                <button class="btn btn-primary mb-3 w-100" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
-                <div id="admin-product-list" class="list-group"></div>
-            </div>
-        </div>
+            <!-- ================= ၃။ ADMIN TAB ================= -->
+            <div id="admin" class="tab-content">
+                <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
+                    <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
+                    
+                    <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
+                        <input type="hidden" name="jsonData" id="form-json-data">
+                        <div class="col-12">
+                            <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ် (မရှိပါက လွတ်ထားနိုင်ပါသည်)">
+                        </div>
+                        <div class="col-12">
+                            <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
+                        </div>
+                        <div class="col-6">
+                            <input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း (Ks)">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" id="new-stock" class="form-control" placeholder="လက်ကျန်ခုရေ">
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
+                        </div>
+                    </form>
+                    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+                </div>
 
+                <div class="card p-3 shadow-sm border-0">
+                    <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h5>
+                    <button class="btn btn-primary mb-3 w-100" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
+                    <div id="admin-product-list" class="list-group"></div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- အသံဖိုင် -->
@@ -168,7 +176,6 @@
             }).catch(err => console.log("Error loading products: ", err));
         }
 
-        // 🔍 ပစ္စည်းအမည်ဖြင့် ရိုက်ရှာပြီး နီးစပ်ရာ စာလုံးပြသပေးသည့် စနစ်သစ်
         function filterProductNames() {
             let input = document.getElementById('name-search-input').value.toLowerCase().trim();
             let suggestionsBox = document.getElementById('search-suggestions');
@@ -178,7 +185,6 @@
                 return;
             }
 
-            // ရိုက်လိုက်သော စာလုံးနှင့် ကိုက်ညီသည့် ပစ္စည်းများကို DB ထဲတွင် ရှာဖွေခြင်း
             let filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
             
             if (filtered.length === 0) {
@@ -192,7 +198,6 @@
                 let div = document.createElement('div');
                 div.className = 'search-item d-flex justify-content-between align-items-center';
                 div.innerHTML = `<div><strong>${prod.name}</strong></div> <div class="text-primary fw-bold">${prod.price} Ks</div>`;
-                // ကလစ်နှိပ်လိုက်လျှင် Cart ထဲသို့ တိုက်ရိုက်ထည့်ခြင်း
                 div.onclick = function() {
                     playBeep();
                     addByProductObject(prod);
@@ -204,7 +209,6 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // စာရိုက်ကွက် ပြင်ပကို နှိပ်လျှင် Dropdown ပိတ်သွားစေရန်
         document.addEventListener('click', function(e) {
             if (e.target.id !== 'name-search-input') {
                 document.getElementById('search-suggestions').style.display = 'none';
@@ -234,7 +238,6 @@
             let price = document.getElementById('new-price').value.trim();
             let stock = document.getElementById('new-stock').value.trim() || 99;
 
-            // Barcode မပါခဲ့လျှင် အချိန်ပေါ်မူတည်ပြီး ID တစ်ခု အလိုအလျောက် သတ်မှတ်ပေးမည်
             if(!barcode) {
                 barcode = "NO-BARCODE-" + Date.now().toString().slice(-5);
             }
@@ -272,7 +275,6 @@
             }, 2000);
         }
 
-        // Barcode စကန်ဖတ်ပြီး ကတ်ထဲထည့်ခြင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
@@ -282,7 +284,6 @@
             addByProductObject(product);
         }
 
-        // Object အလိုက် ကတ်ထဲတိုက်ရိုက်ထည့်ခြင်း စနစ် (စာရိုက်ရှာဖွေမှုအတွက်)
         function addByProductObject(product) {
             let item = cart.find(i => i.barcode === product.barcode);
             if (item) {
@@ -349,23 +350,55 @@
             let localData = { ...saleData, date: new Date().toLocaleString() };
             salesHistory.unshift(localData);
             displayHistory(salesHistory);
+            
+            // 🌟 အမှားမရှိ တန်းပြီး Print ထုတ်မည့် စနစ်ကို လှမ်းခေါ်ခြင်း
             printVoucher(localData);
+            
             cart = [];
             renderCart();
             alert("Voucher ကို Google Sheet ထဲသို့ လှမ်းပို့လိုက်ပါပြီ။");
         }
 
+        // 🌟 အဆင့်မြင့် ကွက်တိ တန်းထွက်မည့် Print စနစ်အသစ် (Window အသစ်ဖွင့်စရာမလိုတော့ပါ)
         function printVoucher(sale) {
-            let printWindow = window.open('', '', 'height=600,width=400');
-            printWindow.document.write('<html><body><center><h3>ကောင်းမြတ် (Kaung Myat)</h3><p>POS ပြေစာ</p></center>');
-            printWindow.document.write('<p><small>Voucher: ' + sale.voucherId + '<br>နေ့ရက်: ' + (sale.date || new Date().toLocaleString()) + '</small></p><hr>');
-            printWindow.document.write('<ul>');
+            const printZone = document.getElementById('print-receipt-zone');
+            
+            let itemsHTML = '';
             sale.items.forEach(i => {
-                printWindow.document.write('<li>' + i.name + ' x ' + i.qty + ' = ' + (i.price * i.qty) + ' Ks</li>');
+                itemsHTML += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:3px;">
+                    <span>${i.name} x ${i.qty}</span>
+                    <span>${i.price * i.qty} Ks</span>
+                </div>`;
             });
-            printWindow.document.write('</ul><hr><h4>စုစုပေါင်း: ' + sale.total + ' Ks</h4><center><p>~ ကျေးဇူးတင်ပါသည် ~</p></center>');
-            printWindow.document.write('<script>window.onload = function() { window.print(); window.close(); }<\/script></body></html>');
-            printWindow.document.close();
+
+            // Voucher ဘောင်ပုံစံ တည်ဆောက်ခြင်း
+            printZone.innerHTML = `
+                <div style="width:100%; max-width:300px; margin:0 auto; padding:10px; font-family:'Courier New', Courier, monospace; color:#000;">
+                    <center>
+                        <h3 style="margin: 0 0 5px 0; font-weight:bold;">ကောင်းမြတ် (Kaung Myat)</h3>
+                        <p style="margin:0 0 10px 0; font-size:12px;">POS ပြေစာ</p>
+                    </center>
+                    <div style="font-size:12px; margin-bottom:8px; border-bottom:1px dashed #000; padding-bottom:5px;">
+                        Voucher: ${sale.voucherId}<br>
+                        နေ့ရက်: ${sale.date || new Date().toLocaleString()}
+                    </div>
+                    <div style="border-bottom:1px dashed #000; padding-bottom:5px; margin-bottom:8px;">
+                        ${itemsHTML}
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:16px; margin-bottom:15px;">
+                        <span>စုစုပေါင်း:</span>
+                        <span>${sale.total} Ks</span>
+                    </div>
+                    <center>
+                        <p style="font-size:12px; margin:0;">~ ကျေးဇူးတင်ပါသည် ~</p>
+                    </center>
+                </div>
+            `;
+
+            // စာမျက်နှာအားလုံး အဆင်သင့်ဖြစ်ချိန်တွင် တစ်ခါတည်း Print စနစ် ခေါ်ယူခြင်း
+            setTimeout(() => {
+                window.print();
+            }, 500);
         }
 
         function displayHistory(data) {
