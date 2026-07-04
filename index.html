@@ -17,15 +17,13 @@
     </style>
 
     <script>
-        // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxsXVxmaSwKoMwxb4NSAWWPgJnYA7QujSRTEXMMXIrWRMYRZlrEbUYGUPkKBCfjKzs3/exec'; 
+        // 👇 အောက်က မျက်တောင်ကွင်းထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxuidta2fNfV1BECWYXUnMyEgzPR5rCIRgWaOme87Fp0NMtF-LtmpgdPibePnQMBx1r/exec'; 
 
-        // Service Worker Register
+        // Service Worker စနစ်ကို ယာယီပိတ်ထားပါမည် (Cache မမိစေရန်)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker: Ready'))
-                .catch(err => console.log('Service Worker Error: ', err));
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) { registration.unregister(); }
             });
         }
     </script>
@@ -85,7 +83,6 @@
             <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                 <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                 
-                <!-- Google Sheet ထံသို့ တိုက်ရိုက် Data ပို့မည့် Native HTML Form စနစ် -->
                 <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
                     <input type="hidden" name="jsonData" id="form-json-data">
                     <div class="col-12">
@@ -104,7 +101,6 @@
                         <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
                     </div>
                 </form>
-                <!-- Form Submit ပြီးလျှင် Page မပြောင်းသွားစေရန် ကြားခံထားသော iframe -->
                 <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
             </div>
 
@@ -138,7 +134,6 @@
             beep.play().catch(e => console.log("Audio play deferred"));
         }
 
-        // Tab ပြောင်းစနစ်
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
@@ -153,7 +148,8 @@
         function loadProductsFromSheet() {
             if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             
-            fetch(scriptURL)
+            // Cache ကင်းဝေးစေရန် Timestamp ထည့်ပြီး Fetch လုပ်ခြင်း
+            fetch(scriptURL + '?t=' + new Date().getTime())
             .then(res => res.json())
             .then(data => {
                 productsDB = data;
@@ -161,7 +157,6 @@
             }).catch(err => console.log("Error loading products: ", err));
         }
 
-        // ကင်မရာ စကန်ဖတ်ခြင်း
         function onScanSuccess(decodedText, decodedResult) {
             if (canScan) {
                 playBeep();
@@ -179,7 +174,6 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // ပစ္စည်းအသစ် ထည့်သွင်းခြင်း
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim();
             let name = document.getElementById('new-name').value.trim();
@@ -198,20 +192,18 @@
                 stock: Number(stock)
             };
 
-            // Form ရဲ့ Hidden Input ထဲသို့ ဒေတာထည့်သွင်းပြီး တိုက်ရိုက် Submit လုပ်ခြင်း
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
 
             alert("ပစ္စည်းအသစ် သိမ်းဆည်းခြင်း လုပ်ဆောင်ချက် ပြီးမြောက်ပါပြီ။");
             
-            // Textbox များကို ရှင်းလင်းရန်
             document.getElementById('new-barcode').value = '';
             document.getElementById('new-name').value = '';
             document.getElementById('new-price').value = '';
             document.getElementById('new-stock').value = '';
             
-            // ဒေတာဝင်သွားအောင် ၂ စက္ကန့်စောင့်ပြီး စာရင်းပြန်ဆွဲခြင်း
-            setTimeout(() => { loadProductsFromSheet(); }, 2500); 
+            // ဒေတာဝင်သွားအောင် ၃ စက္ကန့်စောင့်ပြီးမှ စာရင်းပြန်ဆွဲရန်
+            setTimeout(() => { loadProductsFromSheet(); }, 3000); 
         }
 
         function addToCart(barcode) {
@@ -266,7 +258,6 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
-        // Checkout ပြုလုပ်ခြင်း
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိသေးပါ။");
             
@@ -366,12 +357,10 @@
             });
         }
 
-        // ရှိပြီးသားပစ္စည်း ဈေးနှုန်းပြင်ဆင်မှု မှတ်သားခြင်း
         function saveAdminChanges(index, field, value) {
             productsDB[index][field] = Number(value);
         }
 
-        // ရှိပြီးသားပစ္စည်း ပြင်ဆင်မှုကို Sheet ထဲပို့ခြင်း
         function uploadProductToSheet(index) {
             let prod = productsDB[index];
             let payload = {
@@ -384,7 +373,7 @@
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
             alert("ပြင်ဆင်မှု သိမ်းဆည်းပြီးပါပြီ။");
-            setTimeout(() => { loadProductsFromSheet(); }, 2500);
+            setTimeout(() => { loadProductsFromSheet(); }, 3000);
         }
     </script>
 </body>
