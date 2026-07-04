@@ -20,7 +20,7 @@
         // 👇 အောက်က မျက်တောင်ကွင်းထဲမှာ အစ်ကို့ရဲ့ Google Web App URL (Link အရှည်ကြီး) ကို ထည့်ပေးပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzvu9lysZLgHH9x0FfJhjceCdWnlw4GuEEIM2uDTuzURgyjZSThJCI25_ZJU_2e8r3C/exec'; 
 
-        // Cache မမိစေရန် Service Worker ဖျက်သိမ်းခြင်း
+        // Cache ဖျက်သိမ်းခြင်း
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) { registration.unregister(); }
@@ -131,6 +131,7 @@
             beep.play().catch(e => console.log("Audio play deferred"));
         }
 
+        // Tab ပြောင်းစနစ်
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
@@ -170,7 +171,7 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // ပစ္စည်းအသစ် ထည့်သွင်းခြင်း (ဝင်းသီရိ POS နည်းလမ်းအတိုင်း စိတ်ချရသော ခေါ်ယူမှုပုံစံ)
+        // ပစ္စည်းအသစ် ထည့်သွင်းခြင်း
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim();
             let name = document.getElementById('new-name').value.trim();
@@ -193,7 +194,6 @@
                 stock: Number(stock)
             };
 
-            // HTML Form format အတိုင်း စနစ်တကျ ပြောင်းလဲပို့ဆောင်ခြင်း
             let formBody = [];
             formBody.push(encodeURIComponent("jsonData") + "=" + encodeURIComponent(JSON.stringify(payload)));
 
@@ -201,10 +201,10 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
                 body: formBody.join("&"),
-                mode: 'no-cors' // CORS Error ကို ကျော်ဖြတ်ရန်
+                mode: 'no-cors'
             })
             .then(() => {
-                alert("ပစ္စည်းအသစ်ကို Google Sheet ထဲသို့ သေချာစွာ သိမ်းဆည်းပြီးပါပြီဗျာ။");
+                alert("ပစ္စည်းအသစ်ကို Google Sheet ထဲသို့ သေჩာစွာ သိမ်းဆည်းပြီးပါပြီဗျာ။");
                 btn.disabled = false;
                 btn.innerText = "💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်";
                 
@@ -384,6 +384,7 @@
             productsDB[index][field] = Number(value);
         }
 
+        // ရှိပြီးသားပစ္စည်း ပြင်ဆင်မှု ပို့ခြင်း
         function uploadProductToSheet(index) {
             let prod = productsDB[index];
             let payload = {
