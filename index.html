@@ -15,16 +15,28 @@
         .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
+        
+        /* 🖨️ Voucher Design Style */
         #print-receipt-zone { display: none; }
         @media print {
             body * { display: none !important; }
             #print-receipt-zone, #print-receipt-zone * { display: block !important; }
-            #print-receipt-zone { position: absolute; left: 0; top: 0; width: 100%; padding: 10px; font-family: monospace; }
+            #print-receipt-zone { 
+                position: absolute; left: 0; top: 0; width: 100%; max-width: 58mm; 
+                padding: 5px; font-family: 'Courier New', Courier, monospace; color: #000;
+            }
+            .v-receipt { width: 100%; font-size: 13px; line-height: 1.4; }
+            .v-title { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 5px; }
+            .v-header-table, .v-items-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            .v-items-table th { border-bottom: 1px dashed #000; text-align: left; font-size: 12px; padding: 4px 0; }
+            .v-items-table td { padding: 5px 0; vertical-align: top; }
+            .v-divider { border-top: 1px dashed #000; margin: 8px 0; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
         }
     </style>
 
     <script>
-        // 👇 အောက်က မျက်တောင်အမွှာကြားထဲမှာ Google Web App URL အသစ်ကို ထည့်ပေးပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
 
         if ('serviceWorker' in navigator) {
@@ -54,6 +66,11 @@
         <div class="container pb-5">
             
             <div id="sales" class="tab-content active">
+                <div class="card p-3 mb-3 shadow-sm border-0 bg-white">
+                    <h6 class="card-title fw-bold text-dark">👤 ဝယ်ယူသူအမည် (Customer Name)</h6>
+                    <input type="text" id="customer-name-input" class="form-control form-control-lg border-primary" placeholder="ဝယ်ယူသူအမည် ထည့်ပါ (မထည့်ပါက အထွေထွေ)">
+                </div>
+
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
                     <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
@@ -83,7 +100,7 @@
 
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
-                    <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                    <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
                 </div>
                 <div id="history-list"></div>
             </div>
@@ -299,9 +316,11 @@
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             playBeep();
+            
+            let customerName = document.getElementById('customer-name-input').value.trim() || "အထွေထွေ";
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
-            let saleData = { action: "addSale", voucherId: voucherId, items: cart, total: total };
+            let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
             
             document.getElementById('form-json-data').value = JSON.stringify(saleData);
             document.getElementById('hidden-form').submit();
@@ -310,21 +329,57 @@
             salesHistory.unshift(localData);
             displayHistory(salesHistory);
             printVoucher(localData);
-            cart = []; renderCart();
+            
+            cart = []; 
+            document.getElementById('customer-name-input').value = '';
+            renderCart();
             alert("Voucher ထုတ်ယူခြင်း အောင်မြင်ပါပြီ။");
         }
 
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone');
             let itemsHTML = '';
-            sale.items.forEach(i => { itemsHTML += `<div style="display:flex; justify-content:space-between; font-size:14px;"><span>${i.name} x ${i.qty}</span><span>${i.price * i.qty} Ks</span></div>`; });
+            
+            sale.items.forEach(i => { 
+                itemsHTML += `
+                    <tr>
+                        <td style="max-width: 120px; word-wrap: break-word;">${i.name}</td>
+                        <td class="text-center">${i.qty}</td>
+                        <td class="text-right">${(i.price * i.qty).toLocaleString()}</td>
+                    </tr>`; 
+            });
+
             printZone.innerHTML = `
-                <div style="width:100%; max-width:300px; margin:0 auto; padding:10px; font-family:monospace;">
-                    <center><h3 style="margin:0;">ကောင်းမြတ် POS</h3></center>
-                    <hr style="border-top:1px dashed #000;">
-                    Voucher: ${sale.voucherId}<br>နေ့ရက်: ${sale.date || new Date().toLocaleString()}<hr style="border-top:1px dashed #000;">
-                    ${itemsHTML}<hr style="border-top:1px dashed #000;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>စုစုပေါင်း:</span><span>${sale.total} Ks</span></div>
+                <div class="v-receipt">
+                    <div class="v-title">ကောင်းမြတ် POS</div>
+                    <div class="v-divider"></div>
+                    <table class="v-header-table">
+                        <tr><td>Voucher:</td><td class="text-right"><b>${sale.voucherId}</b></td></tr>
+                        <tr><td>ဝယ်သူ:</td><td class="text-right">${sale.customerName}</td></tr>
+                        <tr><td>နေ့ရက်:</td><td class="text-right" style="font-size:11px;">${sale.date || new Date().toLocaleString()}</td></tr>
+                    </table>
+                    <div class="v-divider"></div>
+                    <table class="v-items-table">
+                        <thead>
+                            <tr>
+                                <th>ပစ္စည်းအမည်</th>
+                                <th class="text-center">ခု</th>
+                                <th class="text-right">သင့်ငွေ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHTML}
+                        </tbody>
+                    </table>
+                    <div class="v-divider"></div>
+                    <table class="v-header-table" style="font-size: 15px; font-weight: bold;">
+                        <tr>
+                            <td>စုစုပေါင်း:</td>
+                            <td class="text-right">${sale.total} Ks</td>
+                        </tr>
+                    </table>
+                    <div class="v-divider"></div>
+                    <div class="text-center" style="font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
             setTimeout(() => { window.print(); }, 500);
         }
@@ -335,8 +390,12 @@
                 let itemsList = sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('');
                 list.innerHTML += `
                     <div class="card p-3 mb-3 shadow-sm border-0">
-                        <div class="d-flex justify-content-between mb-2"><h6 class="fw-bold text-primary">ID: ${sale.voucherId}</h6><small class="text-muted">${sale.date}</small></div>
-                        <div class="mb-2">${itemsList}</div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6 class="fw-bold text-primary">ID: ${sale.voucherId}</h6>
+                            <small class="text-muted">${sale.date}</small>
+                        </div>
+                        <div class="text-secondary mb-2" style="font-size:14px;">ဝယ်သူ: <b>${sale.customerName || "အထွေထွေ"}</b></div>
+                        <div class="mb-2 bg-light p-2 rounded">${itemsList}</div>
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-success mb-0">${sale.total} Ks</h5>
                             <button class="btn btn-sm btn-outline-dark" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ပြန်ထုတ်ရန်</button>
@@ -346,11 +405,14 @@
         }
 
         function searchHistory() {
-            let text = document.getElementById('search-input').value.toLowerCase();
-            displayHistory(salesHistory.filter(s => s.voucherId.toLowerCase().includes(text)));
+            let text = document.getElementById('search-input').value.toLowerCase().trim();
+            let filtered = salesHistory.filter(s => 
+                s.voucherId.toLowerCase().includes(text) || 
+                (s.customerName && s.customerName.toLowerCase().includes(text))
+            );
+            displayHistory(filtered);
         }
 
-        // ⚙️ Admin ပြင်ဆင်ရန်နှင့် ဖျက်ရန် စနစ် (မွမ်းမံပြီး)
         function renderAdminProducts(arrayToRender) {
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             if(!arrayToRender || arrayToRender.length === 0) { list.innerHTML = '<div class="text-center text-muted py-3">ပစ္စည်းစာရင်း မရှိသေးပါ။</div>'; return; }
@@ -404,7 +466,6 @@
                 document.getElementById('form-json-data').value = JSON.stringify(payload);
                 document.getElementById('hidden-form').submit();
                 
-                // UI ထဲကနေ ချက်ချင်း ပျောက်သွားအောင် ဖယ်ထုတ်ပစ်ခြင်း
                 productsDB.splice(index, 1); 
                 renderAdminProducts(productsDB); 
                 alert("ပစ္စည်းကို အပြီးတိုင် ဖျက်ဆီးပြီးပါပြီဗျာ။");
