@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ကောင်းမြတ် - POS</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Barcode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <style>
@@ -42,18 +40,15 @@
 </head>
 <body class="bg-light">
 
-    <!-- Print Zone -->
     <div id="print-receipt-zone"></div>
 
     <div id="app-main-content">
-        <!-- Header -->
         <nav class="navbar navbar-dark bg-dark sticky-top shadow">
             <div class="container-fluid">
                 <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
             </div>
         </nav>
 
-        <!-- Menu Tabs -->
         <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
             <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
             <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
@@ -62,7 +57,6 @@
 
         <div class="container pb-5">
             
-            <!-- ================= ၁။ အရောင်း TAB ================= -->
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
@@ -91,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- ================= ၂။ မှတ်တမ်း TAB ================= -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
@@ -99,9 +92,7 @@
                 <div id="history-list"></div>
             </div>
 
-            <!-- ================= ၃။ ADMIN TAB ================= -->
             <div id="admin" class="tab-content">
-                <!-- ပစ္စည်းအသစ်ထည့်ရန် -->
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                     
@@ -126,18 +117,15 @@
                     <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
                 </div>
 
-                <!-- 📝 ရှိပြီးသားပစ္စည်းစာရင်း ရှာဖွေပြီး ပြင်ဆင်ရန် အကွက် -->
                 <div class="card p-3 shadow-sm border-0">
-                    <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း/Stock ပြင်ရန်</h5>
+                    <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း/Stock ပြင်ရန် သို့မဟုတ် ဖျက်ရန်</h5>
                     <button class="btn btn-primary mb-3 w-100 fw-bold" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
                     
-                    <!-- 🔍 Admin အတွက် ပစ္စည်းရိုက်ရှာဖွေရန်စာကွက် -->
                     <div class="position-relative mb-3">
-                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary" placeholder="🔍 ပြင်ဆင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()">
+                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary" placeholder="🔍 ပြင်လို/ဖျက်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()">
                         <div id="admin-search-suggestions" class="search-results" style="display: none;"></div>
                     </div>
 
-                    <!-- 📦 ရွေးချယ်လိုက်သော ပစ္စည်း၏ ဈေးနှုန်းနှင့် Stock ပြင်ဆင်ရန် ပေါ်လာမည့်နေရာ -->
                     <div id="admin-product-list" class="list-group"></div>
                 </div>
             </div>
@@ -145,7 +133,6 @@
         </div>
     </div>
 
-    <!-- အသံဖိုင် -->
     <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
     <script>
@@ -441,7 +428,7 @@
             }
         }
 
-        // ⚙️ Admin Product List တွင် ဈေးနှုန်းရော Stock ပါ ပြင်ဆင်နိုင်ရန် (မွမ်းမံပြင်ဆင်ပြီး)
+        // ⚙️ Admin Product List တွင် ဈေးနှုန်း၊ Stock နှင့် ဖျက်ရန်ခလုတ် (မွမ်းမံပြင်ဆင်ပြီး)
         function renderAdminProducts(arrayToRender) {
             const list = document.getElementById('admin-product-list');
             list.innerHTML = '';
@@ -460,23 +447,23 @@
                         <h6 class="fw-bold text-dark mb-1">${prod.name}</h6>
                         <small class="text-muted d-block mb-3">Barcode: ${prod.barcode}</small>
                         
-                        <div class="row g-2 mb-2">
-                            <!-- 💰 ဈေးနှုန်းပြင်ရန် ကွက် -->
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <label class="form-label text-secondary mb-1" style="font-size:12px; font-weight:bold;">ဈေးနှုန်း (Ks)</label>
                                 <input type="number" class="form-control fw-bold text-primary" value="${prod.price}" onchange="saveAdminChanges(${mainIndex}, 'price', this.value)">
                             </div>
-                            <!-- 📦 Stock ပြင်ရန် ကွက် -->
                             <div class="col-6">
                                 <label class="form-label text-secondary mb-1" style="font-size:12px; font-weight:bold;">လက်ကျန် Stock</label>
                                 <input type="number" class="form-control fw-bold text-success" value="${stockVal}" onchange="saveAdminChanges(${mainIndex}, 'stock', this.value)">
                             </div>
                         </div>
 
-                        <!-- 💾 သိမ်းဆည်းရန် ခလုတ်အရှည် -->
-                        <div class="row mt-2">
-                            <div class="col-12">
-                                <button class="btn btn-warning w-100 fw-bold shadow-sm py-2" onclick="uploadProductToSheet(${mainIndex})">💾 ဈေးနှုန်းနှင့် Stock အချက်အလက်သိမ်းမည်</button>
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <button class="btn btn-warning w-100 fw-bold shadow-sm py-2" onclick="uploadProductToSheet(${mainIndex})">💾 အချက်အလက်သိမ်းမည်</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-outline-danger w-100 fw-bold shadow-sm py-2" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်မည်</button>
                             </div>
                         </div>
                     </div>`;
@@ -500,6 +487,24 @@
             document.getElementById('hidden-form').submit();
             alert("ပြင်ဆင်ထားသော ဈေးနှုန်းနှင့် Stock ကို Google Sheet ထဲသို့ လှမ်းသိမ်းလိုက်ပါပြီဗျာ။");
             setTimeout(() => { loadProductsFromSheet(); }, 2000);
+        }
+
+        // 🗑️ ပစ္စည်းစာရင်းကို Google Sheet ထဲမှပါ လှမ်းဖျက်ပေးမည့် လုပ်ဆောင်ချက်သစ်
+        function deleteProductFromSheet(index) {
+            let prod = productsDB[index];
+            if (confirm(`⚠️ "${prod.name}" ကို ပစ္စည်းစာရင်းထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလားဗျာ။`)) {
+                let payload = {
+                    action: "deleteProduct",
+                    barcode: prod.barcode
+                };
+                document.getElementById('form-json-data').value = JSON.stringify(payload);
+                document.getElementById('hidden-form').submit();
+                
+                alert("ပစ္စည်းကို စာရင်းထဲမှ ဖျက်ဆီးပြီးပါပြီ။");
+                productsDB.splice(index, 1); 
+                renderAdminProducts(productsDB); 
+                setTimeout(() => { loadProductsFromSheet(); }, 2000);
+            }
         }
     </script>
 </body>
