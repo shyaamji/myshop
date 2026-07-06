@@ -16,28 +16,20 @@
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
         
-        /* 🖨️ Voucher Smart Design Style */
+        /* 🖨️ Voucher Smart Flexbox Design Style */
         #print-receipt-zone { display: none; }
         @media print {
             body * { display: none !important; }
             #print-receipt-zone, #print-receipt-zone * { display: block !important; }
             #print-receipt-zone { 
-                position: absolute; left: 0; top: 0; width: 100%; max-width: 58mm; 
+                position: absolute; left: 0; top: 0; width: 100%; max-width: 72mm; 
                 padding: 5px; font-family: 'Courier New', Courier, monospace; color: #000;
+                box-sizing: border-box;
             }
-            .v-receipt { width: 100%; font-size: 13px; line-height: 1.4; }
-            .v-title { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 5px; }
-            .v-header-table, .v-items-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-            .v-items-table th { border-bottom: 1px dashed #000; text-align: left; font-size: 12px; padding: 4px 0; }
-            .v-items-table td { padding: 5px 0; vertical-align: top; }
-            .v-divider { border-top: 1px dashed #000; margin: 8px 0; }
-            .text-right { text-align: right; }
-            .text-center { text-align: center; }
         }
     </style>
 
     <script>
-        // 👇 အောက်က Google Web App URL အဟောင်းအတိုင်း ထားပေးထားပါတယ်ဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
 
         if ('serviceWorker' in navigator) {
@@ -313,10 +305,9 @@
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             playBeep();
             
-            // 👤 ဝယ်ယူသူအမည်ကို မေးမြန်းသည့် Pop-up Box အရင်ပေါ်လာစေရန်
+            // 👤 ဝယ်ယူသူအမည် တောင်းခံခြင်း
             let customerName = prompt("ဝယ်ယူသူအမည် (Customer Name) ကို ရိုက်ထည့်ပေးပါဗျာ -\n(မထည့်ဘဲ OK နှိပ်ပါက 'အထွေထွေ' ဟု သတ်မှတ်ပါမည်)", "");
             
-            // အကယ်၍ Cancel နှိပ်လိုက်ရင် ရှေ့ဆက်မသွားဘဲ ဒီမှာတင်ရပ်မည်
             if (customerName === null) { return; }
             customerName = customerName.trim() || "အထွေထွေ";
 
@@ -343,45 +334,52 @@
             
             sale.items.forEach(i => { 
                 itemsHTML += `
-                    <tr>
-                        <td style="max-width: 120px; word-wrap: break-word;">${i.name}</td>
-                        <td class="text-center">${i.qty}</td>
-                        <td class="text-right">${(i.price * i.qty).toLocaleString()}</td>
-                    </tr>`; 
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; width: 100%;">
+                        <span style="flex: 2; text-align: left; word-break: break-all; padding-right: 5px;">${i.name}</span>
+                        <span style="flex: 0.5; text-align: center;">${i.qty}</span>
+                        <span style="flex: 1; text-align: right;">${(i.price * i.qty).toLocaleString()}</span>
+                    </div>`; 
             });
 
             printZone.innerHTML = `
-                <div class="v-receipt">
-                    <div class="v-title">ကောင်းမြတ် POS</div>
-                    <div class="v-divider"></div>
-                    <table class="v-header-table">
-                        <tr><td>Voucher:</td><td class="text-right"><b>${sale.voucherId}</b></td></tr>
-                        <tr><td>ဝယ်သူ:</td><td class="text-right">${sale.customerName}</td></tr>
-                        <tr><td>နေ့ရက်:</td><td class="text-right" style="font-size:11px;">${sale.date || new Date().toLocaleString()}</td></tr>
-                    </table>
-                    <div class="v-divider"></div>
-                    <table class="v-items-table">
-                        <thead>
-                            <tr>
-                                <th>ပစ္စည်းအမည်</th>
-                                <th class="text-center">ခု</th>
-                                <th class="text-right">သင့်ငွေ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHTML}
-                        </tbody>
-                    </table>
-                    <div class="v-divider"></div>
-                    <table class="v-header-table" style="font-size: 14px; font-weight: bold;">
-                        <tr>
-                            <td>စုစုပေါင်း:</td>
-                            <td class="text-right">${sale.total} Ks</td>
-                        </tr>
-                    </table>
-                    <div class="v-divider"></div>
-                    <div class="text-center" style="font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</div>
+                <div style="width: 100%; max-width: 72mm; margin: 0 auto; padding: 5px; font-family: 'Courier New', Courier, monospace; color: #000; box-sizing: border-box;">
+                    <center>
+                        <h3 style="margin: 0 0 5px 0; font-size: 18px; font-weight: bold;">ကောင်းမြတ် POS</h3>
+                    </center>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                    
+                    <div style="font-size: 12px; line-height: 1.4; margin-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between;"><span>Voucher:</span><span style="font-weight:bold;">${sale.voucherId}</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>ဝယ်သူ:</span><span>${sale.customerName}</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>နေ့ရက်:</span><span style="font-size:11px;">${sale.date || new Date().toLocaleString()}</span></div>
+                    </div>
+                    
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                    
+                    <!-- Header Titles -->
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 5px; border-bottom: 1px dashed #000; padding-bottom: 5px;">
+                        <span style="flex: 2; text-align: left;">ပစ္စည်းအမည်</span>
+                        <span style="flex: 0.5; text-align: center;">ခု</span>
+                        <span style="flex: 1; text-align: right;">သင့်ငွေ</span>
+                    </div>
+                    
+                    <!-- Items List -->
+                    <div style="width: 100%;">
+                        ${itemsHTML}
+                    </div>
+                    
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                    
+                    <!-- Total -->
+                    <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+                        <span>စုစုပေါင်း:</span>
+                        <span>${sale.total} Ks</span>
+                    </div>
+                    
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                    <center><small style="font-size: 11px; display: block; margin-top: 5px;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</small></center>
                 </div>`;
+                
             setTimeout(() => { window.print(); }, 500);
         }
 
