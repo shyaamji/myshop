@@ -31,8 +31,11 @@
     </style>
 
     <script>
-        // ⚠️ သင့်ရဲ့ Deploy လုပ်ပြီးရလာတဲ့ Web App URL အသစ်ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzOZlu3r1_QDucTrLFYV8yZq1ll6URpldMt33hhMLfIbQcs_dF0CdhhnBg8zhjBoUYr/exec'; 
+        // ⚠️ သင့်ရဲ့ Deploy လုပ်ပြီးရလာတဲ့ Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
+        
+        // 🔐 Admin ဝင်ရန် သတ်မှတ်ထားသော Password (မိမိစိတ်ကြိုက် ပြောင်းလဲနိုင်ပါသည်)
+        const adminPassword = '5858'; 
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -99,7 +102,10 @@
 
             <div id="admin" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
-                    <h5 class="card-title fw-bold text-success mb-3">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
+                        <button class="btn btn-sm btn-outline-danger" onclick="logoutAdmin()">🔒 Admin ပိတ်မည်</button>
+                    </div>
                     <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
                         <input type="hidden" name="jsonData" id="form-json-data">
                         <div class="col-12">
@@ -146,34 +152,58 @@
         let productsDB = []; 
         let salesHistory = [];
 
-        // 💾 ဖုန်းမှတ်ဉာဏ်ထဲက ဒေတာအဟောင်းကို အရင်ဆုံးဆွဲထုတ်ထားခြင်း
         try {
             const localData = localStorage.getItem('salesHistory');
-            if(localData) { 
-                salesHistory = JSON.parse(localData); 
-            }
+            if(localData) { salesHistory = JSON.parse(localData); }
         } catch(e) { console.log(e); }
 
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet();
-            loadSalesHistoryFromSheet(); // ☁️ Sheet ထဲက မှတ်တမ်းအဟောင်းအားလုံးကို ဆွဲယူမည့်စနစ်
+            loadSalesHistoryFromSheet(); 
             displayHistory(salesHistory);
         }
 
         function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
 
         function switchTab(tabId) {
+            // 🔒 Admin Tab ကိုနှိပ်လျှင် Password စစ်ဆေးမည့်စနစ်
+            if (tabId === 'admin') {
+                const isAuthed = localStorage.getItem('isAdminAuthenticated');
+                if (isAuthed !== 'true') {
+                    let passInput = prompt("🔒 Admin ဧရိယာသို့ဝင်ရန် Password ရိုက်ထည့်ပေးပါဗျာ -", "");
+                    if (passInput === null) return; // Cancel နှိပ်ရင် ဘာမှမလုပ်ပါ
+                    
+                    if (passInput === adminPassword) {
+                        localStorage.setItem('isAdminAuthenticated', 'true'); // ဖုန်းထဲတွင် မှတ်သားထားလိုက်မည်
+                        alert("🔓 Password မှန်ကန်ပါသည်။ အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ။");
+                    } else {
+                        alert("❌ Password မှားယွင်းနေပါသည်။ ပြန်လည်ကြိုးစားပေးပါဗျာ။");
+                        return;
+                    }
+                }
+            }
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.btn-group .btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
+            
             if(tabId === 'admin') {
                 document.getElementById('admin-search-input').value = '';
                 renderAdminProducts(productsDB); 
             } else if(tabId === 'history') {
                 displayHistory(salesHistory);
-                loadSalesHistoryFromSheet(); // မှတ်တမ်း Tab ထဲဝင်တိုင်း နောက်ဆုံးအခြေအနေကို ထပ်ဆွဲယူပေးခြင်း
+                loadSalesHistoryFromSheet(); 
+            }
+        }
+
+        // 🔒 ဖုန်းထဲမှာ မှတ်ထားတဲ့ Admin login ဒေတာကို ပြန်ဖျက်ထုတ်ရန် (အခြားသူကို မကိုင်စေချင်သည့်အခါ သုံးနိုင်သည်)
+        function logoutAdmin() {
+            if(confirm("Admin စနစ်ကို ပြန်ပိတ်ပြီး Password ပြန်ခံထားမလားဗျာ။")) {
+                localStorage.removeItem('isAdminAuthenticated');
+                alert("🔒 Admin စနစ်ကို ပြန်လည်ပိတ်ဆို့ပြီးပါပြီ။");
+                switchTab('sales');
             }
         }
 
@@ -185,7 +215,6 @@
             .catch(err => console.log(err));
         }
 
-        // 🔄 Google Sheet မှ အရောင်းမှတ်တမ်းအဟောင်းများ အကုန်လုံးကို အမှားအယွင်းမရှိ ပြန်လည်ဆွဲယူခြင်း
         function loadSalesHistoryFromSheet() {
             if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             fetch(scriptURL + '?getSales=true&t=' + new Date().getTime())
@@ -193,12 +222,11 @@
             .then(data => {
                 if(data && data.length > 0) {
                     salesHistory = data;
-                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); // ဖုန်းထဲမှာ အမြဲမှတ်ထားမည်
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); 
                     displayHistory(salesHistory);
                 }
             }).catch(err => {
                 console.log("History Sync Error:", err);
-                // အကယ်၍ internet နှေးရင် သို့မဟုတ် error တက်ရင် ဖုန်းထဲက Memory ပြောင်းလဲမှုကိုပဲ ဆက်ပြထားမည်
                 displayHistory(salesHistory);
             });
         }
@@ -336,17 +364,14 @@
             let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
             let localData = { ...saleData, date: new Date().toLocaleString() };
 
-            // 1. 💾 ဖုန်းရဲ့ စိတ်ချရဆုံး Memory ထဲသို့ ထည့်သွင်းခြင်း
             try {
                 salesHistory.unshift(localData);
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
                 displayHistory(salesHistory);
             } catch(e) { console.log(e); }
 
-            // 2. 🖨️ Print Layout ကို ပေါ့ပ်အပ် တက်လာစေခြင်း
             printVoucher(localData);
 
-            // 3. ☁️ Google Sheet ထဲကို အပြီးတိုင် သွားသိမ်းခိုင်းခြင်း
             try {
                 document.getElementById('form-json-data').value = JSON.stringify(saleData);
                 document.getElementById('hidden-form').submit();
