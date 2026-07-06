@@ -16,7 +16,7 @@
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
         
-        /* 🖨️ Voucher Design Style */
+        /* 🖨️ Voucher Smart Design Style */
         #print-receipt-zone { display: none; }
         @media print {
             body * { display: none !important; }
@@ -37,6 +37,7 @@
     </style>
 
     <script>
+        // 👇 အောက်က Google Web App URL အဟောင်းအတိုင်း ထားပေးထားပါတယ်ဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
 
         if ('serviceWorker' in navigator) {
@@ -66,11 +67,6 @@
         <div class="container pb-5">
             
             <div id="sales" class="tab-content active">
-                <div class="card p-3 mb-3 shadow-sm border-0 bg-white">
-                    <h6 class="card-title fw-bold text-dark">👤 ဝယ်ယူသူအမည် (Customer Name)</h6>
-                    <input type="text" id="customer-name-input" class="form-control form-control-lg border-primary" placeholder="ဝယ်ယူသူအမည် ထည့်ပါ (မထည့်ပါက အထွေထွေ)">
-                </div>
-
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
                     <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
@@ -317,7 +313,13 @@
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             playBeep();
             
-            let customerName = document.getElementById('customer-name-input').value.trim() || "အထွေထွေ";
+            // 👤 ဝယ်ယူသူအမည်ကို မေးမြန်းသည့် Pop-up Box အရင်ပေါ်လာစေရန်
+            let customerName = prompt("ဝယ်ယူသူအမည် (Customer Name) ကို ရိုက်ထည့်ပေးပါဗျာ -\n(မထည့်ဘဲ OK နှိပ်ပါက 'အထွေထွေ' ဟု သတ်မှတ်ပါမည်)", "");
+            
+            // အကယ်၍ Cancel နှိပ်လိုက်ရင် ရှေ့ဆက်မသွားဘဲ ဒီမှာတင်ရပ်မည်
+            if (customerName === null) { return; }
+            customerName = customerName.trim() || "အထွေထွေ";
+
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
             let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
@@ -331,7 +333,6 @@
             printVoucher(localData);
             
             cart = []; 
-            document.getElementById('customer-name-input').value = '';
             renderCart();
             alert("Voucher ထုတ်ယူခြင်း အောင်မြင်ပါပြီ။");
         }
@@ -372,7 +373,7 @@
                         </tbody>
                     </table>
                     <div class="v-divider"></div>
-                    <table class="v-header-table" style="font-size: 15px; font-weight: bold;">
+                    <table class="v-header-table" style="font-size: 14px; font-weight: bold;">
                         <tr>
                             <td>စုစုပေါင်း:</td>
                             <td class="text-right">${sale.total} Ks</td>
