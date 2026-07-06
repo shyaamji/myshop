@@ -16,14 +16,31 @@
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
         
-        /* 🖨️ Voucher Print Layout */
+        /* 🖨️ Voucher Print Layout - Mobile Size Fix */
         #print-receipt-zone { display: none; }
         @media print {
+            @page {
+                size: auto;
+                margin: 0mm; /* စာရွက်အနားသတ် အလွတ်တွေကို အကုန်ဖြုတ်ချခြင်း */
+            }
             body > *:not(#print-receipt-zone) { display: none !important; }
+            html, body {
+                background-color: #fff;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
             #print-receipt-zone { 
                 display: block !important;
-                position: absolute; left: 0; top: 0; width: 100%; max-width: 72mm; 
-                padding: 0px; margin: 0px; font-family: sans-serif; color: #000;
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100% !important; /* ဘယ်ဘက်ကပ်မနေစေဘဲ အပြည့်ဆွဲဆန့်ခြင်း */
+                max-width: 100% !important;
+                padding: 20px !important; /* စာသားများ ဘေးကပ်မထွက်စေရန် အတွင်းစာသားအကွာအဝေး */
+                margin: 0 auto !important;
+                font-family: sans-serif; 
+                color: #000;
                 box-sizing: border-box;
             }
         }
@@ -160,7 +177,6 @@
             }
         }
 
-        // ... [အလယ်ပိုင်း Functions များ မပြောင်းလဲပါ] ...
         function loadProductsFromSheet() {
             if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             fetch(scriptURL + '?t=' + new Date().getTime())
@@ -306,27 +322,27 @@
             cart = []; renderCart(); alert("Voucher ထုတ်ယူခြင်း အောင်မြင်ပါပြီ။");
         }
 
-        // 🖨️ ဈေးနှုန်းပါဝင်သော စနစ်ကျလှပသည့် ပရင်တာသုံး Voucher စနစ်
+        // 🖨️ Mobile Preview တွင် တစ်မျက်နှာလုံး Fix ဖြစ်စေရန် ပြင်ဆင်ထားသော စနစ်
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone');
             let itemsHTML = '';
             
             sale.items.forEach(i => { 
                 itemsHTML += `
-                    <tr style="font-size: 13px;">
-                        <td style="text-align: left; padding: 5px 0; word-break: break-all; max-width: 32mm;">${i.name}</td>
-                        <td style="text-align: right; padding: 5px 0;">${Number(i.price).toLocaleString()}</td>
-                        <td style="text-align: center; padding: 5px 0;">${i.qty}</td>
-                        <td style="text-align: right; padding: 5px 0;">${(i.price * i.qty).toLocaleString()}</td>
+                    <tr style="font-size: 14px;">
+                        <td style="text-align: left; padding: 6px 0; word-break: break-all; max-width: 40%;">${i.name}</td>
+                        <td style="text-align: right; padding: 6px 0;">${Number(i.price).toLocaleString()}</td>
+                        <td style="text-align: center; padding: 6px 0;">${i.qty}</td>
+                        <td style="text-align: right; padding: 6px 0;">${(i.price * i.qty).toLocaleString()}</td>
                     </tr>`; 
             });
 
             printZone.innerHTML = `
-                <div style="width: 100%; max-width: 100%; padding: 5px; font-family: sans-serif; color: #000; box-sizing: border-box;">
-                    <div style="text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 5px;">ကောင်းမြတ် POS</div>
-                    <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+                <div style="width: 100%; padding: 5px; font-family: sans-serif; color: #000; box-sizing: border-box;">
+                    <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 8px;">ကောင်းမြတ် POS</div>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                     
-                    <table style="width: 100%; font-size: 13px; border-collapse: collapse; line-height: 1.5;">
+                    <table style="width: 100%; font-size: 14px; border-collapse: collapse; line-height: 1.6;">
                         <tr>
                             <td style="text-align: left; width: 30%;">Voucher:</td>
                             <td style="text-align: right; font-weight: bold;">${sale.voucherId}</td>
@@ -337,20 +353,19 @@
                         </tr>
                         <tr>
                             <td style="text-align: left;">နေ့ရက်:</td>
-                            <td style="text-align: right; font-size: 12px;">${sale.date || new Date().toLocaleString()}</td>
+                            <td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td>
                         </tr>
                     </table>
                     
-                    <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                     
-                    <!-- ၄ ကော်လံဇယား (ဈေးနှုန်းကော်လံ အသစ်ပါဝင်သည်) -->
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="font-size: 13px; font-weight: bold; border-bottom: 1px dashed #000;">
-                                <th style="text-align: left; padding-bottom: 5px; width: 40%;">ပစ္စည်းအမည်</th>
-                                <th style="text-align: right; padding-bottom: 5px; width: 22%;">ဈေးနှုန်း</th>
-                                <th style="text-align: center; padding-bottom: 5px; width: 13%;">ခု</th>
-                                <th style="text-align: right; padding-bottom: 5px; width: 25%;">သင့်ငွေ</th>
+                            <tr style="font-size: 14px; font-weight: bold; border-bottom: 1px dashed #000;">
+                                <th style="text-align: left; padding-bottom: 6px; width: 38%;">ပစ္စည်းအမည်</th>
+                                <th style="text-align: right; padding-bottom: 6px; width: 24%;">ဈေးနှုန်း</th>
+                                <th style="text-align: center; padding-bottom: 6px; width: 13%;">ခု</th>
+                                <th style="text-align: right; padding-bottom: 6px; width: 25%;">သင့်ငွေ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -358,17 +373,17 @@
                         </tbody>
                     </table>
                     
-                    <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                     
-                    <table style="width: 100%; font-size: 16px; font-weight: bold;">
+                    <table style="width: 100%; font-size: 18px; font-weight: bold;">
                         <tr>
                             <td style="text-align: left;">စုစုပေါင်း:</td>
                             <td style="text-align: right;">${sale.total} Ks</td>
                         </tr>
                     </table>
                     
-                    <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
-                    <div style="text-align: center; font-size: 12px; margin-top: 8px;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</div>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+                    <div style="text-align: center; font-size: 14px; margin-top: 12px; font-weight: 500;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
                 
             setTimeout(() => { window.print(); }, 500);
