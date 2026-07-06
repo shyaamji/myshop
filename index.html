@@ -31,6 +31,7 @@
     </style>
 
     <script>
+        // ⚠️ သင့်ရဲ့ နေရာချထားပြီးသား Web App URL အသစ်ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
 
         if ('serviceWorker' in navigator) {
@@ -143,12 +144,18 @@
         let canScan = true;
         let cart = [];
         let productsDB = []; 
-        let salesHistory = JSON.parse(localStorage.getItem('salesHistory')) || []; // ဖုန်းထဲက Memory ထဲကနေ အရင်ဖတ်ယူမည်
+        let salesHistory = [];
+
+        // စဖွင့်ချင်း ဖုန်းရဲ့ Memory ထဲက အရောင်းဒေတာဟောင်းကို အရင်ဖတ်ထားမည်
+        try {
+            const localData = localStorage.getItem('salesHistory');
+            if(localData) { salesHistory = JSON.parse(localData); }
+        } catch(e) { console.log(e); }
 
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet();
-            loadSalesHistoryFromSheet(); // 🔄 စဖွင့်ချင်း Google Sheet ထဲက အရောင်းမှတ်တမ်းတွေပါ ဆွဲယူမည်
+            loadSalesHistoryFromSheet(); 
             displayHistory(salesHistory);
         }
 
@@ -175,18 +182,17 @@
             .catch(err => console.log(err));
         }
 
-        // 🔄 Google Sheet ထဲက အရောင်းမှတ်တမ်းအားလုံးကို လှမ်းယူပေးမည့်စနစ်
         function loadSalesHistoryFromSheet() {
-            if(!scriptURL) return;
+            if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             fetch(scriptURL + '?getSales=true&t=' + new Date().getTime())
             .then(res => res.json())
             .then(data => {
                 if(data && data.length > 0) {
                     salesHistory = data;
-                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); // ဖုန်းထဲ သိမ်းမည်
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); 
                     displayHistory(salesHistory);
                 }
-            }).catch(err => console.log("Sales History Fetch Error:", err));
+            }).catch(err => console.log("History Fetching Error:", err));
         }
 
         function filterProductNames() {
@@ -315,22 +321,32 @@
             let customerName = prompt("ဝယ်ယူသူအမည် (Customer Name) ကို ရိုက်ထည့်ပေးပါဗျာ -\n(မထည့်ဘဲ OK နှိပ်ပါက 'အထွေထွေ' ဟု သတ်မှတ်ပါမည်)", "");
             if (customerName === null) { return; }
             customerName = customerName.trim() || "အထွေထွေ";
+            
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
+            
             let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
-            
-            document.getElementById('form-json-data').value = JSON.stringify(saleData);
-            document.getElementById('hidden-form').submit();
-            
             let localData = { ...saleData, date: new Date().toLocaleString() };
-            salesHistory.unshift(localData);
-            
-            // 💾 ဖုန်းထဲက Memory (`localStorage`) ထဲမှာပါ အမြဲသိမ်းဆည်းလိုက်ခြင်း
-            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-            
-            displayHistory(salesHistory);
+
+            // 1. 💾 ဖုန်းမှတ်ဉာဏ်ထဲကို အရင်ဆုံး သိမ်းဆည်းလိုက်ခြင်း (ဒါမှ နောက်ကွယ်က အလုပ်မလုပ်ရင်တောင် မပျောက်မှာပါ)
+            try {
+                salesHistory.unshift(localData);
+                localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                displayHistory(salesHistory);
+            } catch(e) { console.log("Local Storage Error: ", e); }
+
+            // 2. 🖨️ Print Page ကို လှမ်းခေါ်ခြင်း (အမြဲ ပွင့်လာစေရန်)
             printVoucher(localData);
-            cart = []; renderCart(); alert("Voucher ထုတ်ယူခြင်း အောင်မြင်ပါပြီ။");
+
+            // 3. ☁️ Google Sheet ဆီသို့ နောက်ကွယ်မှ ဒေတာပို့ခြင်း
+            try {
+                document.getElementById('form-json-data').value = JSON.stringify(saleData);
+                document.getElementById('hidden-form').submit();
+            } catch(e) { console.log("Google Sheet Submit Error: ", e); }
+            
+            cart = []; 
+            renderCart(); 
+            alert("Voucher ထုတ်ယူခြင်း အောင်မြင်ပါပြီ။");
         }
 
         function printVoucher(sale) {
@@ -392,11 +408,11 @@
                         </tr>
                     </table>
                     
-                    <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+                    <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                     <div style="text-align: center; font-size: 14px; margin-top: 12px; font-weight: 500;">ဝယ်ယူအားပေးမှုကို ကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
                 
-            setTimeout(() => { window.print(); }, 500);
+            setTimeout(() => { window.print(); }, 600);
         }
 
         function displayHistory(data) {
