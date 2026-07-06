@@ -31,8 +31,8 @@
     </style>
 
     <script>
-        // ⚠️ သင့်ရဲ့ နေရာချထားပြီးသား Web App URL အသစ်ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbx-_M5etkWYNRmgeIDsZvFceSAENQpEXdJDOeJQvYjrHnsMuNtSvxAzYhWqBv60ynBP/exec'; 
+        // ⚠️ သင့်ရဲ့ Deploy လုပ်ပြီးရလာတဲ့ Web App URL အသစ်ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzOZlu3r1_QDucTrLFYV8yZq1ll6URpldMt33hhMLfIbQcs_dF0CdhhnBg8zhjBoUYr/exec'; 
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -146,16 +146,18 @@
         let productsDB = []; 
         let salesHistory = [];
 
-        // စဖွင့်ချင်း ဖုန်းရဲ့ Memory ထဲက အရောင်းဒေတာဟောင်းကို အရင်ဖတ်ထားမည်
+        // 💾 ဖုန်းမှတ်ဉာဏ်ထဲက ဒေတာအဟောင်းကို အရင်ဆုံးဆွဲထုတ်ထားခြင်း
         try {
             const localData = localStorage.getItem('salesHistory');
-            if(localData) { salesHistory = JSON.parse(localData); }
+            if(localData) { 
+                salesHistory = JSON.parse(localData); 
+            }
         } catch(e) { console.log(e); }
 
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet();
-            loadSalesHistoryFromSheet(); 
+            loadSalesHistoryFromSheet(); // ☁️ Sheet ထဲက မှတ်တမ်းအဟောင်းအားလုံးကို ဆွဲယူမည့်စနစ်
             displayHistory(salesHistory);
         }
 
@@ -171,6 +173,7 @@
                 renderAdminProducts(productsDB); 
             } else if(tabId === 'history') {
                 displayHistory(salesHistory);
+                loadSalesHistoryFromSheet(); // မှတ်တမ်း Tab ထဲဝင်တိုင်း နောက်ဆုံးအခြေအနေကို ထပ်ဆွဲယူပေးခြင်း
             }
         }
 
@@ -182,6 +185,7 @@
             .catch(err => console.log(err));
         }
 
+        // 🔄 Google Sheet မှ အရောင်းမှတ်တမ်းအဟောင်းများ အကုန်လုံးကို အမှားအယွင်းမရှိ ပြန်လည်ဆွဲယူခြင်း
         function loadSalesHistoryFromSheet() {
             if(!scriptURL || scriptURL.includes('ဒီနေရာမှာ')) return;
             fetch(scriptURL + '?getSales=true&t=' + new Date().getTime())
@@ -189,10 +193,14 @@
             .then(data => {
                 if(data && data.length > 0) {
                     salesHistory = data;
-                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); 
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); // ဖုန်းထဲမှာ အမြဲမှတ်ထားမည်
                     displayHistory(salesHistory);
                 }
-            }).catch(err => console.log("History Fetching Error:", err));
+            }).catch(err => {
+                console.log("History Sync Error:", err);
+                // အကယ်၍ internet နှေးရင် သို့မဟုတ် error တက်ရင် ဖုန်းထဲက Memory ပြောင်းလဲမှုကိုပဲ ဆက်ပြထားမည်
+                displayHistory(salesHistory);
+            });
         }
 
         function filterProductNames() {
@@ -328,21 +336,21 @@
             let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
             let localData = { ...saleData, date: new Date().toLocaleString() };
 
-            // 1. 💾 ဖုန်းမှတ်ဉာဏ်ထဲကို အရင်ဆုံး သိမ်းဆည်းလိုက်ခြင်း (ဒါမှ နောက်ကွယ်က အလုပ်မလုပ်ရင်တောင် မပျောက်မှာပါ)
+            // 1. 💾 ဖုန်းရဲ့ စိတ်ချရဆုံး Memory ထဲသို့ ထည့်သွင်းခြင်း
             try {
                 salesHistory.unshift(localData);
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
                 displayHistory(salesHistory);
-            } catch(e) { console.log("Local Storage Error: ", e); }
+            } catch(e) { console.log(e); }
 
-            // 2. 🖨️ Print Page ကို လှမ်းခေါ်ခြင်း (အမြဲ ပွင့်လာစေရန်)
+            // 2. 🖨️ Print Layout ကို ပေါ့ပ်အပ် တက်လာစေခြင်း
             printVoucher(localData);
 
-            // 3. ☁️ Google Sheet ဆီသို့ နောက်ကွယ်မှ ဒေတာပို့ခြင်း
+            // 3. ☁️ Google Sheet ထဲကို အပြီးတိုင် သွားသိမ်းခိုင်းခြင်း
             try {
                 document.getElementById('form-json-data').value = JSON.stringify(saleData);
                 document.getElementById('hidden-form').submit();
-            } catch(e) { console.log("Google Sheet Submit Error: ", e); }
+            } catch(e) { console.log(e); }
             
             cart = []; 
             renderCart(); 
@@ -420,7 +428,11 @@
             if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">အရောင်းမှတ်တမ်း မရှိသေးပါဗျာ။</div>'; return; }
             list.innerHTML = '';
             data.forEach((sale, index) => {
-                let itemsList = sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('');
+                let itemsList = "";
+                try {
+                    itemsList = sale.items.map(i => `<small class="d-block">${i.name} x ${i.qty}</small>`).join('');
+                } catch(e) { itemsList = "<small class='text-danger'>ပစ္စည်းစာရင်းဖတ်မရပါ</small>"; }
+                
                 list.innerHTML += `
                     <div class="card p-3 mb-3 shadow-sm border-0">
                         <div class="d-flex justify-content-between mb-2">
