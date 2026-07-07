@@ -12,6 +12,10 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <style>
+        /* 🔒 App Lockdown Style */
+        #app-lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #212529; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; }
+        #app-main-content { display: none; } /* Password မှန်မှ ပြမည် */
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .qty-btn { width: 45px; height: 45px; font-size: 22px; font-weight: bold; }
@@ -38,7 +42,7 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzOZlu3r1_QDucTrLFYV8yZq1ll6URpldMt33hhMLfIbQcs_dF0CdhhnBg8zhjBoUYr/exec'; 
-        const adminPassword = '1234'; 
+        const adminPassword = '5858'; // 🔑 ဤနေရာတွင် Password ပြောင်းနိုင်ပါသည်
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -51,22 +55,35 @@
 </head>
 <body class="bg-light">
 
+    <!-- 🔒 Home Page Password Screen -->
+    <div id="app-lock-screen">
+        <div class="text-center p-4 bg-dark rounded shadow" style="max-width: 350px; width: 90%; border: 1px solid #343a40;">
+            <h4 class="fw-bold text-primary mb-3">ကောင်းမြတ် POS</h4>
+            <p class="text-muted small mb-4">စနစ်ထဲသို့ဝင်ရန် Password ရိုက်ထည့်ပါ</p>
+            <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-3 border-secondary bg-secondary text-white" placeholder="••••">
+            <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" onclick="checkHomePassword()">🔓 အကောင့်ဝင်မည်</button>
+            <div id="lock-error" class="text-danger small mt-2 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
+        </div>
+    </div>
+
     <div id="print-receipt-zone"></div>
 
+    <!-- 📱 Main App Content (စက္ကန့်ပိုင်းအထိ ဖျောက်ထားမည်) -->
     <div id="app-main-content">
         <div id="install-banner" class="bg-primary text-white text-center p-2 fw-bold" style="display: none; cursor: pointer;" onclick="triggerPwaInstall()">
             📲 ဤ POS စနစ်ကို ဖုန်းထဲသို့ App အဖြစ် ထည့်သွင်းရန် (Install App) နှိပ်ပါ။
         </div>
 
         <nav class="navbar navbar-dark bg-dark sticky-top shadow">
-            <div class="container-fluid">
+            <div class="container-fluid d-flex justify-content-between">
                 <span class="navbar-brand mb-0 h1 fw-bold">ကောင်းမြတ် (Kaung Myat POS)</span>
+                <button class="btn btn-sm btn-outline-danger font-monospace" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
             </div>
         </nav>
 
         <div class="btn-group w-100 sticky-top bg-white shadow-sm mb-3" role="group">
             <button id="btn-sales" class="btn btn-outline-primary py-2 active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-            <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜  မှတ်တမ်း</button>
+            <button id="btn-history" class="btn btn-outline-primary py-2" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
             <button id="btn-admin" class="btn btn-outline-primary py-2" onclick="switchTab('admin')">⚙️ Admin</button>
         </div>
 
@@ -101,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- 📜  မှတ်တမ်း Tab -->
+            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
@@ -172,7 +189,7 @@
             }
         }
 
-        // 🔊 Web Audio API စနစ်ဖြင့် စက်ထဲကနေ Beep သံတန်းထုတ်ပေးသည့်စနစ်
+        // 🔊 Web Audio API စနစ်
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -183,7 +200,6 @@
             }
         }
         
-        // စာမျက်နှာပေါ် တစ်ချက်နှိပ်လိုက်တာနဲ့ Audio စနစ်ကို အဆင်သင့်ဖြစ်အောင် နှိုးထားခြင်း
         window.addEventListener('click', initAudio, { once: true });
         window.addEventListener('touchstart', initAudio, { once: true });
 
@@ -191,22 +207,43 @@
             try {
                 initAudio();
                 if (!audioCtx) return;
-                
                 let oscillator = audioCtx.createOscillator();
                 let gainNode = audioCtx.createGain();
-                
-                oscillator.type = 'sine'; // အသံလှိုင်းပုံစံ
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 800Hz (တီ ဆိုတဲ့စူးရှရှအသံ)
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); // အသံအတိုးအကျယ် (0.2)
-                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                
                 oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.1); // ၀.၁ စက္ကန့်ပဲ မြည်စေမည်
-            } catch(e) {
-                console.log("Audio Error:", e);
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch(e) { console.log(e); }
+        }
+
+        // 🔒 Home Page Password Functions
+        function checkHomePassword() {
+            let input = document.getElementById('home-pass-input').value;
+            if (input === adminPassword) {
+                sessionStorage.setItem('isAppUnlocked', 'true');
+                document.getElementById('app-lock-screen').style.display = 'none';
+                document.getElementById('app-main-content').style.display = 'block';
+                document.getElementById('home-pass-input').value = '';
+                document.getElementById('lock-error').style.display = 'none';
+                initAudio(); // Audio activation
+            } else {
+                document.getElementById('lock-error').style.display = 'block';
+                document.getElementById('home-pass-input').value = '';
             }
+        }
+
+        // Enter Key နှိပ်ရင်လည်း Password စစ်ပေးရန်
+        document.getElementById('home-pass-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkHomePassword();
+        });
+
+        function lockAppImmediate() {
+            sessionStorage.removeItem('isAppUnlocked');
+            localStorage.removeItem('isAdminAuthenticated');
+            window.location.reload();
         }
 
         let canScan = true; let cart = []; let productsDB = []; let salesHistory = [];
@@ -218,6 +255,13 @@
 
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
+            
+            // Password ယခင်က ထည့်ထားပြီးသားလား စစ်ဆေးခြင်း (Refresh ဖြစ်ရင် ခဏခဏ မတောင်းစေရန်)
+            if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+                document.getElementById('app-lock-screen').style.display = 'none';
+                document.getElementById('app-main-content').style.display = 'block';
+            }
+            
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
         }
 
@@ -288,7 +332,6 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // 📷 စကန်ဖတ်မိချိန် အသံမြည်ခြင်း
         function onScanSuccess(decodedText) { 
             if (canScan) { 
                 playBeep(); 
@@ -311,7 +354,6 @@
             renderCart();
         }
 
-        // ➕ / ➖ ခလုတ်နှိပ်ပြီး အတိုးအလျှော့လုပ်ချိန် အသံမြည်ခြင်း
         function changeQty(index, change) { 
             playBeep(); 
             cart[index].qty += change; 
@@ -350,7 +392,6 @@
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); 
             let itemsHTML = '';
-            
             sale.items.forEach(i => { 
                 itemsHTML += `
                     <tr style="font-size: 13px; border-bottom: 1px dashed #eee;">
@@ -365,13 +406,11 @@
                 <div style="width: 100%; max-width: 280px; margin: 0 auto; padding: 5px; font-family: sans-serif; color: #000;">
                     <div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 4px;">ကောင်းမြတ် POS</div>
                     <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
-                    
                     <table style="width: 100%; font-size: 12px; line-height: 1.5; margin-bottom: 6px;">
                         <tr><td>Voucher:</td><td style="text-align: right; font-weight: bold;">${sale.voucherId}</td></tr>
                         <tr><td>ဝယ်သူ:</td><td style="text-align: right;">${sale.customerName}</td></tr>
                         <tr><td>နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
                     </table>
-                    
                     <table class="v-table" style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                         <thead>
                             <tr style="font-size: 13px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000;">
@@ -381,24 +420,15 @@
                                 <th style="text-align: right; padding: 4px 0;">သင့်ငွေ</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${itemsHTML}
-                        </tbody>
+                        <tbody>${itemsHTML}</tbody>
                     </table>
-                    
                     <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
-                    
                     <table style="width: 100%; font-size: 15px; font-weight: bold;">
-                        <tr>
-                            <td>စုစုပေါင်း:</td>
-                            <td style="text-align: right;">${sale.total} Ks</td>
-                        </tr>
+                        <tr><td>စုစုပေါင်း:</td><td style="text-align: right;">${sale.total} Ks</td></tr>
                     </table>
-                    
                     <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
                     <div style="text-align: center; font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
-                
             setTimeout(() => { window.print(); }, 500);
         }
 
