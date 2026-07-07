@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- 📜 မှတ်တမ်း Tab -->
+            <!-- 📜  မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
@@ -153,9 +153,6 @@
         </div>
     </div>
 
-    <!-- 🔊 အသံဖိုင် ချိတ်ဆက်ထားခြင်း -->
-    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
-
     <script>
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -175,7 +172,43 @@
             }
         }
 
-        const beep = document.getElementById('beep-sound');
+        // 🔊 Web Audio API စနစ်ဖြင့် စက်ထဲကနေ Beep သံတန်းထုတ်ပေးသည့်စနစ်
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        // စာမျက်နှာပေါ် တစ်ချက်နှိပ်လိုက်တာနဲ့ Audio စနစ်ကို အဆင်သင့်ဖြစ်အောင် နှိုးထားခြင်း
+        window.addEventListener('click', initAudio, { once: true });
+        window.addEventListener('touchstart', initAudio, { once: true });
+
+        function playBeep() { 
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                
+                let oscillator = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine'; // အသံလှိုင်းပုံစံ
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 800Hz (တီ ဆိုတဲ့စူးရှရှအသံ)
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); // အသံအတိုးအကျယ် (0.2)
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1); // ၀.၁ စက္ကန့်ပဲ မြည်စေမည်
+            } catch(e) {
+                console.log("Audio Error:", e);
+            }
+        }
+
         let canScan = true; let cart = []; let productsDB = []; let salesHistory = [];
 
         try {
@@ -186,12 +219,6 @@
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
-        }
-        
-        // 🎵 အသံမြည်စေမည့် Function
-        function playBeep() { 
-            beep.currentTime = 0; 
-            beep.play().catch(e => console.log("Audio play blocked, need user interaction first.")); 
         }
 
         function switchTab(tabId) {
@@ -261,10 +288,10 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // 📷 Barcode စကန်ဖတ်အောင်မြင်ချိန်တွင် အသံမြည်ခြင်း
+        // 📷 စကန်ဖတ်မိချိန် အသံမြည်ခြင်း
         function onScanSuccess(decodedText) { 
             if (canScan) { 
-                playBeep(); // <--- စကန်ဖတ်မိချိန် အသံမြည်ရန်
+                playBeep(); 
                 addToCart(decodedText); 
                 canScan = false; 
                 setTimeout(() => { canScan = true; }, 2000); 
@@ -284,9 +311,9 @@
             renderCart();
         }
 
-        // ➕ / ➖ ပစ္စည်းအရေအတွက် အတိုးအလျှော့လုပ်ချိန်တွင် အသံမြည်ခြင်း
+        // ➕ / ➖ ခလုတ်နှိပ်ပြီး အတိုးအလျှော့လုပ်ချိန် အသံမြည်ခြင်း
         function changeQty(index, change) { 
-            playBeep(); // <--- (+ / -) ခလုတ်နှိပ်ချိန် အသံမြည်ရန်
+            playBeep(); 
             cart[index].qty += change; 
             if (cart[index].qty <= 0) cart.splice(index, 1); 
             renderCart(); 
