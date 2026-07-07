@@ -14,7 +14,7 @@
     <style>
         /* 🔒 App Lockdown Style */
         #app-lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #212529; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; }
-        #app-main-content { display: none; } /* Password မှန်မှ ပြမည် */
+        #app-main-content { display: none; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -42,7 +42,7 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzOZlu3r1_QDucTrLFYV8yZq1ll6URpldMt33hhMLfIbQcs_dF0CdhhnBg8zhjBoUYr/exec'; 
-        const adminPassword = '5858'; // 🔑 ဤနေရာတွင် Password ပြောင်းနိုင်ပါသည်
+        const adminPassword = '5858'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -68,7 +68,7 @@
 
     <div id="print-receipt-zone"></div>
 
-    <!-- 📱 Main App Content (စက္ကန့်ပိုင်းအထိ ဖျောက်ထားမည်) -->
+    <!-- 📱 Main App Content -->
     <div id="app-main-content">
         <div id="install-banner" class="bg-primary text-white text-center p-2 fw-bold" style="display: none; cursor: pointer;" onclick="triggerPwaInstall()">
             📲 ဤ POS စနစ်ကို ဖုန်းထဲသို့ App အဖြစ် ထည့်သွင်းရန် (Install App) နှိပ်ပါ။
@@ -132,22 +132,26 @@
             <div id="admin" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
+                        <h5 class="card-title fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                         <button class="btn btn-sm btn-outline-danger" onclick="logoutAdmin()">🔒 Admin ပိတ်မည်</button>
                     </div>
                     <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
                         <input type="hidden" name="jsonData" id="form-json-data">
                         <div class="col-12">
-                            <input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ်">
+                            <label class="text-muted small fw-bold">Barcode နံပါတ်</label>
+                            <input type="text" id="new-barcode" class="form-control border-primary" placeholder="Barcode နံပါတ်">
                         </div>
                         <div class="col-12">
-                            <input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" required>
+                            <label class="text-muted small fw-bold">ပစ္စည်းအမည်</label>
+                            <input type="text" id="new-name" class="form-control border-primary" placeholder="ပစ္စည်းအမည် ရိုက်ထည့်ပါ" required>
                         </div>
                         <div class="col-6">
-                            <input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း (Ks)">
+                            <label class="text-muted small fw-bold">ဈေးနှုန်း (Ks)</label>
+                            <input type="number" id="new-price" class="form-control border-primary" placeholder="ဈေးနှုန်း">
                         </div>
                         <div class="col-6">
-                            <input type="number" id="new-stock" class="form-control" placeholder="လက်ကျန်ခုရေ">
+                            <label class="text-muted small fw-bold">လက်ကျန်ခုရေ</label>
+                            <input type="number" id="new-stock" class="form-control border-primary" placeholder="လက်ကျန်စတော့">
                         </div>
                         <div class="col-12 mt-3">
                             <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="add-prod-btn" onclick="addNewProduct()">💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
@@ -228,14 +232,13 @@
                 document.getElementById('app-main-content').style.display = 'block';
                 document.getElementById('home-pass-input').value = '';
                 document.getElementById('lock-error').style.display = 'none';
-                initAudio(); // Audio activation
+                initAudio();
             } else {
                 document.getElementById('lock-error').style.display = 'block';
                 document.getElementById('home-pass-input').value = '';
             }
         }
 
-        // Enter Key နှိပ်ရင်လည်း Password စစ်ပေးရန်
         document.getElementById('home-pass-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') checkHomePassword();
         });
@@ -255,13 +258,10 @@
 
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
-            
-            // Password ယခင်က ထည့်ထားပြီးသားလား စစ်ဆေးခြင်း (Refresh ဖြစ်ရင် ခဏခဏ မတောင်းစေရန်)
             if (sessionStorage.getItem('isAppUnlocked') === 'true') {
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
             }
-            
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
         }
 
@@ -332,6 +332,7 @@
             suggestionsBox.style.display = 'block';
         }
 
+        // 📷 စကန်ဖတ်စနစ်
         function onScanSuccess(decodedText) { 
             if (canScan) { 
                 playBeep(); 
@@ -343,11 +344,29 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
+        // 🔎 Barcode အသစ်ဆိုလျှင် အမည်ပြောင်းသိမ်းရန် Admin Tab သို့ ပို့ပေးမည့်စနစ်
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
-            if (!product) product = { barcode: barcode, name: "ပစ္စည်းအသစ် (" + barcode + ")", price: 0 };
-            addByProductObject(product);
+            if (!product) {
+                // စနစ်ထဲမှာ Barcode မရှိသေးရင်
+                alert(`📢 Barcode: ${barcode} သည် စနစ်ထဲတွင် မရှိသေးပါ။ ပစ္စည်းအသစ်အဖြစ် အမည်နှင့် ဈေးနှုန်း သတ်မှတ်ရန် Admin ဧရိယာသို့ ခေါ်ဆောင်သွားပါမည်။`);
+                
+                // Admin ကို စကားဝှက်မတောင်းဘဲ တိုက်ရိုက် Unlock လုပ်ပေးလိုက်ခြင်း
+                localStorage.setItem('isAdminAuthenticated', 'true'); 
+                switchTab('admin');
+                
+                // Form တွင် ကူးထည့်ပေးခြင်း
+                document.getElementById('new-barcode').value = barcode;
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-price').value = '';
+                document.getElementById('new-stock').value = '';
+                document.getElementById('admin-form-title').innerText = `🆕 ပစ္စည်းအသစ် ထည့်သွင်းရန် (${barcode})`;
+                document.getElementById('new-name').focus();
+            } else {
+                addByProductObject(product);
+            }
         }
+        
         function addByProductObject(product) {
             let item = cart.find(i => i.barcode === product.barcode);
             if (item) item.qty++; else cart.push({ ...product, qty: 1 });
@@ -504,7 +523,9 @@
                 btn.disabled = false; btn.innerText = "💾 Google Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်";
                 document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
+                document.getElementById('admin-form-title').innerText = "➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်";
                 loadProductsFromSheet();
+                switchTab('sales'); // အရောင်းခန်းသို့ ပြန်ပို့ပေးခြင်း
             }, 2000);
         }
 
