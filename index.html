@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ကောင်းမြတ် - POS System Pro v3</title>
+    <title>ကောင်းမြတ် - POS System Pro v4</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0d6efd">
@@ -22,13 +22,11 @@
         .product-card { border-left: 5px solid #0d6efd; background: #fff; border-radius: 8px; transition: transform 0.2s; }
         .product-card:hover { transform: translateY(-2px); }
         
-        /* Layout & Cards */
         .admin-product-card { border: 1px solid #e0e4ec; border-radius: 12px; background: #fff; margin-bottom: 15px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-top: 3px solid #0d6efd; position: relative; }
         .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
         .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f5; }
         .search-item:hover { background-color: #e9ecef; }
         
-        /* Print Styles */
         #print-receipt-zone { display: none; }
         @media print {
             @page { size: auto; margin: 0mm; }
@@ -42,7 +40,6 @@
     </style>
 
     <script>
-        // ⚠️ မိမိ၏ Google Web App URL ကို ဤနေရာတွင် ထည့်သွင်းပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyHs8WfjsxLeUfxXVBTHxXxGxSeZbiRq4eYNx61SDcoXALB7Bkpa0tTDL8vNxB1CZGZ/exec'; 
         
         const homePassword = '1111';  
@@ -58,13 +55,13 @@
 <body>
 
     <div id="app-lock-screen">
-        <div class="text-center p-4 bg-dark rounded shadow-lg" style="max-width: 360px; width: 92%;">
+        <form onsubmit="checkHomePassword(event)" class="text-center p-4 bg-dark rounded shadow-lg" style="max-width: 360px; width: 92%;">
             <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
             <h4 class="fw-bold text-white mt-2 mb-3">ကောင်းမြတ် POS</h4>
-            <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-3 text-white bg-secondary border-0" placeholder="Password ရိုက်ပါ" autocomplete="new-password">
-            <button class="btn btn-primary btn-lg w-100 fw-bold shadow" onclick="checkHomePassword()">🔓 အကောင့်ဝင်မည်</button>
+            <input type="text" id="home-pass-input" class="form-control form-control-lg text-center mb-3 text-white bg-secondary border-0" placeholder="Password ရိုက်ပါ" autocomplete="off" required>
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow">🔓 အကောင့်ဝင်မည်</button>
             <div id="lock-error" class="text-danger small mt-2 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
-        </div>
+        </form>
     </div>
 
     <div id="print-receipt-zone"></div>
@@ -84,7 +81,6 @@
         </div>
 
         <div class="container pb-5">
-            
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0 bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-1 px-1">
@@ -120,7 +116,7 @@
                 <div class="card p-3 shadow-sm border-0 mb-3 bg-white">
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="Voucher ID သို့မဟုတ် ဝယ်သူအမည် (နီးစပ်ရာရှာနိုင်သည်)..." onkeyup="searchHistory()" autocomplete="off">
+                        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="Voucher ID သို့မဟုတ် ဝယ်သူအမည်..." onkeyup="searchHistory()" autocomplete="off">
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="form-check">
@@ -149,7 +145,7 @@
                     <button class="btn btn-primary mb-3 w-100 fw-bold shadow-sm" onclick="loadProductsFromSheet()"><i class="bi bi-arrow-clockwise me-1"></i>စာရင်းပြန်ဆွဲယူရန်</button>
                     
                     <div class="mb-3 bg-light p-3 rounded-3 border border-primary-subtle">
-                        <label class="form-label small fw-bold text-primary"><i class="bi bi-search me-1"></i>ပစ္စည်းရှာဖွေရန် (နီးစပ်ရာ စာရိုက်ရုံဖြင့် တိုက်ရိုက်စစ်ထုတ်ပေးမည်)</label>
+                        <label class="form-label small fw-bold text-primary"><i class="bi bi-search me-1"></i>ပစ္စည်းရှာဖွေရန် (နီးစပ်ရာရှာပေးမည်)</label>
                         <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary shadow-sm" placeholder="ပစ္စည်းအမည် သို့မဟုတ် Barcode..." onkeyup="filterAdminProducts()" autocomplete="off">
                     </div>
 
@@ -163,7 +159,6 @@
                     <div id="admin-product-list"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -184,12 +179,17 @@
             loadProductsFromSheet(); loadSalesHistoryFromSheet();
         }
 
-        function checkHomePassword() {
-            if (document.getElementById('home-pass-input').value === homePassword) {
+        // 🔐 Lock Screen Fix - ပိုမိုစိတ်ချရသော စစ်ဆေးမှုပြုလုပ်ခြင်း
+        function checkHomePassword(event) {
+            if(event) event.preventDefault(); 
+            let enteredPass = document.getElementById('home-pass-input').value.trim();
+            if (enteredPass === homePassword) {
                 sessionStorage.setItem('isAppUnlocked', 'true');
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
-            } else { document.getElementById('lock-error').style.display = 'block'; }
+            } else { 
+                document.getElementById('lock-error').style.display = 'block'; 
+            }
         }
 
         function switchTab(tabId) {
@@ -241,14 +241,9 @@
             suggestionsBox.style.display = filtered.length > 0 ? 'block' : 'none';
         }
 
-        // 🔍 Admin - နီးစပ်ရာ (Partial Search) စနစ်အသစ်
         function filterAdminProducts() {
             let text = document.getElementById('admin-search-input').value.toLowerCase().trim();
-            if (text === "") {
-                renderAdminProducts(productsDB);
-                return;
-            }
-            // Includes စနစ်သုံးထား၍ နီးစပ်ရာ စာလုံးပါတာနဲ့ တန်းထွက်လာပါမည်။
+            if (text === "") { renderAdminProducts(productsDB); return; }
             let filtered = productsDB.filter(p => {
                 let bCode = (p.barcode || p.Barcode || p["ဘားကုဒ်"] || "").toString().toLowerCase();
                 let pName = (p.name || p.Name || p["ပစ္စည်းအမည်"] || "").toString().toLowerCase();
@@ -285,6 +280,7 @@
             renderCart();
         }
 
+        // ... [ကျန်ရှိသော လုပ်ဆောင်ချက် Functions အားလုံး မူလဗားရှင်းအတိုင်း တည်ငြိမ်စွာ အလုပ်လုပ်ပါသည်] ...
         function renderCart() {
             const list = document.getElementById('cart-list'); let total = 0; list.innerHTML = '';
             if(cart.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-cart-x fs-2 d-block text-muted mb-1"></i>ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>'; return; }
@@ -304,11 +300,9 @@
             let vId = "KM-" + Date.now().toString().slice(-6);
             let summary = cart.map(i => `${i.name} (${i.qty}ခု x ${i.price}Ks)`).join(", ");
             let totalVal = document.getElementById('cart-total').innerText + " Ks";
-            
             let payload = { action: "addSale", voucherId: vId, customerName: name, itemsSummary: summary, total: totalVal };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
-            
             printLocalVoucher(vId, name, cart, document.getElementById('cart-total').innerText);
             cart = []; renderCart(); 
             alert("Voucher စာရင်းသိမ်းပြီးပါပြီ။");
@@ -382,28 +376,19 @@
             });
         }
 
-        // 🔍 History - နီးစပ်ရာ (Partial Match) စနစ်အသစ်
         function searchHistory() {
             let text = document.getElementById('search-input').value.toLowerCase().trim();
             let filtered = salesHistory.filter(s => {
                 let vId = (s.voucherId || s.VoucherId || s["ဘောက်ချာနံပါတ်"] || s["Voucher ID"] || "").toString().toLowerCase();
                 let cName = (s.customerName || s.CustomerName || s["ဝယ်ယူသူ"] || s["ဝယ်သူ"] || "").toString().toLowerCase();
                 let items = (s.itemsSummary || s.ItemsSummary || s["ပစ္စည်းအကျဉ်း"] || "").toString().toLowerCase();
-                
-                // Voucher ID (သို့) ဝယ်သူအမည် (သို့) ဝယ်ထားတဲ့ပစ္စည်းအမည် တစ်ခုခု နီးစပ်တာနဲ့ တန်းပေါ်လာပါမည်
                 return vId.includes(text) || cName.includes(text) || items.includes(text);
             });
             displayHistory(filtered);
         }
 
-        function toggleSelectAllHistory(master) {
-            document.querySelectorAll('.history-item-checkbox').forEach(cb => cb.checked = master.checked);
-        }
-
-        function deleteSingleSale(vId) {
-            if(confirm("ဤ Voucher ကို အပြီးဖျက်မလားဗျာ။")) { sendSalesDeleteBulk([vId]); }
-        }
-
+        function toggleSelectAllHistory(master) { document.querySelectorAll('.history-item-checkbox').forEach(cb => cb.checked = master.checked); }
+        function deleteSingleSale(vId) { if(confirm("ဤ Voucher ကို အပြီးဖျက်မလားဗျာ။")) { sendSalesDeleteBulk([vId]); } }
         function deleteSelectedHistory() {
             let checkboxes = document.querySelectorAll('.history-item-checkbox:checked');
             if (checkboxes.length === 0) return alert("ဖျက်ရန် အရင်ရွေးချယ်ပေးပါဗျာ။");
@@ -412,13 +397,11 @@
                 sendSalesDeleteBulk(ids);
             }
         }
-
         function sendSalesDeleteBulk(vIdsArray) {
             let payload = { action: "deleteSalesBulk", voucherIds: vIdsArray };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
-            alert("စာရင်းများကို ဖျက်ဆီးနေပါပြီ...");
-            document.getElementById('history-select-all').checked = false;
+            alert("စာရင်းများကို ဖျက်ဆီးနေပါပြီ..."); document.getElementById('history-select-all').checked = false;
             setTimeout(loadSalesHistoryFromSheet, 2000);
         }
 
@@ -430,7 +413,6 @@
                 let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"] || "";
                 let pPrice = prod.price || prod.Price || prod["ဈေးနှုန်း"] || 0;
                 let pStock = prod.stock || prod.Stock || prod["လက်ကျန်"] || prod["လက်ကျန်စတော့"] || 0;
-
                 list.innerHTML += `
                     <div class="admin-product-card">
                         <div class="d-flex justify-content-between align-items-center mb-1">
@@ -458,14 +440,8 @@
             });
         }
 
-        function toggleSelectAllProducts(master) {
-            document.querySelectorAll('.prod-item-checkbox').forEach(cb => cb.checked = master.checked);
-        }
-
-        function deleteSingleProduct(barcode) {
-            if(confirm("ဤပစ္စည်းကို အပြီးဖျက်ရန် သေချာပါသလား။")) { sendProductsDeleteBulk([barcode]); }
-        }
-
+        function toggleSelectAllProducts(master) { document.querySelectorAll('.prod-item-checkbox').forEach(cb => cb.checked = master.checked); }
+        function deleteSingleProduct(barcode) { if(confirm("ဤပစ္စည်းကို အပြီးဖျက်ရန် သေချာပါသလား။")) { sendProductsDeleteBulk([barcode]); } }
         function deleteSelectedProductsBulk() {
             let checkboxes = document.querySelectorAll('.prod-item-checkbox:checked');
             if (checkboxes.length === 0) return alert("ဖျက်လိုသော ပစ္စည်းများကို အရင်ရွေးချယ်ပေးပါဗျာ။");
@@ -474,44 +450,32 @@
                 sendProductsDeleteBulk(codes);
             }
         }
-
         function sendProductsDeleteBulk(barcodesArray) {
             let payload = { action: "deleteProductsBulk", barcodes: barcodesArray };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
-            alert("ပစ္စည်းစာရင်းကို ဖြုတ်ချနေပါပြီ...");
-            document.getElementById('prod-select-all').checked = false;
+            alert("ပစ္စည်းစာရင်းကို ဖြုတ်ချနေပါပြီ..."); document.getElementById('prod-select-all').checked = false;
             setTimeout(loadProductsFromSheet, 2000);
         }
-
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
-            let name = document.getElementById('new-name').value.trim();
-            let price = document.getElementById('new-price').value.trim();
+            let name = document.getElementById('new-name').value.trim(); let price = document.getElementById('new-price').value.trim();
             let stock = document.getElementById('new-stock').value.trim() || 0;
             if(!name || !price) return alert("ကျေးပြု၍ အမည်နှင့် ဈေးနှုန်း ဖြည့်ပါဗျာ။");
-            
             let payload = { action: "updateProduct", barcode: barcode, name: name, price: Number(price), stock: Number(stock) };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
-            document.getElementById('hidden-form').submit();
-            alert("သိမ်းဆည်းပြီးပါပြီ။");
+            document.getElementById('hidden-form').submit(); alert("သိမ်းဆည်းပြီးပါပြီ။");
             document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
             document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
             setTimeout(() => { loadProductsFromSheet(); resumeScannerManual(); switchTab('sales'); }, 2000);
         }
-
         function uploadProductToSheet(index) {
             let priceVal = document.getElementById(`p-price-${index}`).value;
             let stockVal = document.getElementById(`p-stock-${index}`).value;
-            
-            let prod = productsDB[index];
-            let bCode = prod.barcode || prod.Barcode || prod["ဘားကုဒ်"];
-            let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"];
-
+            let prod = productsDB[index]; let bCode = prod.barcode || prod.Barcode || prod["ဘားကုဒ်"]; let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"];
             let payload = { action: "updateProduct", barcode: bCode, name: pName, price: Number(priceVal), stock: Number(stockVal) };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
-            document.getElementById('hidden-form').submit();
-            alert("ပြင်ဆင်ချက် သိမ်းဆည်းပြီးပါပြီ။");
+            document.getElementById('hidden-form').submit(); alert("ပြင်ဆင်ချက် သိမ်းဆည်းပြီးပါပြီ။");
             setTimeout(loadProductsFromSheet, 2000);
         }
     </script>
