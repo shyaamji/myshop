@@ -24,26 +24,19 @@
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
         
-        /* 🖨️ Voucher Print Layout */
+        /* 🖨️ Fix Print Preview Area */
         #print-receipt-zone { display: none; }
         @media print {
-            @page { size: auto; margin: 0mm; }
-            body > *:not(#print-receipt-zone) { display: none !important; }
-            html, body { background-color: #fff; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-            #print-receipt-zone { 
-                display: block !important;
-                position: absolute; left: 0; top: 0; width: 100% !important;
-                padding: 10px !important; margin: 0 auto !important; 
-                font-family: Arial, sans-serif; color: #000; box-sizing: border-box;
-            }
-            .v-table th, .v-table td { padding: 4px 0 !important; font-size: 13px !important; }
+            body { visibility: hidden; background: white; }
+            #print-receipt-zone { visibility: visible; display: block !important; position: absolute; left: 0; top: 0; width: 100% !important; }
+            #print-receipt-zone * { visibility: visible; }
         }
     </style>
 
     <script>
         // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL ကို အောက်ကနေရာမှာ သေချာပေါက် ပြန်ထည့်ပေးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2kfMqxZcgUnRkIGPdrdW5xdfI-n3LMDo0EzYIyqBwP8yt7HpJKcg6BbeHzPU4JOY/exec'; 
-        const adminPassword = '1234'; 
+        const adminPassword = 'hello'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -291,7 +284,7 @@
         }
 
         function loadProductsFromSheet() {
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { productsDB = data; renderAdminProducts(productsDB); }).catch(err => console.log(err));
+            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { productsDB = data; if(document.getElementById('admin').classList.contains('active')) { renderAdminProducts(productsDB); } }).catch(err => console.log(err));
         }
 
         function loadSalesHistoryFromSheet() {
@@ -404,7 +397,6 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
-        // 固定：အကောင်းဆုံး ပြင်ဆင်ပြီးသား အလုပ်ဖြစ်သေချာမည့် CHECKOUT FUNCTION 🚀
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
@@ -420,15 +412,13 @@
                 date: new Date().toLocaleString()
             };
             
-            // ၁။ စက်ထဲကို အရင်သိမ်းပြီး မျက်နှာပြင်မှာ ချက်ချင်းပြောင်းလဲမှု ပြုလုပ်သည်
             salesHistory.unshift(saleData);
             localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
             displayHistory(salesHistory); 
 
-            // ၂။ 🖨️ ပထမဦးဆုံး ဦးစားပေးအနေဖြင့် Print Page ကို တန်းစီပြီး တိုက်ရိုက်ခေါ်ထုတ်ပါသည် (Net နှေးရင်တောင် တန်းပွင့်စေရန်)
+            // 🖨️ Print ခေါ်ထုတ်ခြင်း
             printVoucher(saleData);
 
-            // ၃။ နောက်ကွယ်မှသာ Google Sheet ဆီကို Fetch သီးခြားလွတ်လပ်စွာ လှမ်းပို့ပါသည်
             let formData = new FormData();
             formData.append('jsonData', JSON.stringify(saleData));
             
@@ -437,16 +427,14 @@
                 body: formData,
                 mode: 'no-cors'
             })
-            .then(() => {
-                console.log("Cloud synced smoothly");
-            })
-            .catch(err => console.error("Sheet Sync Delayed but local saved", err));
+            .then(() => console.log("Cloud synced"))
+            .catch(err => console.error("Sheet Sync Error", err));
 
-            // ခြင်းတောင်းကို ရှင်းထုတ်သည်
             cart = []; 
             renderCart(); 
         }
 
+        // 🛠️ FIX PRINT FUNCTION: လုံးဝအလုပ်လုပ်စေရန် ဖွဲ့စည်းပုံအသစ်ဖြင့် ပြင်ဆင်ခြင်း
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); 
             let itemsHTML = '';
@@ -461,7 +449,7 @@
             });
 
             printZone.innerHTML = `
-                <div style="width: 100%; max-width: 280px; margin: 0 auto; padding: 5px; font-family: sans-serif; color: #000;">
+                <div style="width: 100%; max-width: 280px; margin: 0 auto; padding: 10px; font-family: Arial, sans-serif; color: #000; background: white;">
                     <div style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 4px;">ကောင်းမြတ် POS</div>
                     <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
                     <table style="width: 100%; font-size: 12px; line-height: 1.5; margin-bottom: 6px;">
@@ -469,7 +457,7 @@
                         <tr><td>ဝယ်သူ:</td><td style="text-align: right;">${sale.customerName}</td></tr>
                         <tr><td>နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
                     </table>
-                    <table class="v-table" style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                         <thead>
                             <tr style="font-size: 13px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000;">
                                 <th style="text-align: left; padding: 4px 0;">ပစ္စည်း</th>
@@ -488,10 +476,10 @@
                     <div style="text-align: center; font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
             
-            // ⏰ DOM နေရာချမှု သေချာစေရန် စက္ကန့်အနည်းငယ် ခြားပြီး Print Preview ဆွဲခေါ်ခြင်း
+            // ⏰ DOM ရိုက်ပြီးတာ သေချာစေရန် ဆိုင်းငံ့ပြီး Print Preview တန်းခေါ်သည်
             setTimeout(() => { 
                 window.print(); 
-            }, 350);
+            }, 300);
         }
 
         function displayHistory(data) {
@@ -540,12 +528,9 @@
                     method: 'POST',
                     body: formData,
                     mode: 'no-cors'
-                })
-                .then(() => {
-                    console.log("Voucher deleted from cloud successfully");
-                    setTimeout(() => { loadSalesHistoryFromSheet(); }, 1500);
-                })
-                .catch(err => console.error("Cloud delete error", err));
+                }).then(() => {
+                    console.log("Deleted from cloud");
+                });
                 
                 alert("Voucher မှတ်တမ်းကို ဖျက်ပြီးပါပြီဗျာ။");
             } else {
@@ -590,7 +575,7 @@
                             </div>
                         </div>
                         <div class="row g-2 mt-2">
-                            <div class="col-8"><button class="btn btn-sm btn-warning w-100 fw-bold" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
+                            <div class="col-8"><button class="btn btn-sm btn-warning w-100 fw-bold" id="edit-btn-${mainIndex}" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
                             <div class="col-4"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်</button></div>
                         </div>
                     </div>`;
@@ -622,16 +607,31 @@
             }, 2000);
         }
 
+        // 🛠️ FIX UPDATE FUNCTION: ပြင်လိုက်တဲ့ ဒေတာ ချက်ချင်းတည်မြဲစေရန် ပြင်ဆင်ခြင်း
         function uploadProductToSheet(index) {
             let priceVal = document.getElementById(`p-price-${index}`).value;
             let stockVal = document.getElementById(`p-stock-${index}`).value;
-            productsDB[index].price = Number(priceVal); productsDB[index].stock = Number(stockVal);
+            
+            // ၁။ Local Memory (အာရုံခံစနစ်) ထဲမှာ ချက်ချင်း အရင်ပြင်လိုက်သည်
+            productsDB[index].price = Number(priceVal); 
+            productsDB[index].stock = Number(stockVal);
+            
             let prod = productsDB[index];
+            let editBtn = document.getElementById(`edit-btn-${index}`);
+            editBtn.disabled = true; editBtn.innerText = "⏳...";
+
             let payload = { action: "updateProduct", barcode: prod.barcode, name: prod.name, price: prod.price, stock: prod.stock };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
+            
+            // ၂။ Sheet ဆီ ပို့သည်
             document.getElementById('hidden-form').submit();
-            alert("ပြင်ဆင်ချက် သိမ်းဆည်းပြီးပါပြီ။");
-            setTimeout(() => { loadProductsFromSheet(); }, 2000);
+            
+            // ၃။ ဒေတာဟောင်း ပြန်မဆွဲမိအောင် Sheet ဆီရောက်ဖို့ စက္ကန့်ပိုင်း ပိုစောင့်ပြီးမှ နောက်ကွယ်က ဒေတာအသစ်ပြန်ယူခိုင်းသည်
+            setTimeout(() => { 
+                editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
+                alert(`📝 "${prod.name}" ရဲ့ ဈေးနှုန်းနှင့် စတော့ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီဗျာ။`);
+                loadProductsFromSheet(); 
+            }, 3000);
         }
 
         function deleteProductFromSheet(index) {
@@ -642,7 +642,7 @@
                 document.getElementById('hidden-form').submit();
                 productsDB.splice(index, 1); renderAdminProducts(productsDB); 
                 alert("ပစ္စည်းကို ဖျက်ပြီးပါပြီ။");
-                setTimeout(() => { loadProductsFromSheet(); }, 2000);
+                setTimeout(() => { loadProductsFromSheet(); }, 2500);
             }
         }
     </script>
