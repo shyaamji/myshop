@@ -42,7 +42,10 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzOZlu3r1_QDucTrLFYV8yZq1ll6URpldMt33hhMLfIbQcs_dF0CdhhnBg8zhjBoUYr/exec'; 
-        const adminPassword = '5858'; 
+        
+        // 🔑 စကားဝှက်များကို ဤနေရာတွင် သီးသန့်ခွဲ၍ ပြောင်းလဲနိုင်ပါသည်
+        const homePassword = '1111';  // Home Page Password
+        const adminPassword = '2222'; // Admin Page Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -55,7 +58,6 @@
 </head>
 <body class="bg-light">
 
-    <!-- 🔒 Home Page Password Screen -->
     <div id="app-lock-screen">
         <div class="text-center p-4 bg-dark rounded shadow" style="max-width: 350px; width: 90%; border: 1px solid #343a40;">
             <h4 class="fw-bold text-primary mb-3">ကောင်းမြတ် POS</h4>
@@ -68,7 +70,6 @@
 
     <div id="print-receipt-zone"></div>
 
-    <!-- 📱 Main App Content -->
     <div id="app-main-content">
         <div id="install-banner" class="bg-primary text-white text-center p-2 fw-bold" style="display: none; cursor: pointer;" onclick="triggerPwaInstall()">
             📲 ဤ POS စနစ်ကို ဖုန်းထဲသို့ App အဖြစ် ထည့်သွင်းရန် (Install App) နှိပ်ပါ။
@@ -89,7 +90,6 @@
 
         <div class="container pb-5">
             
-            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -121,17 +121,23 @@
                 </div>
             </div>
 
-            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
-                    <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                    <input type="text" id="search-input" class="form-control form-control-lg mb-2" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="history-select-all" onchange="toggleSelectAllHistory(this)">
+                            <label class="form-check-label small fw-bold text-secondary" for="history-select-all">Select All (မှတ်တမ်းအားလုံး)</label>
+                        </div>
+                        <button class="btn btn-sm btn-danger fw-bold" onclick="deleteSelectedHistory()">🗑️ ရွေးထားသည်များကိုဖျက်မည်</button>
+                    </div>
                 </div>
                 <div id="history-list">
                     <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
                 </div>
             </div>
 
-            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -166,6 +172,15 @@
                 <div class="card p-3 shadow-sm border-0">
                     <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h5>
                     <button class="btn btn-primary mb-3 w-100 fw-bold" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="prod-select-all" onchange="toggleSelectAllProducts(this)">
+                            <label class="form-check-label small fw-bold text-dark" for="prod-select-all">Select All (ပစ္စည်းအားလုံး)</label>
+                        </div>
+                        <button class="btn btn-sm btn-danger fw-bold" onclick="deleteSelectedProducts()">🗑️ ရွေးထားသောပစ္စည်းများ ဖျက်ပစ်မည်</button>
+                    </div>
+
                     <div class="position-relative mb-3">
                         <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary" placeholder="🔍 ပြင်လို/ဖျက်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()">
                         <div id="admin-search-suggestions" class="search-results" style="display: none;"></div>
@@ -198,12 +213,8 @@
 
         let audioCtx = null;
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         }
         
         window.addEventListener('click', initAudio, { once: true });
@@ -211,23 +222,18 @@
 
         function playBeep() { 
             try {
-                initAudio();
-                if (!audioCtx) return;
-                let oscillator = audioCtx.createOscillator();
-                let gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.1);
+                initAudio(); if (!audioCtx) return;
+                let oscillator = audioCtx.createOscillator(); let gainNode = audioCtx.createGain();
+                oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination); oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
             } catch(e) { console.log(e); }
         }
 
+        // 🔒 Home Page Password System
         function checkHomePassword() {
             let input = document.getElementById('home-pass-input').value;
-            if (input === adminPassword) {
+            if (input === homePassword) {
                 sessionStorage.setItem('isAppUnlocked', 'true');
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
@@ -266,17 +272,18 @@
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
         }
 
+        // 🔑 Admin Page Password System
         function switchTab(tabId) {
             if (tabId === 'admin') {
                 const isAuthed = localStorage.getItem('isAdminAuthenticated');
                 if (isAuthed !== 'true') {
-                    let passInput = prompt("🔒 Admin ဧရိယာသို့ဝင်ရန် Password ရိုက်ထည့်ပေးပါဗျာ -", "");
+                    let passInput = prompt("⚙️ Admin ဧရိယာသို့ဝင်ရန် Admin Password ရိုက်ထည့်ပေးပါဗျာ -", "");
                     if (passInput === null) return;
                     if (passInput === adminPassword) {
                         localStorage.setItem('isAdminAuthenticated', 'true');
-                        alert("🔓 Password မှန်ကန်ပါသည်။");
+                        alert("🔓 Admin စနစ်သို့ အောင်မြင်စွာ ဝင်ရောက်ပြီးပါပြီ။");
                     } else {
-                        alert("❌ Password မှားယွင်းနေပါသည်။"); return;
+                        alert("❌ Admin Password မှားယွင်းနေပါသည်။"); return;
                     }
                 }
             }
@@ -333,61 +340,32 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // 📷 စကန်ဖတ်စနစ်
-        function onScanSuccess(decodedText) { 
-            if (canScan) { 
-                playBeep(); 
-                addToCart(decodedText); 
-            } 
-        }
+        function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // 🔎 Barcode အသစ်တွေ့လျှင် Scanner ကို လုံးဝ ရပ်တန့် (Pause) မည့်စနစ်ထည့်သွင်းခြင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
-                // 🛑 စကန်ဆက်မဖတ်အောင် အရင်ပိတ်ပစ်လိုက်သည် (ထပ်ခါထပ်ခါ မပေါ်စေရန်)
-                canScan = false;
-                updateScannerStatusUi(false);
-                
+                canScan = false; updateScannerStatusUi(false);
                 alert(`📢 Barcode: ${barcode} သည် စနစ်ထဲတွင် မရှိသေးပါ။ ပစ္စည်းအသစ်အဖြစ် အမည်နှင့် ဈေးနှုန်း သတ်မှတ်ရန် Admin ဧရိယာသို့ ခေါ်ဆောင်သွားပါမည်။`);
-                
-                localStorage.setItem('isAdminAuthenticated', 'true'); 
-                switchTab('admin');
-                
-                document.getElementById('new-barcode').value = barcode;
-                document.getElementById('new-name').value = '';
-                document.getElementById('new-price').value = '';
-                document.getElementById('new-stock').value = '';
+                localStorage.setItem('isAdminAuthenticated', 'true'); switchTab('admin');
+                document.getElementById('new-barcode').value = barcode; document.getElementById('new-name').value = '';
+                document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
                 document.getElementById('admin-form-title').innerText = `🆕 ပစ္စည်းအသစ် ထည့်သွင်းရန် (${barcode})`;
                 document.getElementById('new-name').focus();
             } else {
-                // ရှိပြီးသားပစ္စည်းဆိုလျှင် ပုံမှန် ၂ စက္ကန့် စောင့်ပြီး ဆက်ဖတ်ခွင့်ပြုမည်
-                canScan = false;
-                setTimeout(() => { canScan = true; }, 2000);
-                addByProductObject(product);
+                canScan = false; setTimeout(() => { canScan = true; }, 2000); addByProductObject(product);
             }
         }
 
-        // Scanner ရဲ့ UI အရောင်ကို ပြောင်းလဲပေးမည့် စနစ်
         function updateScannerStatusUi(isScanning) {
             let btn = document.getElementById('scanner-status-btn');
-            if (isScanning) {
-                btn.className = "btn btn-xs btn-success py-0 px-2 fw-bold";
-                btn.innerText = "🟢 Scanning";
-            } else {
-                btn.className = "btn btn-xs btn-danger py-0 px-2 fw-bold";
-                btn.innerText = "🔴 Paused (နှိပ်ပြီးပြန်ဖွင့်ပါ)";
-            }
+            if (isScanning) { btn.className = "btn btn-xs btn-success py-0 px-2 fw-bold"; btn.innerText = "🟢 Scanning"; } 
+            else { btn.className = "btn btn-xs btn-danger py-0 px-2 fw-bold"; btn.innerText = "🔴 Paused (နှိပ်ပြီးပြန်ဖွင့်ပါ)"; }
         }
 
-        // စကန်နာကို ကိုယ်တိုင် ပြန်ဖွင့်ချင်ရင် နှိပ်ရန်
-        function resumeScannerManual() {
-            canScan = true;
-            updateScannerStatusUi(true);
-            playBeep();
-        }
+        function resumeScannerManual() { canScan = true; updateScannerStatusUi(true); playBeep(); }
         
         function addByProductObject(product) {
             let item = cart.find(i => i.barcode === product.barcode);
@@ -396,8 +374,7 @@
         }
 
         function changeQty(index, change) { 
-            playBeep(); 
-            cart[index].qty += change; 
+            playBeep(); cart[index].qty += change; 
             if (cart[index].qty <= 0) cart.splice(index, 1); 
             renderCart(); 
         }
@@ -431,8 +408,7 @@
         }
 
         function printVoucher(sale) {
-            const printZone = document.getElementById('print-receipt-zone'); 
-            let itemsHTML = '';
+            const printZone = document.getElementById('print-receipt-zone'); let itemsHTML = '';
             sale.items.forEach(i => { 
                 itemsHTML += `
                     <tr style="font-size: 13px; border-bottom: 1px dashed #eee;">
@@ -473,16 +449,20 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
+        // 📜 မှတ်တမ်းများ ပြသခြင်းစာရင်း
         function displayHistory(data) {
             const list = document.getElementById('history-list'); 
             if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">မှတ်တမ်းမရှိသေးပါ။</div>'; return; }
             list.innerHTML = '';
-            data.forEach(sale => {
+            data.forEach((sale, index) => {
                 let itemsList = sale.items.map(i => `<div class="d-flex justify-content-between text-secondary" style="font-size:14px;"><span>${i.name} x ${i.qty}</span><span>${(i.price * i.qty).toLocaleString()} Ks</span></div>`).join('');
                 list.innerHTML += `
                     <div class="card p-3 mb-3 border-0 shadow-sm bg-white">
                         <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold text-primary">ID: ${sale.voucherId}</span>
+                            <div>
+                                <input class="form-check-input history-item-checkbox me-2" type="checkbox" data-index="${index}">
+                                <span class="fw-bold text-primary">ID: ${sale.voucherId}</span>
+                            </div>
                             <small class="text-muted" style="font-size:11px;">${sale.date || ''}</small>
                         </div>
                         <div class="text-dark small mb-2">ဝယ်သူ: <b>${sale.customerName || "အထွေထွေ"}</b></div>
@@ -491,7 +471,10 @@
                         <hr class="my-1 text-muted">
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <h6 class="fw-bold text-success mb-0">စုစုပေါင်း: ${sale.total} Ks</h6>
-                            <button class="btn btn-sm btn-outline-dark" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ပြန်ထုတ်ရန်</button>
+                            <div>
+                                <button class="btn btn-sm btn-outline-dark me-1" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ပြန်ထုတ်</button>
+                                <button class="btn btn-sm btn-danger" onclick='deleteSingleHistory(${index})'>🗑️ ဖျက်မည်</button>
+                            </div>
                         </div>
                     </div>`;
             });
@@ -503,12 +486,50 @@
             displayHistory(filtered);
         }
 
+        // 📜 မှတ်တမ်း တစ်ခုချင်းဖျက်ရန်
+        function deleteSingleHistory(index) {
+            if (confirm("ဤမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား။")) {
+                salesHistory.splice(index, 1);
+                localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                displayHistory(salesHistory);
+            }
+        }
+
+        // 📜 မှတ်တမ်း Select All လုပ်ရန်
+        function toggleSelectAllHistory(master) {
+            let checkboxes = document.querySelectorAll('.history-item-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        // 📜 ရွေးထားသော မှတ်တမ်းများ အစုလိုက်ဖျက်ရန်
+        function deleteSelectedHistory() {
+            let checkboxes = document.querySelectorAll('.history-item-checkbox:checked');
+            if (checkboxes.length === 0) return alert("ဖျက်ရန် အရင်ရွေးချယ်ပေးပါဗျာ။");
+            if (confirm(`ရွေးချယ်ထားသော မှတ်တမ်း (${checkboxes.length}) ခုကို ဖျက်ရန် သေချာပါသလား။`)) {
+                let indexesToDelete = [];
+                checkboxes.forEach(cb => indexesToDelete.push(parseInt(cb.getAttribute('data-index'))));
+                indexesToDelete.sort((a, b) => b - a); // နောက်ဆုံးကောင်ကနေ စဖျက်ရန်
+                indexesToDelete.forEach(idx => salesHistory.splice(idx, 1));
+                localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                document.getElementById('history-select-all').checked = false;
+                displayHistory(salesHistory);
+                alert("ရွေးချယ်ထားသော မှတ်တမ်းများ ဖျက်ပြီးပါပြီ။");
+            }
+        }
+
+        // 📦 Admin Product စာရင်း ပြသခြင်း
         function renderAdminProducts(arr) {
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             arr.forEach((prod, mainIndex) => {
                 list.innerHTML += `
                     <div class="list-group-item p-3 mb-2 rounded border bg-white shadow-sm">
-                        <div class="fw-bold text-dark">${prod.name}</div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="fw-bold text-dark">
+                                <input class="form-check-input prod-item-checkbox me-2" type="checkbox" data-barcode="${prod.barcode}">
+                                ${prod.name}
+                            </div>
+                            <button class="btn btn-sm btn-danger py-0" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်</button>
+                        </div>
                         <div class="text-muted small mb-2">Barcode: ${prod.barcode || '-'}</div>
                         <div class="row g-2">
                             <div class="col-6">
@@ -520,12 +541,41 @@
                                 <input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock || 0}">
                             </div>
                         </div>
-                        <div class="row g-2 mt-2">
-                            <div class="col-8"><button class="btn btn-sm btn-warning w-100 fw-bold" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
-                            <div class="col-4"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်</button></div>
+                        <div class="mt-2 text-end">
+                            <button class="btn btn-sm btn-warning fw-bold px-3" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်ဆင်ချက်သိမ်းမည်</button>
                         </div>
                     </div>`;
             });
+        }
+
+        // 📦 ပစ္စည်းစာရင်း Select All လုပ်ရန်
+        function toggleSelectAllProducts(master) {
+            let checkboxes = document.querySelectorAll('.prod-item-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        // 📦 ရွေးထားသော ပစ္စည်းများ အစုလိုက် Google Sheet ထဲမှပါ ဖျက်ရန်
+        function deleteSelectedProducts() {
+            let checkboxes = document.querySelectorAll('.prod-item-checkbox:checked');
+            if (checkboxes.length === 0) return alert("ဖျက်လိုသော ပစ္စည်းများကို အရင်ရွေးချယ်ပေးပါဗျာ။");
+            if (confirm(`⚠️ ရွေးချယ်ထားသော ပစ္စည်း (${checkboxes.length}) မျိုးလုံးကို Google Sheet ထဲမှ လုံးဝ ဖျက်ပစ်ရန် သေချာပါသလား။`)) {
+                
+                // စုပြုံဖျက်ရန် နောက်ကွယ်မှ တစ်ခုချင်းစီ လှမ်းပို့ပေးခြင်း
+                checkboxes.forEach((cb, idx) => {
+                    let barcode = cb.getAttribute('data-barcode');
+                    let payload = { action: "deleteProduct", barcode: barcode };
+                    
+                    // Form အသုံးပြုပြီး လှမ်းပို့ခြင်း
+                    setTimeout(() => {
+                        document.getElementById('form-json-data').value = JSON.stringify(payload);
+                        document.getElementById('hidden-form').submit();
+                    }, idx * 400); // 0.4 စက္ကန့်စီ ခြားပြီး ပို့ပေးရန်
+                });
+
+                alert("ရွေးချယ်ထားသော ပစ္စည်းများကို ဖျက်ဆီးနေပါပြီ။ ခေတ္တစောင့်ပြီးနောက် စာရင်းပြန်ဆွဲယူပေးပါ။");
+                document.getElementById('prod-select-all').checked = false;
+                setTimeout(() => { loadProductsFromSheet(); }, checkboxes.length * 500);
+            }
         }
 
         function addNewProduct() {
@@ -546,14 +596,7 @@
                 document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
                 document.getElementById('admin-form-title').innerText = "➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်";
-                
-                loadProductsFromSheet();
-                
-                // 🟢 ပစ္စည်းသိမ်းပြီးလို့ အရောင်းခန်းပြန်ရောက်ရင် Scanner ကို အလိုအလျောက် ပြန်ဖွင့်ပေးသည်
-                canScan = true;
-                updateScannerStatusUi(true);
-                
-                switchTab('sales'); 
+                loadProductsFromSheet(); canScan = true; updateScannerStatusUi(true); switchTab('sales'); 
             }, 2000);
         }
 
