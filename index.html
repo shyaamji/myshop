@@ -20,7 +20,7 @@
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
         .search-item:hover { background-color: #f8f9fa; }
         
-        /* 🖨️ Voucher Print Layout (အသစ်ပြင်ဆင်ထားသော ပုံစံ) */
+        /* 🖨️ Voucher Print Layout */
         #print-receipt-zone { display: none; }
         @media print {
             @page { size: auto; margin: 0mm; }
@@ -72,6 +72,7 @@
 
         <div class="container pb-5">
             
+            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
@@ -100,6 +101,7 @@
                 </div>
             </div>
 
+            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
@@ -109,6 +111,7 @@
                 </div>
             </div>
 
+            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -150,6 +153,7 @@
         </div>
     </div>
 
+    <!-- 🔊 အသံဖိုင် ချိတ်ဆက်ထားခြင်း -->
     <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
     <script>
@@ -183,7 +187,12 @@
             document.getElementById('hidden-form').action = scriptURL;
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
         }
-        function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
+        
+        // 🎵 အသံမြည်စေမည့် Function
+        function playBeep() { 
+            beep.currentTime = 0; 
+            beep.play().catch(e => console.log("Audio play blocked, need user interaction first.")); 
+        }
 
         function switchTab(tabId) {
             if (tabId === 'admin') {
@@ -252,7 +261,15 @@
             suggestionsBox.style.display = 'block';
         }
 
-        function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); canScan = false; setTimeout(() => { canScan = true; }, 2000); } }
+        // 📷 Barcode စကန်ဖတ်အောင်မြင်ချိန်တွင် အသံမြည်ခြင်း
+        function onScanSuccess(decodedText) { 
+            if (canScan) { 
+                playBeep(); // <--- စကန်ဖတ်မိချိန် အသံမြည်ရန်
+                addToCart(decodedText); 
+                canScan = false; 
+                setTimeout(() => { canScan = true; }, 2000); 
+            } 
+        }
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
@@ -266,7 +283,14 @@
             if (item) item.qty++; else cart.push({ ...product, qty: 1 });
             renderCart();
         }
-        function changeQty(index, change) { cart[index].qty += change; if (cart[index].qty <= 0) cart.splice(index, 1); renderCart(); }
+
+        // ➕ / ➖ ပစ္စည်းအရေအတွက် အတိုးအလျှော့လုပ်ချိန်တွင် အသံမြည်ခြင်း
+        function changeQty(index, change) { 
+            playBeep(); // <--- (+ / -) ခလုတ်နှိပ်ချိန် အသံမြည်ရန်
+            cart[index].qty += change; 
+            if (cart[index].qty <= 0) cart.splice(index, 1); 
+            renderCart(); 
+        }
         
         function renderCart() {
             const list = document.getElementById('cart-list'); let total = 0;
@@ -296,7 +320,6 @@
             cart = []; renderCart(); alert("Voucher ထုတ်ယူပြီးပါပြီ။");
         }
 
-        // 🖨️ ပုံစံသစ်ဖြင့် Voucher ထုတ်ပေးသည့် Function
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); 
             let itemsHTML = '';
