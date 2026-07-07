@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ကောင်းမြတ် - POS System Pro</title>
+    <title>ကောင်းမြတ် - POS System Pro v3</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0d6efd">
@@ -45,8 +45,8 @@
         // ⚠️ မိမိ၏ Google Web App URL ကို ဤနေရာတွင် ထည့်သွင်းပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyHs8WfjsxLeUfxXVBTHxXxGxSeZbiRq4eYNx61SDcoXALB7Bkpa0tTDL8vNxB1CZGZ/exec'; 
         
-        const homePassword = '0000';  
-        const adminPassword = '0000'; 
+        const homePassword = '9999';  
+        const adminPassword = '5555'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -61,7 +61,7 @@
         <div class="text-center p-4 bg-dark rounded shadow-lg" style="max-width: 360px; width: 92%;">
             <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
             <h4 class="fw-bold text-white mt-2 mb-3">ကောင်းမြတ် POS</h4>
-            <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-3 text-white bg-secondary border-0" placeholder="Password ရိုက်ပါ">
+            <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-3 text-white bg-secondary border-0" placeholder="Password ရိုက်ပါ" autocomplete="new-password">
             <button class="btn btn-primary btn-lg w-100 fw-bold shadow" onclick="checkHomePassword()">🔓 အကောင့်ဝင်မည်</button>
             <div id="lock-error" class="text-danger small mt-2 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
         </div>
@@ -120,7 +120,7 @@
                 <div class="card p-3 shadow-sm border-0 mb-3 bg-white">
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                        <input type="text" id="search-input" class="form-control form-control-lg" placeholder="Voucher ID သို့မဟုတ် ဝယ်သူအမည် (နီးစပ်ရာရှာနိုင်သည်)..." onkeyup="searchHistory()" autocomplete="off">
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="form-check">
@@ -137,10 +137,10 @@
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 4px solid #28a745 !important;">
                     <h5 class="fw-bold text-success mb-3"><i class="bi bi-plus-circle-fill me-1"></i>ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                     <div class="row g-2">
-                        <div class="col-12"><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div>
-                        <div class="col-12"><input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်"></div>
-                        <div class="col-6"><input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း"></div>
-                        <div class="col-6"><input type="number" id="new-stock" class="form-control" placeholder="စတော့ခုရေ"></div>
+                        <div class="col-12"><input type="text" id="new-barcode" class="form-control" placeholder="Barcode" autocomplete="off"></div>
+                        <div class="col-12"><input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်" autocomplete="off"></div>
+                        <div class="col-6"><input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း" autocomplete="off"></div>
+                        <div class="col-6"><input type="number" id="new-stock" class="form-control" placeholder="စတော့ခုရေ" autocomplete="off"></div>
                         <button type="button" class="btn btn-success w-100 fw-bold mt-3 shadow-sm" onclick="addNewProduct()"><i class="bi bi-cloud-upload-fill me-1"></i>Google Sheet သို့ သိမ်းမည်</button>
                     </div>
                 </div>
@@ -149,8 +149,8 @@
                     <button class="btn btn-primary mb-3 w-100 fw-bold shadow-sm" onclick="loadProductsFromSheet()"><i class="bi bi-arrow-clockwise me-1"></i>စာရင်းပြန်ဆွဲယူရန်</button>
                     
                     <div class="mb-3 bg-light p-3 rounded-3 border border-primary-subtle">
-                        <label class="form-label small fw-bold text-primary"><i class="bi bi-search me-1"></i>ပြင်လို/ဖျက်လိုသော ပစ္စည်းရှာဖွေရန် (စာရိုက်သည်နှင့် တိုက်ရိုက်စစ်ထုတ်ပေးမည်)</label>
-                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary shadow-sm" placeholder="ပစ္စည်းအမည် သို့မဟုတ် Barcode ရိုက်ပါ..." onkeyup="filterAdminProducts()">
+                        <label class="form-label small fw-bold text-primary"><i class="bi bi-search me-1"></i>ပစ္စည်းရှာဖွေရန် (နီးစပ်ရာ စာရိုက်ရုံဖြင့် တိုက်ရိုက်စစ်ထုတ်ပေးမည်)</label>
+                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary shadow-sm" placeholder="ပစ္စည်းအမည် သို့မဟုတ် Barcode..." onkeyup="filterAdminProducts()" autocomplete="off">
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
@@ -241,17 +241,19 @@
             suggestionsBox.style.display = filtered.length > 0 ? 'block' : 'none';
         }
 
-        // 🔍 Admin Instant Filter - စာရိုက်တာနဲ့ အောက်ကကတ်ပြားတွေ ချက်ချင်းသီးသန့် ထွက်လာစေရန် ပြင်ဆင်ပြီး
+        // 🔍 Admin - နီးစပ်ရာ (Partial Search) စနစ်အသစ်
         function filterAdminProducts() {
             let text = document.getElementById('admin-search-input').value.toLowerCase().trim();
             if (text === "") {
                 renderAdminProducts(productsDB);
                 return;
             }
-            let filtered = productsDB.filter(p => 
-                (p.name && p.name.toLowerCase().includes(text)) || 
-                (p.barcode && p.barcode.toString().toLowerCase().includes(text))
-            );
+            // Includes စနစ်သုံးထား၍ နီးစပ်ရာ စာလုံးပါတာနဲ့ တန်းထွက်လာပါမည်။
+            let filtered = productsDB.filter(p => {
+                let bCode = (p.barcode || p.Barcode || p["ဘားကုဒ်"] || "").toString().toLowerCase();
+                let pName = (p.name || p.Name || p["ပစ္စည်းအမည်"] || "").toString().toLowerCase();
+                return pName.includes(text) || bCode.includes(text);
+            });
             renderAdminProducts(filtered);
         }
 
@@ -334,12 +336,10 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
-        // 🛠️ ပြဿနာဖြေရှင်းပြီး - undefined နှင့် 0 Ks မဖြစ်အောင် Variable Key စုံစမ်းစနစ် ထည့်ထားသည်
         function displayHistory(data) {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             if(!data || data.length === 0) { list.innerHTML = '<div class="text-center py-5 text-muted"><i class="bi bi-folder-x fs-1"></i><br>မှတ်တမ်းမရှိသေးပါ။</div>'; return; }
             data.forEach((sale) => {
-                // Google Sheet Column ခေါင်းစဉ် အမျိုးမျိုးဖြစ်နေနိုင်၍ အားလုံးကို ရှာဖွေစစ်ဆေးပေးခြင်း
                 let displayTotal = sale.total || sale.Total || sale["စုစုပေါင်း"] || "0 Ks";
                 let displayCustomer = sale.customerName || sale.CustomerName || sale["ဝယ်ယူသူ"] || sale["ဝယ်သူ"] || "အထွေထွေ";
                 let displayVoucher = sale.voucherId || sale.VoucherId || sale["ဘောက်ချာနံပါတ်"] || sale["Voucher ID"] || "KM-Unknown";
@@ -382,13 +382,16 @@
             });
         }
 
-        // 🔍 History Filter စနစ် - ရိုက်လိုက်တာနဲ့ မပြတ်တမ်း ရှာဖွေပေးမည်
+        // 🔍 History - နီးစပ်ရာ (Partial Match) စနစ်အသစ်
         function searchHistory() {
             let text = document.getElementById('search-input').value.toLowerCase().trim();
             let filtered = salesHistory.filter(s => {
                 let vId = (s.voucherId || s.VoucherId || s["ဘောက်ချာနံပါတ်"] || s["Voucher ID"] || "").toString().toLowerCase();
                 let cName = (s.customerName || s.CustomerName || s["ဝယ်ယူသူ"] || s["ဝယ်သူ"] || "").toString().toLowerCase();
-                return vId.includes(text) || cName.includes(text);
+                let items = (s.itemsSummary || s.ItemsSummary || s["ပစ္စည်းအကျဉ်း"] || "").toString().toLowerCase();
+                
+                // Voucher ID (သို့) ဝယ်သူအမည် (သို့) ဝယ်ထားတဲ့ပစ္စည်းအမည် တစ်ခုခု နီးစပ်တာနဲ့ တန်းပေါ်လာပါမည်
+                return vId.includes(text) || cName.includes(text) || items.includes(text);
             });
             displayHistory(filtered);
         }
@@ -460,57 +463,4 @@
         }
 
         function deleteSingleProduct(barcode) {
-            if(confirm("ဤပစ္စည်းကို အပြီးဖျက်ရန် သေချာပါသလား။")) { sendProductsDeleteBulk([barcode]); }
-        }
-
-        function deleteSelectedProductsBulk() {
-            let checkboxes = document.querySelectorAll('.prod-item-checkbox:checked');
-            if (checkboxes.length === 0) return alert("ဖျက်လိုသော ပစ္စည်းများကို အရင်ရွေးချယ်ပေးပါဗျာ။");
-            if (confirm(`ရွေးထားသော ပစ္စည်း (${checkboxes.length}) မျိုးလုံးကို Google Sheet ထဲမှ အပြီးဖျက်မလားဗျာ။`)) {
-                let codes = Array.from(checkboxes).map(cb => cb.getAttribute('data-barcode'));
-                sendProductsDeleteBulk(codes);
-            }
-        }
-
-        function sendProductsDeleteBulk(barcodesArray) {
-            let payload = { action: "deleteProductsBulk", barcodes: barcodesArray };
-            document.getElementById('form-json-data').value = JSON.stringify(payload);
-            document.getElementById('hidden-form').submit();
-            alert("ပစ္စည်းစာရင်းကို ဖြုတ်ချနေပါပြီ...");
-            document.getElementById('prod-select-all').checked = false;
-            setTimeout(loadProductsFromSheet, 2000);
-        }
-
-        function addNewProduct() {
-            let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
-            let name = document.getElementById('new-name').value.trim();
-            let price = document.getElementById('new-price').value.trim();
-            let stock = document.getElementById('new-stock').value.trim() || 0;
-            if(!name || !price) return alert("ကျေးပြု၍ အမည်နှင့် ဈေးနှုန်း ဖြည့်ပါဗျာ။");
-            
-            let payload = { action: "updateProduct", barcode: barcode, name: name, price: Number(price), stock: Number(stock) };
-            document.getElementById('form-json-data').value = JSON.stringify(payload);
-            document.getElementById('hidden-form').submit();
-            alert("သိမ်းဆည်းပြီးပါပြီ။");
-            document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
-            document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
-            setTimeout(() => { loadProductsFromSheet(); resumeScannerManual(); switchTab('sales'); }, 2000);
-        }
-
-        function uploadProductToSheet(index) {
-            let priceVal = document.getElementById(`p-price-${index}`).value;
-            let stockVal = document.getElementById(`p-stock-${index}`).value;
-            
-            let prod = productsDB[index];
-            let bCode = prod.barcode || prod.Barcode || prod["ဘားကုဒ်"];
-            let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"];
-
-            let payload = { action: "updateProduct", barcode: bCode, name: pName, price: Number(priceVal), stock: Number(stockVal) };
-            document.getElementById('form-json-data').value = JSON.stringify(payload);
-            document.getElementById('hidden-form').submit();
-            alert("ပြင်ဆင်ချက် သိမ်းဆည်းပြီးပါပြီ။");
-            setTimeout(loadProductsFromSheet, 2000);
-        }
-    </script>
-</body>
-</html>
+            if(confirm("ဤပစ္စည်းကို အပြီးဖျက်ရန် သေချာပါသလား။")) {
