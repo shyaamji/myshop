@@ -92,7 +92,10 @@
             <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0">
-                    <h6 class="card-title fw-bold text-secondary">📷 Barcode Scanner</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="card-title fw-bold text-secondary mb-0">📷 Barcode Scanner</h6>
+                        <button id="scanner-status-btn" class="btn btn-xs btn-success py-0 px-2 fw-bold" style="font-size: 11px;" onclick="resumeScannerManual()">🟢 Scanning</button>
+                    </div>
                     <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden;"></div>
                 </div>
 
@@ -193,7 +196,6 @@
             }
         }
 
-        // 🔊 Web Audio API စနစ်
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -223,7 +225,6 @@
             } catch(e) { console.log(e); }
         }
 
-        // 🔒 Home Page Password Functions
         function checkHomePassword() {
             let input = document.getElementById('home-pass-input').value;
             if (input === adminPassword) {
@@ -337,25 +338,24 @@
             if (canScan) { 
                 playBeep(); 
                 addToCart(decodedText); 
-                canScan = false; 
-                setTimeout(() => { canScan = true; }, 2000); 
             } 
         }
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // 🔎 Barcode အသစ်ဆိုလျှင် အမည်ပြောင်းသိမ်းရန် Admin Tab သို့ ပို့ပေးမည့်စနစ်
+        // 🔎 Barcode အသစ်တွေ့လျှင် Scanner ကို လုံးဝ ရပ်တန့် (Pause) မည့်စနစ်ထည့်သွင်းခြင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
-                // စနစ်ထဲမှာ Barcode မရှိသေးရင်
+                // 🛑 စကန်ဆက်မဖတ်အောင် အရင်ပိတ်ပစ်လိုက်သည် (ထပ်ခါထပ်ခါ မပေါ်စေရန်)
+                canScan = false;
+                updateScannerStatusUi(false);
+                
                 alert(`📢 Barcode: ${barcode} သည် စနစ်ထဲတွင် မရှိသေးပါ။ ပစ္စည်းအသစ်အဖြစ် အမည်နှင့် ဈေးနှုန်း သတ်မှတ်ရန် Admin ဧရိယာသို့ ခေါ်ဆောင်သွားပါမည်။`);
                 
-                // Admin ကို စကားဝှက်မတောင်းဘဲ တိုက်ရိုက် Unlock လုပ်ပေးလိုက်ခြင်း
                 localStorage.setItem('isAdminAuthenticated', 'true'); 
                 switchTab('admin');
                 
-                // Form တွင် ကူးထည့်ပေးခြင်း
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = '';
@@ -363,8 +363,30 @@
                 document.getElementById('admin-form-title').innerText = `🆕 ပစ္စည်းအသစ် ထည့်သွင်းရန် (${barcode})`;
                 document.getElementById('new-name').focus();
             } else {
+                // ရှိပြီးသားပစ္စည်းဆိုလျှင် ပုံမှန် ၂ စက္ကန့် စောင့်ပြီး ဆက်ဖတ်ခွင့်ပြုမည်
+                canScan = false;
+                setTimeout(() => { canScan = true; }, 2000);
                 addByProductObject(product);
             }
+        }
+
+        // Scanner ရဲ့ UI အရောင်ကို ပြောင်းလဲပေးမည့် စနစ်
+        function updateScannerStatusUi(isScanning) {
+            let btn = document.getElementById('scanner-status-btn');
+            if (isScanning) {
+                btn.className = "btn btn-xs btn-success py-0 px-2 fw-bold";
+                btn.innerText = "🟢 Scanning";
+            } else {
+                btn.className = "btn btn-xs btn-danger py-0 px-2 fw-bold";
+                btn.innerText = "🔴 Paused (နှိပ်ပြီးပြန်ဖွင့်ပါ)";
+            }
+        }
+
+        // စကန်နာကို ကိုယ်တိုင် ပြန်ဖွင့်ချင်ရင် နှိပ်ရန်
+        function resumeScannerManual() {
+            canScan = true;
+            updateScannerStatusUi(true);
+            playBeep();
         }
         
         function addByProductObject(product) {
@@ -524,8 +546,14 @@
                 document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
                 document.getElementById('admin-form-title').innerText = "➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်";
+                
                 loadProductsFromSheet();
-                switchTab('sales'); // အရောင်းခန်းသို့ ပြန်ပို့ပေးခြင်း
+                
+                // 🟢 ပစ္စည်းသိမ်းပြီးလို့ အရောင်းခန်းပြန်ရောက်ရင် Scanner ကို အလိုအလျောက် ပြန်ဖွင့်ပေးသည်
+                canScan = true;
+                updateScannerStatusUi(true);
+                
+                switchTab('sales'); 
             }, 2000);
         }
 
