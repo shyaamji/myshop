@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ကောင်းမြတ် - POS System</title>
+    <title>ကောင်းမြတ် - POS System Pro</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0d6efd">
@@ -22,13 +22,13 @@
         .product-card { border-left: 5px solid #0d6efd; background: #fff; border-radius: 8px; transition: transform 0.2s; }
         .product-card:hover { transform: translateY(-2px); }
         
-        /* Admin သေသပ်လှပသော ကတ်ဒီဇိုင်း */
-        .admin-product-card { border: 1px solid #e0e4ec; border-radius: 12px; background: #fff; margin-bottom: 15px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-top: 3px solid #0d6efd; }
+        /* Layout & Cards */
+        .admin-product-card { border: 1px solid #e0e4ec; border-radius: 12px; background: #fff; margin-bottom: 15px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-top: 3px solid #0d6efd; position: relative; }
         .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 250px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f5; transition: background 0.2s; }
+        .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f5; }
         .search-item:hover { background-color: #e9ecef; }
         
-        /* Print Zone စနစ် */
+        /* Print Styles */
         #print-receipt-zone { display: none; }
         @media print {
             @page { size: auto; margin: 0mm; }
@@ -45,8 +45,8 @@
         // ⚠️ မိမိ၏ Google Web App URL ကို ဤနေရာတွင် ထည့်သွင်းပါ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyHs8WfjsxLeUfxXVBTHxXxGxSeZbiRq4eYNx61SDcoXALB7Bkpa0tTDL8vNxB1CZGZ/exec'; 
         
-        const homePassword = '4444';  
-        const adminPassword = '5555'; 
+        const homePassword = '0000';  
+        const adminPassword = '0000'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -125,9 +125,9 @@
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="form-check">
                             <input class="form-check-input border-secondary" type="checkbox" id="history-select-all" onchange="toggleSelectAllHistory(this)">
-                            <label class="form-check-label small fw-bold text-dark" for="history-select-all">Select All (အားလုံးရွေးမည်)</label>
+                            <label class="form-check-label small fw-bold text-dark" for="history-select-all">Select All (Voucher အားလုံး)</label>
                         </div>
-                        <button class="btn btn-sm btn-danger fw-bold px-3" onclick="deleteSelectedHistory()"><i class="bi bi-trash3-fill me-1"></i>ရွေးထားသည်များဖျက်မည်</button>
+                        <button class="btn btn-sm btn-danger fw-bold px-3" onclick="deleteSelectedHistory()"><i class="bi bi-trash3-fill me-1"></i>Google Sheet ထဲမှပါ အပြီးဖျက်မည်</button>
                     </div>
                 </div>
                 <div id="history-list"></div>
@@ -137,28 +137,28 @@
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 4px solid #28a745 !important;">
                     <h5 class="fw-bold text-success mb-3"><i class="bi bi-plus-circle-fill me-1"></i>ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
                     <div class="row g-2">
-                        <div class="col-12"><input type="text" id="new-barcode" class="form-control" placeholder="Barcode နံပါတ်"></div>
+                        <div class="col-12"><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div>
                         <div class="col-12"><input type="text" id="new-name" class="form-control" placeholder="ပစ္စည်းအမည်"></div>
-                        <div class="col-6"><input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း (Ks)"></div>
-                        <div class="col-6"><input type="number" id="new-stock" class="form-control" placeholder="လက်ကျန်စတော့ခုရေ"></div>
+                        <div class="col-6"><input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း"></div>
+                        <div class="col-6"><input type="number" id="new-stock" class="form-control" placeholder="စတော့ခုရေ"></div>
                         <button type="button" class="btn btn-success w-100 fw-bold mt-3 shadow-sm" onclick="addNewProduct()"><i class="bi bi-cloud-upload-fill me-1"></i>Google Sheet သို့ သိမ်းမည်</button>
                     </div>
                 </div>
 
                 <div class="card p-3 shadow-sm border-0 bg-white">
-                    <button class="btn btn-primary mb-3 w-100 fw-bold shadow-sm" onclick="loadProductsFromSheet()"><i class="bi bi-arrow-clockwise me-1"></i>စာရင်းအသစ် ပြန်ဆွဲယူရန်</button>
+                    <button class="btn btn-primary mb-3 w-100 fw-bold shadow-sm" onclick="loadProductsFromSheet()"><i class="bi bi-arrow-clockwise me-1"></i>စာရင်းပြန်ဆွဲယူရန်</button>
                     
-                    <div class="mb-4 bg-light p-3 rounded-3 border border-primary-subtle">
-                        <label class="form-label small fw-bold text-primary"><i class="bi bi-filter-square-fill me-1"></i>ပစ္စည်းအမည်တိုက်ရိုက်ရှာဖွေရန် (စာရိုက်ရုံဖြင့် သီးသန့်ထွက်လာမည်)</label>
-                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary shadow-sm" placeholder="ရှာဖွေလိုသော ပစ္စည်းအမည် သို့မဟုတ် Barcode ရိုက်ပါ..." onkeyup="filterAdminProducts()">
+                    <div class="mb-3 bg-light p-3 rounded-3 border border-primary-subtle">
+                        <label class="form-label small fw-bold text-primary"><i class="bi bi-search me-1"></i>ပြင်လို/ဖျက်လိုသော ပစ္စည်းရှာဖွေရန် (စာရိုက်သည်နှင့် တိုက်ရိုက်စစ်ထုတ်ပေးမည်)</label>
+                        <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary shadow-sm" placeholder="ပစ္စည်းအမည် သို့မဟုတ် Barcode ရိုက်ပါ..." onkeyup="filterAdminProducts()">
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                         <div class="form-check">
                             <input class="form-check-input border-secondary" type="checkbox" id="prod-select-all" onchange="toggleSelectAllProducts(this)">
-                            <label class="form-check-label small fw-bold text-dark" for="prod-select-all">Select All (ပစ္စည်းအားလုံး ရွေးမည်)</label>
+                            <label class="form-check-label small fw-bold text-dark" for="prod-select-all">Select All (ပစ္စည်းအားလုံး)</label>
                         </div>
-                        <button class="btn btn-sm btn-danger fw-bold px-3" onclick="deleteSelectedProductsBulk()"><i class="bi bi-trash3-fill me-1"></i>ရွေးထားသော ပစ္စည်းများဖျက်မည်</button>
+                        <button class="btn btn-sm btn-danger fw-bold px-3" onclick="deleteSelectedProductsBulk()"><i class="bi bi-trash3-fill me-1"></i>ရွေးထားသောပစ္စည်းများဖျက်မည်</button>
                     </div>
                     <div id="admin-product-list"></div>
                 </div>
@@ -241,7 +241,7 @@
             suggestionsBox.style.display = filtered.length > 0 ? 'block' : 'none';
         }
 
-        // 🔍 Admin Instant Live Filter စနစ် (စာရိုက်လိုက်ရုံဖြင့် ခလုတ်နှိပ်ရန်မလိုဘဲ တိုက်ရိုက်သီးသန့် ထွက်လာမည်)
+        // 🔍 Admin Instant Filter - စာရိုက်တာနဲ့ အောက်ကကတ်ပြားတွေ ချက်ချင်းသီးသန့် ထွက်လာစေရန် ပြင်ဆင်ပြီး
         function filterAdminProducts() {
             let text = document.getElementById('admin-search-input').value.toLowerCase().trim();
             if (text === "") {
@@ -263,7 +263,7 @@
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
                 canScan = false; document.getElementById('scanner-status-btn').className = "btn btn-xs btn-danger py-0 px-2 fw-bold";
-                alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
+                alert(`📢 Barcode: ${barcode} စာရင်းမရှိသေးပါ။`);
                 localStorage.setItem('isAdminAuthenticated', 'true'); switchTab('admin');
                 document.getElementById('new-barcode').value = barcode; document.getElementById('new-name').focus();
             } else { canScan = false; setTimeout(() => { canScan = true; }, 1500); addByProductObject(product); }
@@ -303,7 +303,6 @@
             let summary = cart.map(i => `${i.name} (${i.qty}ခု x ${i.price}Ks)`).join(", ");
             let totalVal = document.getElementById('cart-total').innerText + " Ks";
             
-            // ဒေတာများ လုံးဝမလွဲစေရန် တိကျစွာ ပုံသေ တည်ဆောက်လှမ်းပို့ခြင်း
             let payload = { action: "addSale", voucherId: vId, customerName: name, itemsSummary: summary, total: totalVal };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
@@ -335,16 +334,21 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
+        // 🛠️ ပြဿနာဖြေရှင်းပြီး - undefined နှင့် 0 Ks မဖြစ်အောင် Variable Key စုံစမ်းစနစ် ထည့်ထားသည်
         function displayHistory(data) {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             if(!data || data.length === 0) { list.innerHTML = '<div class="text-center py-5 text-muted"><i class="bi bi-folder-x fs-1"></i><br>မှတ်တမ်းမရှိသေးပါ။</div>'; return; }
             data.forEach((sale) => {
-                let displayTotal = sale.total ? sale.total : "0 Ks";
-                let displayCustomer = sale.customerName ? sale.customerName : "အထွေထွေ";
-                
+                // Google Sheet Column ခေါင်းစဉ် အမျိုးမျိုးဖြစ်နေနိုင်၍ အားလုံးကို ရှာဖွေစစ်ဆေးပေးခြင်း
+                let displayTotal = sale.total || sale.Total || sale["စုစုပေါင်း"] || "0 Ks";
+                let displayCustomer = sale.customerName || sale.CustomerName || sale["ဝယ်ယူသူ"] || sale["ဝယ်သူ"] || "အထွေထွေ";
+                let displayVoucher = sale.voucherId || sale.VoucherId || sale["ဘောက်ချာနံပါတ်"] || sale["Voucher ID"] || "KM-Unknown";
+                let displayDate = sale.date || sale.Date || sale["နေ့ရက်"] || "";
+                let displaySummary = sale.itemsSummary || sale.ItemsSummary || sale["ပစ္စည်းအကျဉ်း"] || "";
+
                 let itemsForPrint = [];
-                if(sale.itemsSummary) {
-                    let parts = sale.itemsSummary.split(", ");
+                if(displaySummary) {
+                    let parts = displaySummary.split(", ");
                     parts.forEach(p => {
                         let qtyMatch = p.match(/\((\d+)ခု/);
                         let priceMatch = p.match(/x\s(\d+)Ks/);
@@ -360,27 +364,32 @@
                     <div class="card p-3 mb-2 border-0 shadow-sm bg-white">
                         <div class="d-flex justify-content-between mb-1">
                             <div>
-                                <input class="form-check-input history-item-checkbox me-2 border-secondary" type="checkbox" data-voucher="${sale.voucherId}">
-                                <span class="fw-bold text-primary">ID: ${sale.voucherId}</span>
+                                <input class="form-check-input history-item-checkbox me-2 border-secondary" type="checkbox" data-voucher="${displayVoucher}">
+                                <span class="fw-bold text-primary">ID: ${displayVoucher}</span>
                             </div>
-                            <small class="text-muted" style="font-size:11px;">${sale.date || ''}</small>
+                            <small class="text-muted" style="font-size:11px;">${displayDate}</small>
                         </div>
                         <div class="small text-dark mb-1">ဝယ်သူ: <b>${displayCustomer}</b></div>
-                        <div class="bg-light p-2 rounded text-secondary mb-2" style="font-size:13px;">${sale.itemsSummary || ''}</div>
+                        <div class="bg-light p-2 rounded text-secondary mb-2" style="font-size:13px;">${displaySummary}</div>
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold text-success mb-0">စုစုပေါင်း: ${displayTotal}</h5>
                             <div>
-                                <button class="btn btn-sm btn-info text-white fw-bold me-1" onclick="printLocalVoucher('${sale.voucherId}', '${displayCustomer}', ${itemsJson}, '${displayTotal.replace(' Ks','')}')"><i class="bi bi-printer"></i> Print</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSingleSale('${sale.voucherId}')"><i class="bi bi-trash"></i></button>
+                                <button class="btn btn-sm btn-info text-white fw-bold me-1" onclick="printLocalVoucher('${displayVoucher}', '${displayCustomer}', ${itemsJson}, '${displayTotal.toString().replace(' Ks','')}')"><i class="bi bi-printer"></i> Print</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSingleSale('${displayVoucher}')"><i class="bi bi-trash"></i></button>
                             </div>
                         </div>
                     </div>`;
             });
         }
 
+        // 🔍 History Filter စနစ် - ရိုက်လိုက်တာနဲ့ မပြတ်တမ်း ရှာဖွေပေးမည်
         function searchHistory() {
-            let text = document.getElementById('search-input').value.toLowerCase();
-            let filtered = salesHistory.filter(s => (s.voucherId && s.voucherId.toLowerCase().includes(text)) || (s.customerName && s.customerName.toLowerCase().includes(text)));
+            let text = document.getElementById('search-input').value.toLowerCase().trim();
+            let filtered = salesHistory.filter(s => {
+                let vId = (s.voucherId || s.VoucherId || s["ဘောက်ချာနံပါတ်"] || s["Voucher ID"] || "").toString().toLowerCase();
+                let cName = (s.customerName || s.CustomerName || s["ဝယ်ယူသူ"] || s["ဝယ်သူ"] || "").toString().toLowerCase();
+                return vId.includes(text) || cName.includes(text);
+            });
             displayHistory(filtered);
         }
 
@@ -395,7 +404,7 @@
         function deleteSelectedHistory() {
             let checkboxes = document.querySelectorAll('.history-item-checkbox:checked');
             if (checkboxes.length === 0) return alert("ဖျက်ရန် အရင်ရွေးချယ်ပေးပါဗျာ။");
-            if (confirm(`ရွေးထားသော Voucher (${checkboxes.length}) ခုလုံးကို အပြီးဖျက်မလားဗျာ။`)) {
+            if (confirm(`ရွေးထားသော Voucher (${checkboxes.length}) ခုလုံးကို Google Sheet ထဲမှ အပြီးဖျက်မလားဗျာ။`)) {
                 let ids = Array.from(checkboxes).map(cb => cb.getAttribute('data-voucher'));
                 sendSalesDeleteBulk(ids);
             }
@@ -414,24 +423,29 @@
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             if(arr.length === 0) { list.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-search fs-3 d-block mb-1"></i>ရှာဖွေထားသော ပစ္စည်းမရှိပါ။</div>'; return; }
             arr.forEach((prod, idx) => {
+                let bCode = prod.barcode || prod.Barcode || prod["ဘားကုဒ်"] || "";
+                let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"] || "";
+                let pPrice = prod.price || prod.Price || prod["ဈေးနှုန်း"] || 0;
+                let pStock = prod.stock || prod.Stock || prod["လက်ကျန်"] || prod["လက်ကျန်စတော့"] || 0;
+
                 list.innerHTML += `
                     <div class="admin-product-card">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <div class="fw-bold text-dark fs-5">
-                                <input class="form-check-input prod-item-checkbox me-2 border-secondary" type="checkbox" data-barcode="${prod.barcode}">
-                                ${prod.name}
+                                <input class="form-check-input prod-item-checkbox me-2 border-secondary" type="checkbox" data-barcode="${bCode}">
+                                ${pName}
                             </div>
-                            <button class="btn btn-sm btn-light text-danger border border-danger-subtle px-2 py-1" onclick="deleteSingleProduct('${prod.barcode}')"><i class="bi bi-trash3"></i> ဖျက်</button>
+                            <button class="btn btn-sm btn-light text-danger border border-danger-subtle px-2 py-1" onclick="deleteSingleProduct('${bCode}')"><i class="bi bi-trash3"></i> ဖျက်</button>
                         </div>
-                        <div class="text-muted small mb-2">Barcode: <b>${prod.barcode}</b></div>
+                        <div class="text-muted small mb-2">Barcode: <b>${bCode}</b></div>
                         <div class="row g-2">
                             <div class="col-6">
                                 <small class="text-muted d-block fw-bold" style="font-size:11px;">ဈေးနှုန်း</small>
-                                <input type="number" id="p-price-${idx}" class="form-control form-control-sm fw-bold text-primary" value="${prod.price}">
+                                <input type="number" id="p-price-${idx}" class="form-control form-control-sm fw-bold text-primary" value="${pPrice}">
                             </div>
                             <div class="col-6">
                                 <small class="text-muted d-block fw-bold" style="font-size:11px;">လက်ကျန်စတော့</small>
-                                <input type="number" id="p-stock-${idx}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock || 0}">
+                                <input type="number" id="p-stock-${idx}" class="form-control form-control-sm fw-bold text-success" value="${pStock}">
                             </div>
                         </div>
                         <div class="mt-3 text-end">
@@ -449,7 +463,6 @@
             if(confirm("ဤပစ္စည်းကို အပြီးဖျက်ရန် သေချာပါသလား။")) { sendProductsDeleteBulk([barcode]); }
         }
 
-        // ... [ကျန်ရှိသော Functions အားလုံး မူလအတိုင်း အလုပ်လုပ်ပါသည်] ...
         function deleteSelectedProductsBulk() {
             let checkboxes = document.querySelectorAll('.prod-item-checkbox:checked');
             if (checkboxes.length === 0) return alert("ဖျက်လိုသော ပစ္စည်းများကို အရင်ရွေးချယ်ပေးပါဗျာ။");
@@ -487,9 +500,12 @@
         function uploadProductToSheet(index) {
             let priceVal = document.getElementById(`p-price-${index}`).value;
             let stockVal = document.getElementById(`p-stock-${index}`).value;
-            productsDB[index].price = Number(priceVal); productsDB[index].stock = Number(stockVal);
+            
             let prod = productsDB[index];
-            let payload = { action: "updateProduct", barcode: prod.barcode, name: prod.name, price: prod.price, stock: prod.stock };
+            let bCode = prod.barcode || prod.Barcode || prod["ဘားကုဒ်"];
+            let pName = prod.name || prod.Name || prod["ပစ္စည်းအမည်"];
+
+            let payload = { action: "updateProduct", barcode: bCode, name: pName, price: Number(priceVal), stock: Number(stockVal) };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
             alert("ပြင်ဆင်ချက် သိမ်းဆည်းပြီးပါပြီ။");
