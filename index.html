@@ -31,9 +31,12 @@
     </style>
 
     <script>
-        // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL အသစ်ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
+        // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2Gly6uvG2Jp05loyqfevmbSBMPrX3l2ttgpdxjOW4QPLIWfnIC_WmKUUzWjku7FUl/exec'; 
-        const adminPassword = '1234'; 
+        
+        // 🔐 Password သက်သက်စီ သတ်မှတ်ခြင်း
+        const homePassword = 'abcd';  // Home Page သို့ အဝင် Password
+        const adminPassword = 'goodss'; // Admin Tab သို့ အဝင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -78,7 +81,12 @@
 
         <div class="container pb-5">
             
+            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineSalesTab(this)">🔄 Reload Online</button>
+                </div>
+
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <h6 class="card-title fw-bold text-secondary mb-0">📷 Barcode Scanner</h6>
@@ -109,7 +117,12 @@
                 </div>
             </div>
 
+            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineHistoryTab(this)">🔄 Reload Online</button>
+                </div>
+
                 <div class="card p-3 shadow-sm border-0 mb-3 d-flex flex-column gap-2">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
                     <button class="btn btn-sm btn-danger fw-bold shadow-sm" onclick="clearAllSalesHistoryLocal()">⚠️ စက်ထဲရှိ အရောင်းမှတ်တမ်းဟောင်းအားလုံး အကုန်ရှင်းထုတ်မည်</button>
@@ -119,7 +132,12 @@
                 </div>
             </div>
 
+            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineAdminTab(this)">🔄 Reload Online</button>
+                </div>
+
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h5>
@@ -152,7 +170,6 @@
 
                 <div class="card p-3 shadow-sm border-0">
                     <h5 class="card-title fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h5>
-                    <button class="btn btn-primary mb-3 w-100 fw-bold" onclick="loadProductsFromSheet()">🔄 Google Sheet မှ ပစ္စည်းစာရင်း ပြန်ဆွဲယူရန်</button>
                     <div class="position-relative mb-3">
                         <input type="text" id="admin-search-input" class="form-control form-control-lg border-primary" placeholder="🔍 ပြင်လို/ဖျက်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()">
                         <div id="admin-search-suggestions" class="search-results" style="display: none;"></div>
@@ -191,9 +208,10 @@
             } catch(e) { console.log(e); }
         }
 
+        // Home Page ဝင်ရောက်ရန် စစ်ဆေးခြင်း
         function checkHomePassword() {
             let input = document.getElementById('home-pass-input').value;
-            if (input === adminPassword) {
+            if (input === homePassword) {
                 sessionStorage.setItem('isAppUnlocked', 'true');
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
@@ -233,7 +251,7 @@
                     if (passInput === adminPassword) {
                         localStorage.setItem('isAdminAuthenticated', 'true');
                     } else {
-                        alert("❌ Password မှားယွင်းနေပါသည်။"); return;
+                        alert("❌ Admin Password မှားယွင်းနေပါသည်။"); return;
                     }
                 }
             }
@@ -246,6 +264,39 @@
 
         function logoutAdmin() {
             localStorage.removeItem('isAdminAuthenticated'); switchTab('sales');
+        }
+
+        // 🔄 RELOAD ONLINE FUNCTIONS
+        function reloadOnlineSalesTab(btn) {
+            btn.disabled = true; btn.innerText = "⏳ Loading...";
+            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
+                productsDB = data; 
+                btn.disabled = false; btn.innerText = "🔄 Reload Online";
+                alert("🛒 ပစ္စည်းစာရင်းအသစ်များကို Google Sheet မှ ဆွဲယူပြီးပါပြီ။");
+            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Reload Online"; });
+        }
+
+        function reloadOnlineHistoryTab(btn) {
+            btn.disabled = true; btn.innerText = "⏳ Loading...";
+            fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(res => res.json()).then(data => {
+                if(data && data.length > 0) { 
+                    salesHistory = data; 
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); 
+                    displayHistory(salesHistory); 
+                }
+                btn.disabled = false; btn.innerText = "🔄 Reload Online";
+                alert("📜 အရောင်းမှတ်တမ်းများကို အွန်လိုင်းမှ ပြန်ဆွဲယူပြီးပါပြီ။");
+            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Reload Online"; });
+        }
+
+        function reloadOnlineAdminTab(btn) {
+            btn.disabled = true; btn.innerText = "⏳ Loading...";
+            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
+                productsDB = data; 
+                renderAdminProducts(productsDB);
+                btn.disabled = false; btn.innerText = "🔄 Reload Online";
+                alert("⚙️ Admin ပစ္စည်းစာရင်းကို Google Sheet ကနေ ဒေတာအသစ် ပြန်တင်ပေးပြီးပါပြီ။");
+            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Reload Online"; });
         }
 
         function loadProductsFromSheet() {
@@ -410,12 +461,10 @@
             });
         }
 
-        // 🛠️ FIX UPLOAD FUNCTION: Google Sheet ထဲက စာကြောင်းအမှန်ကို ရှာပြီး တိုက်ရိုက်သွားပြင်ခိုင်းသည့် စနစ်
         function uploadProductToSheet(index) {
             let priceVal = document.getElementById(`p-price-${index}`).value;
             let stockVal = document.getElementById(`p-stock-${index}`).value;
             
-            // Local Memory ကို ချက်ချင်း အရင်ပြင်သည်
             productsDB[index].price = Number(priceVal); 
             productsDB[index].stock = Number(stockVal);
             
@@ -425,7 +474,6 @@
 
             let payload = { action: "updateProduct", barcode: prod.barcode.toString(), name: prod.name, price: prod.price, stock: prod.stock };
             
-            // Form Data သုံးပြီး Fetch API ဖြင့် သန့်သန့်ရှင်းရှင်း ဒေတာလှမ်းပို့သည်
             let formData = new FormData();
             formData.append('jsonData', JSON.stringify(payload));
             
@@ -434,7 +482,6 @@
                 body: formData,
                 mode: 'no-cors'
             }).then(() => {
-                // ပြင်ပြီးတာနဲ့ ၃ စက္ကန့်စောင့်ပြီးမှ Sheet ဒေတာအသစ် ပြန်ခေါ်သည် (Timing ပြဿနာမဖြစ်စေရန်)
                 setTimeout(() => { 
                     editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
                     alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီဗျာ။`);
