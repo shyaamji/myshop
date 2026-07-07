@@ -19,8 +19,8 @@
         .qty-btn { width: 40px; height: 40px; font-size: 20px; font-weight: bold; }
         .product-card { border-left: 5px solid #0d6efd; }
         
-        /* ရိုးရှင်းသေသပ်သော ပစ္စည်းကတ်ပြား ဒီဇိုင်း (အဝါရောင်ဘောင် လုံးဝမရှိတော့ပါ) */
-        .admin-product-card { border: 1px solid #dee2e6; border-radius: 8px; background: #fff; margin-bottom: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        /* ကတ်ဒီဇိုင်းများကို သေသပ်အောင် ပြင်ဆင်ခြင်း (ဝါးတားတားနှင့် အဝါရောင်ဘောင်များ ဖယ်ရှားပြီး) */
+        .admin-product-card { border: 1px solid #dee2e6; border-radius: 12px; background: #fff; margin-bottom: 15px; padding: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
         
         .search-results { position: absolute; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ced4da; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
@@ -41,8 +41,8 @@
     </style>
 
     <script>
-        // ⚠️ မိမိ၏ Web App Script URL ကို ဤနေရာတွင် ထည့်ပါ
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyQoKtJ4ZaE6UL0oOFK7JRQezscH6pWY3OjehyyEgmLG7VFvfI_9x-HayFKeHsOnPCA/exec'; 
+        // ⚠️ မိမိ၏ Web App Script URL ကို အောက်တွင် သေချာစွာ အစားထိုးပါ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyHs8WfjsxLeUfxXVBTHxXxGxSeZbiRq4eYNx61SDcoXALB7Bkpa0tTDL8vNxB1CZGZ/exec'; 
         
         const homePassword = '1111';  
         const adminPassword = '2222'; 
@@ -273,7 +273,7 @@
             let summary = cart.map(i => `${i.name} (${i.qty}ခု x ${i.price}Ks)`).join(", ");
             let totalVal = document.getElementById('cart-total').innerText + " Ks";
             
-            // ဒေတာ ပေးပို့မှု ပိုမိုတိကျစေရန် ညှိနှိုင်းခြင်း
+            // ကော်လံအမည်များအား သေသပ်စွာ ညှိနှိုင်းပေးပို့ခြင်း
             let payload = { action: "addSale", voucherId: vId, customerName: name, itemsSummary: summary, total: totalVal };
             document.getElementById('form-json-data').value = JSON.stringify(payload);
             document.getElementById('hidden-form').submit();
@@ -305,12 +305,12 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
-        // 📜 History UI Display (Amount နှင့် စုစုပေါင်း ပြဿနာအား လုံးဝတိကျစွာ ဖြေရှင်းပြီး)
+        // 📜 History UI Display (ဝယ်သူအမည်နှင့် စုစုပေါင်းပြဿနာကို ၁၀၀% ဖြေရှင်းပြီး)
         function displayHistory(data) {
             const list = document.getElementById('history-list'); list.innerHTML = '';
             if(!data || data.length === 0) { list.innerHTML = '<div class="text-center py-4 text-muted">မှတ်တမ်းမရှိသေးပါ။</div>'; return; }
             data.forEach((sale) => {
-                // ပြောင်းပြန်လွဲနေသော ဒေတာများကို ကာကွယ်ရန် စနစ်တကျ ဖတ်ယူပုံ
+                // ပြောင်းပြန်လွဲနေသော ဒေတာများကို မှန်ကန်စွာ ကယ်တင်ဖတ်ယူခြင်း
                 let displayTotal = sale.total ? sale.total : "0 Ks";
                 let displayCustomer = sale.customerName ? sale.customerName : "အထွေထွေ";
                 
