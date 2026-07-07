@@ -41,7 +41,8 @@
     </style>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzwo8ULIZqIpygsD_pUwvYO33hrXCyPufl9ehw-MATZVCwL87HhsRgN4GmgYUHo1bBq/exec'; 
+        // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL ကို အောက်ကနေရာမှာ ပြန်ထည့်ပေးပါ
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwsIZo_gF_1aHNfLfC8R3S3i8IJMwCIbYamk2nE_AON93Hk-EAyWzcklt56wGm39Irf/exec'; 
         const adminPassword = '1234'; 
 
         if ('serviceWorker' in navigator) {
@@ -55,7 +56,6 @@
 </head>
 <body class="bg-light">
 
-    <!-- 🔒 Home Page Password Screen -->
     <div id="app-lock-screen">
         <div class="text-center p-4 bg-dark rounded shadow" style="max-width: 350px; width: 90%; border: 1px solid #343a40;">
             <h4 class="fw-bold text-primary mb-3">ကောင်းမြတ် POS</h4>
@@ -68,7 +68,6 @@
 
     <div id="print-receipt-zone"></div>
 
-    <!-- 📱 Main App Content -->
     <div id="app-main-content">
         <div id="install-banner" class="bg-primary text-white text-center p-2 fw-bold" style="display: none; cursor: pointer;" onclick="triggerPwaInstall()">
             📲 ဤ POS စနစ်ကို ဖုန်းထဲသို့ App အဖြစ် ထည့်သွင်းရန် (Install App) နှိပ်ပါ။
@@ -89,7 +88,6 @@
 
         <div class="container pb-5">
             
-            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="card p-2 mb-3 shadow-sm border-0">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -121,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-3">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
@@ -131,7 +128,6 @@
                 </div>
             </div>
 
-            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="card p-3 shadow-sm border-0 mb-4 bg-white" style="border-top: 5px solid #28a745 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -333,7 +329,6 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // 📷 စကန်ဖတ်စနစ်
         function onScanSuccess(decodedText) { 
             if (canScan) { 
                 playBeep(); 
@@ -343,19 +338,14 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // 🔎 Barcode အသစ်တွေ့လျှင် Scanner ကို လုံးဝ ရပ်တန့် (Pause) မည့်စနစ်ထည့်သွင်းခြင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
-                // 🛑 စကန်ဆက်မဖတ်အောင် အရင်ပိတ်ပစ်လိုက်သည် (ထပ်ခါထပ်ခါ မပေါ်စေရန်)
                 canScan = false;
                 updateScannerStatusUi(false);
-                
                 alert(`📢 Barcode: ${barcode} သည် စနစ်ထဲတွင် မရှိသေးပါ။ ပစ္စည်းအသစ်အဖြစ် အမည်နှင့် ဈေးနှုန်း သတ်မှတ်ရန် Admin ဧရိယာသို့ ခေါ်ဆောင်သွားပါမည်။`);
-                
                 localStorage.setItem('isAdminAuthenticated', 'true'); 
                 switchTab('admin');
-                
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = '';
@@ -363,14 +353,12 @@
                 document.getElementById('admin-form-title').innerText = `🆕 ပစ္စည်းအသစ် ထည့်သွင်းရန် (${barcode})`;
                 document.getElementById('new-name').focus();
             } else {
-                // ရှိပြီးသားပစ္စည်းဆိုလျှင် ပုံမှန် ၂ စက္ကန့် စောင့်ပြီး ဆက်ဖတ်ခွင့်ပြုမည်
                 canScan = false;
                 setTimeout(() => { canScan = true; }, 2000);
                 addByProductObject(product);
             }
         }
 
-        // Scanner ရဲ့ UI အရောင်ကို ပြောင်းလဲပေးမည့် စနစ်
         function updateScannerStatusUi(isScanning) {
             let btn = document.getElementById('scanner-status-btn');
             if (isScanning) {
@@ -382,7 +370,6 @@
             }
         }
 
-        // စကန်နာကို ကိုယ်တိုင် ပြန်ဖွင့်ချင်ရင် နှိပ်ရန်
         function resumeScannerManual() {
             canScan = true;
             updateScannerStatusUi(true);
@@ -416,18 +403,43 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
+        // 🔥 ပြင်ဆင်ထားသော FETCH စနစ်သုံး CHECKOUT FUNCTION
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
             let voucherId = "KM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
-            let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total };
+            
+            let saleData = { 
+                action: "addSale", 
+                voucherId: voucherId, 
+                customerName: customerName, 
+                items: cart, 
+                total: total 
+            };
+            
             salesHistory.unshift({ ...saleData, date: new Date().toLocaleString() });
             localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-            displayHistory(salesHistory); printVoucher(saleData);
-            document.getElementById('form-json-data').value = JSON.stringify(saleData);
-            document.getElementById('hidden-form').submit();
-            cart = []; renderCart(); alert("Voucher ထုတ်ယူပြီးပါပြီ။");
+            displayHistory(salesHistory); 
+            
+            // ၁။ ပရင်တာ ပေါ်လာအောင် အရင်ဆုံး ခေါ်လိုက်သည်
+            printVoucher(saleData);
+            
+            // ၂။ Google Sheet ထဲကို Fetch (POST) စနစ်ဖြင့် နောက်ကွယ်မှ ပို့သည်
+            let formData = new FormData();
+            formData.append('jsonData', JSON.stringify(saleData));
+            
+            fetch(scriptURL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors'
+            })
+            .then(() => console.log("Success Sheet Transfer"))
+            .catch(err => console.error("Error Sheet Transfer", err));
+
+            cart = []; 
+            renderCart(); 
+            alert("Voucher စာမျက်နှာ ခေါ်ယူနေပါပြီ။");
         }
 
         function printVoucher(sale) {
@@ -479,6 +491,8 @@
             list.innerHTML = '';
             data.forEach(sale => {
                 let itemsList = sale.items.map(i => `<div class="d-flex justify-content-between text-secondary" style="font-size:14px;"><span>${i.name} x ${i.qty}</span><span>${(i.price * i.qty).toLocaleString()} Ks</span></div>`).join('');
+                let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
+
                 list.innerHTML += `
                     <div class="card p-3 mb-3 border-0 shadow-sm bg-white">
                         <div class="d-flex justify-content-between mb-1">
@@ -491,10 +505,33 @@
                         <hr class="my-1 text-muted">
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <h6 class="fw-bold text-success mb-0">စုစုပေါင်း: ${sale.total} Ks</h6>
-                            <button class="btn btn-sm btn-outline-dark" onclick='printVoucher(${JSON.stringify(sale)})'>🖨️ ပြန်ထုတ်ရန်</button>
+                            <div>
+                                <button class="btn btn-sm btn-outline-dark me-1" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button>
+                                <button class="btn btn-sm btn-danger" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်မည်</button>
+                            </div>
                         </div>
                     </div>`;
             });
+        }
+
+        function deleteSaleFromSheet(voucherId) {
+            let confirmPass = prompt(`⚠️ Voucher ID: ${voucherId} ကို ဖျက်ရန် သေချာပါသလား။\nအတည်ပြုရန် Admin Password ရိုက်ထည့်ပါ -`, "");
+            if (confirmPass === null) return;
+            
+            if (confirmPass === adminPassword) {
+                let payload = { action: "deleteSale", voucherId: voucherId };
+                document.getElementById('form-json-data').value = JSON.stringify(payload);
+                document.getElementById('hidden-form').submit();
+                
+                salesHistory = salesHistory.filter(s => s.voucherId !== voucherId);
+                localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                displayHistory(salesHistory);
+                
+                alert("Voucher မှတ်တမ်းကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီဗျာ။");
+                setTimeout(() => { loadSalesHistoryFromSheet(); }, 2000);
+            } else {
+                alert("❌ Password မှားယွင်းနေသောကြောင့် ဖျက်ခွင့်မရှိပါ။");
+            }
         }
 
         function searchHistory() {
@@ -546,13 +583,9 @@
                 document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
                 document.getElementById('admin-form-title').innerText = "➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်";
-                
                 loadProductsFromSheet();
-                
-                // 🟢 ပစ္စည်းသိမ်းပြီးလို့ အရောင်းခန်းပြန်ရောက်ရင် Scanner ကို အလိုအလျောက် ပြန်ဖွင့်ပေးသည်
                 canScan = true;
                 updateScannerStatusUi(true);
-                
                 switchTab('sales'); 
             }, 2000);
         }
