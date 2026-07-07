@@ -43,7 +43,7 @@
     <script>
         // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL ကို အောက်ကနေရာမှာ သေချာပေါက် ပြန်ထည့်ပေးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2kfMqxZcgUnRkIGPdrdW5xdfI-n3LMDo0EzYIyqBwP8yt7HpJKcg6BbeHzPU4JOY/exec'; 
-        const adminPassword = '9999'; 
+        const adminPassword = '1234'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -404,6 +404,7 @@
             document.getElementById('cart-total').innerText = total.toLocaleString();
         }
 
+        // 固定：အကောင်းဆုံး ပြင်ဆင်ပြီးသား အလုပ်ဖြစ်သေချာမည့် CHECKOUT FUNCTION 🚀
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
@@ -415,13 +416,19 @@
                 voucherId: voucherId, 
                 customerName: customerName, 
                 items: cart, 
-                total: total 
+                total: total,
+                date: new Date().toLocaleString()
             };
             
-            salesHistory.unshift({ ...saleData, date: new Date().toLocaleString() });
+            // ၁။ စက်ထဲကို အရင်သိမ်းပြီး မျက်နှာပြင်မှာ ချက်ချင်းပြောင်းလဲမှု ပြုလုပ်သည်
+            salesHistory.unshift(saleData);
             localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
             displayHistory(salesHistory); 
-            
+
+            // ၂။ 🖨️ ပထမဦးဆုံး ဦးစားပေးအနေဖြင့် Print Page ကို တန်းစီပြီး တိုက်ရိုက်ခေါ်ထုတ်ပါသည် (Net နှေးရင်တောင် တန်းပွင့်စေရန်)
+            printVoucher(saleData);
+
+            // ၃။ နောက်ကွယ်မှသာ Google Sheet ဆီကို Fetch သီးခြားလွတ်လပ်စွာ လှမ်းပို့ပါသည်
             let formData = new FormData();
             formData.append('jsonData', JSON.stringify(saleData));
             
@@ -430,11 +437,12 @@
                 body: formData,
                 mode: 'no-cors'
             })
-            .then(() => console.log("Google Sheet Updated"))
-            .catch(err => console.error("Sheet Sync Error", err));
+            .then(() => {
+                console.log("Cloud synced smoothly");
+            })
+            .catch(err => console.error("Sheet Sync Delayed but local saved", err));
 
-            printVoucher(saleData);
-
+            // ခြင်းတောင်းကို ရှင်းထုတ်သည်
             cart = []; 
             renderCart(); 
         }
@@ -480,9 +488,10 @@
                     <div style="text-align: center; font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
                 </div>`;
             
+            // ⏰ DOM နေရာချမှု သေချာစေရန် စက္ကန့်အနည်းငယ် ခြားပြီး Print Preview ဆွဲခေါ်ခြင်း
             setTimeout(() => { 
                 window.print(); 
-            }, 300);
+            }, 350);
         }
 
         function displayHistory(data) {
@@ -514,18 +523,15 @@
             });
         }
 
-        // 🛠️ ပြင်ဆင်ထားသော သေချာပေါက်အလုပ်လုပ်မည့် စနစ်တကျဖျက်နည်း FUNCTION
         function deleteSaleFromSheet(voucherId) {
             let confirmPass = prompt(`⚠️ Voucher ID: ${voucherId} ကို ဖျက်ရန် သေချာပါသလား။\nအတည်ပြုရန် Admin Password ရိုက်ထည့်ပါ -`, "");
             if (confirmPass === null) return;
             
             if (confirmPass === adminPassword) {
-                // ၁။ ရွေးချယ်ထားတဲ့ Voucher ကို Local Memory (စက်ထဲက) အရင်ချက်ချင်းဖျက်ပစ်သည်
                 salesHistory = salesHistory.filter(s => s.voucherId.toString() !== voucherId.toString());
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-                displayHistory(salesHistory); // မျက်နှာပြင်မှာ ချက်ချင်းအပ်ဒိတ်လုပ်သည်
+                displayHistory(salesHistory); 
                 
-                // ၂။ Google Sheet ဆီကို နောက်ကွယ်ကနေ ဖျက်ခိုင်းတဲ့ Action (Post) လှမ်းပို့သည်
                 let payload = { action: "deleteSale", voucherId: voucherId };
                 let formData = new FormData();
                 formData.append('jsonData', JSON.stringify(payload));
@@ -537,7 +543,6 @@
                 })
                 .then(() => {
                     console.log("Voucher deleted from cloud successfully");
-                    // ၃။ ပိုသေချာစေရန် Google Sheet ကနေ ဒေတာအသစ်ကို နောက်တစ်ခေါက် ပြန်ဆွဲယူပြီး အတည်ပြုသည်
                     setTimeout(() => { loadSalesHistoryFromSheet(); }, 1500);
                 })
                 .catch(err => console.error("Cloud delete error", err));
@@ -548,15 +553,14 @@
             }
         }
 
-        // 🚨 လက်ရှိ ကျန်နေတဲ့ စက်ထဲက ဒေတာအဟောင်းအားလုံးကို တစ်ခါတည်း အကုန်ရှင်းပစ်မယ့် ကူညီပေးမယ့် Function
         function clearAllSalesHistoryLocal() {
             let confirmClear = prompt("⚠️ ဤစက် (Browser) ထဲတွင် ကျန်နေခဲ့သော အရောင်းမှတ်တမ်းအဟောင်းအားလုံးကို အကုန်ရှင်းထုတ်ပစ်မလားဗျာ။\nရှင်းလင်းမည်ဆိုပါက Admin Password ရိုက်ထည့်ပါ -");
             if (confirmClear === adminPassword) {
-                localStorage.removeItem('salesHistory'); // LocalStorage ကို ရှင်းသည်
-                salesHistory = []; // Memory ပေါ်က ရှင်းသည်
-                displayHistory(salesHistory); // မျက်နှာပြင်မှာ ဖျောက်သည်
+                localStorage.removeItem('salesHistory'); 
+                salesHistory = []; 
+                displayHistory(salesHistory); 
                 alert("🗑️ စက်ထဲက မှတ်တမ်းအဟောင်းများအားလုံးကို သန့်ရှင်းရေးလုပ်ပြီးပါပြီ။ Cloud (Google Sheet) မှ ဒေတာအသစ်ကို ပြန်လည်ဆွဲယူပါမည်။");
-                loadSalesHistoryFromSheet(); // Google Sheet ပေါ်က ဒေတာအမှန်ကိုပဲ ပြန်ယူခိုင်းသည်
+                loadSalesHistoryFromSheet(); 
             } else if (confirmClear !== null) {
                 alert("❌ Password မှားယွင်းနေပါသည်။");
             }
