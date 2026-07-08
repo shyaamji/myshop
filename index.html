@@ -35,8 +35,8 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2Gly6uvG2Jp05loyqfevmbSBMPrX3l2ttgpdxjOW4QPLIWfnIC_WmKUUzWjku7FUl/exec'; 
         
         // 🔐 Password များကို မိမိစိတ်ကြိုက် စာလုံးရေ အတိုအရှည် ပြောင်းလဲနိုင်ပါတယ်ဗျာ
-        const homePassword = '1111';  
-        const adminPassword = '2222'; 
+        const homePassword = 'hello';  
+        const adminPassword = 'nono'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -318,17 +318,24 @@
             });
         }
 
-        // 📊 တနေ့တာ အရောင်းစုစုပေါင်း တွက်ချက်သည့် စနစ်
+        // 📊 တနေ့တာ အရောင်းစုစုပေါင်း တွက်ချက်သည့် စနစ် (ရက်စွဲပုံစံအားလုံးအတွက် ပြင်ဆင်ပြီး)
         function calculateTodaySales() {
-            let todayStr = new Date().toLocaleDateString();
-            document.getElementById('today-date-string').innerText = "ရက်စွဲ: " + new Date().toDateString();
+            let now = new Date();
+            let d = String(now.getDate()).padStart(2, '0');
+            let m = String(now.getMonth() + 1).padStart(2, '0');
+            let y = now.getFullYear();
+            
+            let todayFormat1 = `${d}/${m}/${y}`; // DD/MM/YYYY ပုံစံ
+            let todayFormat2 = `${m}/${d}/${y}`; // MM/DD/YYYY ပုံစံ
+            
+            document.getElementById('today-date-string').innerText = "ရက်စွဲ: " + now.toDateString();
             
             let totalSum = 0;
             salesHistory.forEach(sale => {
-                // Voucher ထဲက နေ့စွဲနဲ့ ဒီနေ့နေ့စွဲ တူမတူ စစ်ဆေးသည်
                 if(sale.date) {
-                    let saleDateStr = new Date(sale.date).toLocaleDateString();
-                    if(saleDateStr === todayStr) {
+                    let saleDateOnly = sale.date.split(',')[0].trim(); 
+                    
+                    if(saleDateOnly.includes(todayFormat1) || saleDateOnly.includes(todayFormat2) || new Date(sale.date).toLocaleDateString() === now.toLocaleDateString()) {
                         let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
                         totalSum += cleanTotal;
                     }
@@ -446,7 +453,7 @@
                 let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
                 list.innerHTML += `<div class="card p-3 mb-3 border-0 shadow-sm bg-white"><div class="d-flex justify-content-between mb-1"><span class="fw-bold text-primary">ID: ${sale.voucherId}</span><small class="text-muted">${sale.date || ''}</small></div><div class="small mb-2">ဝယ်သူ: <b>${sale.customerName}</b></div><hr class="my-1"><div class="py-2">${itemsList}</div><hr class="my-1"><div class="d-flex justify-content-between align-items-center mt-2"><h6 class="fw-bold text-success mb-0">စုစုပေါင်း: ${sale.total} Ks</h6><div><button class="btn btn-sm btn-outline-dark me-1" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button><button class="btn btn-sm btn-danger" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်မည်</button></div></div></div>`;
             });
-            calculateTodaySales(); // မှတ်တမ်းပြောင်းလဲတိုင်း ယနေ့စုစုပေါင်းကို ပြန်တွက်ခိုင်းသည်
+            calculateTodaySales(); 
         }
 
         function deleteSaleFromSheet(voucherId) {
