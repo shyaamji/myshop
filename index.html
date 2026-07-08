@@ -37,7 +37,7 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2Gly6uvG2Jp05loyqfevmbSBMPrX3l2ttgpdxjOW4QPLIWfnIC_WmKUUzWjku7FUl/exec'; 
         
         // 🔐 Password များကို မိမိစိတ်ကြိုက် စာလုံးရေ အတိုအရှည် ပြောင်းလဲနိုင်ပါတယ်ဗျာ
-        const homePassword = 'nono';  
+        const homePassword = 'donot';  
         const adminPassword = 'kpay'; 
 
         if ('serviceWorker' in navigator) {
@@ -83,6 +83,7 @@
 
         <div class="container pb-5">
             
+            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineSalesTab(this)">🔄 Reload Online</button>
@@ -118,11 +119,13 @@
                 </div>
             </div>
 
+            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineHistoryTab(this)">🔄 Reload Online</button>
                 </div>
 
+                <!-- 📅 တနေ့တာ အရောင်းစာရင်း ကတ်ပြား -->
                 <div class="card p-3 shadow-sm border-0 mb-3 text-center bg-primary text-white" style="border-radius: 12px;">
                     <small class="text-white-50 fw-bold uppercase" style="letter-spacing: 0.5px;">TODAY'S TOTAL SALES</small>
                     <h2 class="fw-bold my-1" id="today-sales-summary">0 Ks</h2>
@@ -131,13 +134,14 @@
 
                 <div class="card p-3 shadow-sm border-0 mb-3 d-flex flex-column gap-2">
                     <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
-                    <button class="btn btn-sm btn-danger fw-bold shadow-sm" onclick="clearAllSalesHistoryLocal()">⚠️ စက်ထဲရှိ အရောင်းမှတ်တမ်းဟောင်းအားလုံး အကုန်ရှင်းထုတ်မည်</button>
+                    <button id="clear-all-history-btn" class="btn btn-sm btn-danger fw-bold shadow-sm py-2" onclick="clearAllSalesHistoryLocal()">⚠️ Google Sheet နှင့် ဖုန်းထဲရှိ အရောင်းမှတ်တမ်းအားလုံး အပြီးအပိုင် ရှင်းထုတ်မည်</button>
                 </div>
                 <div id="history-list">
                     <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
                 </div>
             </div>
 
+            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineAdminTab(this)">🔄 Reload Online</button>
@@ -432,7 +436,6 @@
             cart = []; renderCart(); 
         }
 
-        // 🖨️ ပရင်တာအပြင်အဆင် မျက်နှာပြင်ပြည့် ကြီးကြီးလင်းလင်း ပြင်ဆင်ထားသည့် Voucher ဒီဇိုင်း
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); let itemsHTML = '';
             sale.items.forEach(i => { 
@@ -479,7 +482,7 @@
         }
 
         function displayHistory(data) {
-            const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">...</div>'; return; }
+            const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">မှတ်တမ်းမရှိပါ</div>'; return; }
             list.innerHTML = '';
             data.forEach(sale => {
                 let itemsList = sale.items.map(i => `<div class="d-flex justify-content-between text-secondary" style="font-size:14px;"><span>${i.name} x ${i.qty}</span><span>${(i.price * i.qty).toLocaleString()} Ks</span></div>`).join('');
@@ -498,9 +501,30 @@
             }
         }
 
+        // 🔥 အွန်လိုင်းရော ဖုန်းထဲကပါ အပြီးအပိုင် ပြောင်စင်သွားအောင် ရှင်းထုတ်ပေးမည့် စနစ်အသစ်
         function clearAllSalesHistoryLocal() {
-            if (prompt("အတည်ပြုရန် Admin Password ရိုက်ပါ") === adminPassword) {
-                localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory); loadSalesHistoryFromSheet();
+            if (prompt("⚠️ သတိပေးချက်- မှတ်တမ်းအားလုံးကို Google Sheet ထဲကပါ အပြီးဖျက်ပါမည်။ အတည်ပြုရန် Admin Password ရိုက်ပါ -") === adminPassword) {
+                let btn = document.getElementById('clear-all-history-btn');
+                btn.disabled = true; btn.innerText = "⏳ Google Sheet မှ ဒေတာများ အကုန်ဖျက်နေပါသည်...";
+
+                let formData = new FormData(); 
+                formData.append('jsonData', JSON.stringify({ action: "clearAllSales" }));
+
+                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
+                .then(() => {
+                    setTimeout(() => {
+                        localStorage.removeItem('salesHistory'); 
+                        salesHistory = []; 
+                        displayHistory(salesHistory);
+                        btn.disabled = false;
+                        btn.innerText = "⚠️ Google Sheet နှင့် ဖုန်းထဲရှိ အရောင်းမှတ်တမ်းအားလုံး အပြီးအပိုင် ရှင်းထုတ်မည်";
+                        alert("✅ Google Sheet နှင့် စက်ထဲရှိ အရောင်းမှတ်တမ်းအားလုံးကို အပြီးအပိုင် ရှင်းလင်းပြီးပါပြီဗျာ။");
+                    }, 3000);
+                }).catch(err => {
+                    btn.disabled = false;
+                    btn.innerText = "⚠️ Google Sheet နှင့် ဖုန်းထဲရှိ အရောင်းမှတ်တမ်းအားလုံး အပြီးအပိုင် ရှင်းထုတ်မည်";
+                    alert("❌ အွန်လိုင်းချိတ်ဆက်မှု ချို့ယွင်းချက်ကြောင့် မအောင်မြင်ပါ။");
+                });
             }
         }
 
