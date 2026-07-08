@@ -34,9 +34,9 @@
         // ⚠️ သင့်ရဲ့ ဝင်ပေါက် Google Script Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2Gly6uvG2Jp05loyqfevmbSBMPrX3l2ttgpdxjOW4QPLIWfnIC_WmKUUzWjku7FUl/exec'; 
         
-        // 🔐 Password သက်သက်စီ သတ်မှတ်ခြင်း
-        const homePassword = 'abcd';  // Home Page သို့ အဝင် Password
-        const adminPassword = 'goodss'; // Admin Tab သို့ အဝင် Password
+        // 🔐 Password များကို မိမိစိတ်ကြိုက် စာလုံးရေ အတိုအရှည် ပြောင်းလဲနိုင်ပါတယ်ဗျာ
+        const homePassword = '1111';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -121,6 +121,13 @@
             <div id="history" class="tab-content">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineHistoryTab(this)">🔄 Reload Online</button>
+                </div>
+
+                <!-- 📅 တနေ့တာ အရောင်းစာရင်း ကတ်ပြား -->
+                <div class="card p-3 shadow-sm border-0 mb-3 text-center bg-primary text-white" style="border-radius: 12px;">
+                    <small class="text-white-50 fw-bold uppercase" style="letter-spacing: 0.5px;">TODAY'S TOTAL SALES</small>
+                    <h2 class="fw-bold my-1" id="today-sales-summary">0 Ks</h2>
+                    <small class="small text-white-50" id="today-date-string"></small>
                 </div>
 
                 <div class="card p-3 shadow-sm border-0 mb-3 d-flex flex-column gap-2">
@@ -208,7 +215,6 @@
             } catch(e) { console.log(e); }
         }
 
-        // Home Page ဝင်ရောက်ရန် စစ်ဆေးခြင်း
         function checkHomePassword() {
             let input = document.getElementById('home-pass-input').value;
             if (input === homePassword) {
@@ -260,13 +266,13 @@
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
             if(tabId === 'admin') renderAdminProducts(productsDB);
+            if(tabId === 'history') calculateTodaySales();
         }
 
         function logoutAdmin() {
             localStorage.removeItem('isAdminAuthenticated'); switchTab('sales');
         }
 
-        // 🔄 RELOAD ONLINE FUNCTIONS
         function reloadOnlineSalesTab(btn) {
             btn.disabled = true; btn.innerText = "⏳ Loading...";
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
@@ -310,6 +316,25 @@
             fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(res => res.json()).then(data => {
                 if(data && data.length > 0) { salesHistory = data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); }
             });
+        }
+
+        // 📊 တနေ့တာ အရောင်းစုစုပေါင်း တွက်ချက်သည့် စနစ်
+        function calculateTodaySales() {
+            let todayStr = new Date().toLocaleDateString();
+            document.getElementById('today-date-string').innerText = "ရက်စွဲ: " + new Date().toDateString();
+            
+            let totalSum = 0;
+            salesHistory.forEach(sale => {
+                // Voucher ထဲက နေ့စွဲနဲ့ ဒီနေ့နေ့စွဲ တူမတူ စစ်ဆေးသည်
+                if(sale.date) {
+                    let saleDateStr = new Date(sale.date).toLocaleDateString();
+                    if(saleDateStr === todayStr) {
+                        let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
+                        totalSum += cleanTotal;
+                    }
+                }
+            });
+            document.getElementById('today-sales-summary').innerText = totalSum.toLocaleString() + " Ks";
         }
 
         function filterProductNames() {
@@ -421,6 +446,7 @@
                 let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
                 list.innerHTML += `<div class="card p-3 mb-3 border-0 shadow-sm bg-white"><div class="d-flex justify-content-between mb-1"><span class="fw-bold text-primary">ID: ${sale.voucherId}</span><small class="text-muted">${sale.date || ''}</small></div><div class="small mb-2">ဝယ်သူ: <b>${sale.customerName}</b></div><hr class="my-1"><div class="py-2">${itemsList}</div><hr class="my-1"><div class="d-flex justify-content-between align-items-center mt-2"><h6 class="fw-bold text-success mb-0">စုစုပေါင်း: ${sale.total} Ks</h6><div><button class="btn btn-sm btn-outline-dark me-1" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button><button class="btn btn-sm btn-danger" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်မည်</button></div></div></div>`;
             });
+            calculateTodaySales(); // မှတ်တမ်းပြောင်းလဲတိုင်း ယနေ့စုစုပေါင်းကို ပြန်တွက်ခိုင်းသည်
         }
 
         function deleteSaleFromSheet(voucherId) {
