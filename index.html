@@ -24,9 +24,11 @@
         
         #print-receipt-zone { display: none; }
         @media print {
-            body { visibility: hidden; background: white; }
-            #print-receipt-zone { visibility: visible; display: block !important; position: absolute; left: 0; top: 0; width: 100% !important; }
+            body { visibility: hidden; background: white; margin: 0; padding: 0; }
+            #app-main-content { display: none !important; }
+            #print-receipt-zone { visibility: visible; display: block !important; position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 0; }
             #print-receipt-zone * { visibility: visible; }
+            @page { margin: 0; }
         }
     </style>
 
@@ -35,8 +37,8 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbw2Gly6uvG2Jp05loyqfevmbSBMPrX3l2ttgpdxjOW4QPLIWfnIC_WmKUUzWjku7FUl/exec'; 
         
         // 🔐 Password များကို မိမိစိတ်ကြိုက် စာလုံးရေ အတိုအရှည် ပြောင်းလဲနိုင်ပါတယ်ဗျာ
-        const homePassword = 'hello';  
-        const adminPassword = 'nono'; 
+        const homePassword = 'nono';  
+        const adminPassword = 'kpay'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -81,7 +83,6 @@
 
         <div class="container pb-5">
             
-            <!-- 🛒 အရောင်း Tab -->
             <div id="sales" class="tab-content active">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineSalesTab(this)">🔄 Reload Online</button>
@@ -117,13 +118,11 @@
                 </div>
             </div>
 
-            <!-- 📜 မှတ်တမ်း Tab -->
             <div id="history" class="tab-content">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineHistoryTab(this)">🔄 Reload Online</button>
                 </div>
 
-                <!-- 📅 တနေ့တာ အရောင်းစာရင်း ကတ်ပြား -->
                 <div class="card p-3 shadow-sm border-0 mb-3 text-center bg-primary text-white" style="border-radius: 12px;">
                     <small class="text-white-50 fw-bold uppercase" style="letter-spacing: 0.5px;">TODAY'S TOTAL SALES</small>
                     <h2 class="fw-bold my-1" id="today-sales-summary">0 Ks</h2>
@@ -139,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="reloadOnlineAdminTab(this)">🔄 Reload Online</button>
@@ -318,15 +316,14 @@
             });
         }
 
-        // 📊 တနေ့တာ အရောင်းစုစုပေါင်း တွက်ချက်သည့် စနစ် (ရက်စွဲပုံစံအားလုံးအတွက် ပြင်ဆင်ပြီး)
         function calculateTodaySales() {
             let now = new Date();
             let d = String(now.getDate()).padStart(2, '0');
             let m = String(now.getMonth() + 1).padStart(2, '0');
             let y = now.getFullYear();
             
-            let todayFormat1 = `${d}/${m}/${y}`; // DD/MM/YYYY ပုံစံ
-            let todayFormat2 = `${m}/${d}/${y}`; // MM/DD/YYYY ပုံစံ
+            let todayFormat1 = `${d}/${m}/${y}`; 
+            let todayFormat2 = `${m}/${d}/${y}`; 
             
             document.getElementById('today-date-string').innerText = "ရက်စွဲ: " + now.toDateString();
             
@@ -435,18 +432,54 @@
             cart = []; renderCart(); 
         }
 
+        // 🖨️ ပရင်တာအပြင်အဆင် မျက်နှာပြင်ပြည့် ကြီးကြီးလင်းလင်း ပြင်ဆင်ထားသည့် Voucher ဒီဇိုင်း
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); let itemsHTML = '';
             sale.items.forEach(i => { 
-                itemsHTML += `<tr style="font-size: 13px; border-bottom: 1px dashed #eee;"><td style="text-align: left; padding: 5px 0;">${i.name}</td><td style="text-align: right; padding: 5px 0;">${Number(i.price).toLocaleString()}</td><td style="text-align: center; padding: 5px 0;">${i.qty}</td><td style="text-align: right; padding: 5px 0;">${(i.price * i.qty).toLocaleString()}</td></tr>`; 
+                itemsHTML += `<tr style="font-size: 16px; font-weight: bold; border-bottom: 1px dashed #bbb;"><td style="text-align: left; padding: 10px 0; word-break: break-word; max-width: 120px;">${i.name}</td><td style="text-align: right; padding: 10px 0;">${Number(i.price).toLocaleString()}</td><td style="text-align: center; padding: 10px 0;">${i.qty}</td><td style="text-align: right; padding: 10px 0;">${(i.price * i.qty).toLocaleString()}</td></tr>`; 
             });
 
-            printZone.innerHTML = `<div style="width: 100%; max-width: 280px; margin: 0 auto; padding: 10px; font-family: Arial, sans-serif; color: #000; background: white;"><div style="text-align: center; font-size: 18px; font-weight: bold;">ကောင်းမြတ် POS</div><div style="border-top: 1px dashed #000; margin: 6px 0;"></div><table style="width: 100%; font-size: 12px;"><tr><td>Voucher:</td><td style="text-align: right; font-weight: bold;">${sale.voucherId}</td></tr><tr><td>ဝယ်သူ:</td><td style="text-align: right;">${sale.customerName}</td></tr><tr><td>နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr></table><table style="width: 100%; border-collapse: collapse; margin-top: 5px;"><thead><tr style="font-size: 13px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000;"><th style="text-align: left;">ပစ္စည်း</th><th style="text-align: right;">ဈေး</th><th style="text-align: center;">ခု</th><th style="text-align: right;">သင့်ငွေ</th></tr></thead><tbody>${itemsHTML}</tbody></table><div style="border-top: 1px dashed #000; margin: 6px 0;"></div><table style="width: 100%; font-size: 15px; font-weight: bold;"><tr><td>စုစုပေါင်း:</td><td style="text-align: right;">${sale.total} Ks</td></tr></table><div style="border-top: 1px dashed #000; margin: 6px 0;"></div><div style="text-align: center; font-size: 11px; margin-top: 10px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></div>`;
+            printZone.innerHTML = `
+                <div style="width: 100%; box-sizing: border-box; padding: 15px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; background: white;">
+                    <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px;">ကောင်းမြတ် POS</div>
+                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
+                    
+                    <table style="width: 100%; font-size: 15px; border-collapse: collapse; margin-bottom: 10px; line-height: 1.6;">
+                        <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
+                        <tr><td style="font-weight: bold;">ဝယ်သူ:</td><td style="text-align: right; font-weight: bold;">${sale.customerName}</td></tr>
+                        <tr><td style="font-weight: bold;">နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
+                    </table>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                        <thead>
+                            <tr style="font-size: 15px; font-weight: bold; border-top: 2px dashed #000; border-bottom: 2px dashed #000; background: #f9f9f9;">
+                                <th style="text-align: left; padding: 8px 0;">ပစ္စည်း</th>
+                                <th style="text-align: right; padding: 8px 0;">ဈေး</th>
+                                <th style="text-align: center; padding: 8px 0;">ခု</th>
+                                <th style="text-align: right; padding: 8px 0;">သင့်ငွေ</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsHTML}</tbody>
+                    </table>
+                    
+                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
+                    
+                    <table style="width: 100%; font-size: 22px; font-weight: bold;">
+                        <tr>
+                            <td>စုစုပေါင်း:</td>
+                            <td style="text-align: right; color: #000;">${sale.total} Ks</td>
+                        </tr>
+                    </table>
+                    
+                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
+                    <div style="text-align: center; font-size: 14px; font-weight: bold; margin-top: 15px; line-height: 1.5;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
+                </div>`;
+                
             setTimeout(() => { window.print(); }, 300);
         }
 
         function displayHistory(data) {
-            const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">မှတ်တမ်းမရှိသေးပါ။</div>'; return; }
+            const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">...</div>'; return; }
             list.innerHTML = '';
             data.forEach(sale => {
                 let itemsList = sale.items.map(i => `<div class="d-flex justify-content-between text-secondary" style="font-size:14px;"><span>${i.name} x ${i.qty}</span><span>${(i.price * i.qty).toLocaleString()} Ks</span></div>`).join('');
