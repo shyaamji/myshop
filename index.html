@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ဝင်းသီရိ - Premium POS (Dual Mode & Keyboard Fix)</title>
+    <title>ကောင်းမြတ် - Premium POS</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
@@ -74,10 +74,11 @@
         .nav-tabs-custom { 
             background: var(--bg-card); border-radius: 16px; padding: 6px; 
             border: 1px solid var(--border-color); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            align-items: center;
         }
         .nav-tabs-custom .btn { 
-            border: none; border-radius: 12px; font-weight: 600; font-size: 14px; 
-            color: var(--text-muted); padding: 12px 5px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border: none; border-radius: 12px; font-weight: 600; font-size: 13px; 
+            color: var(--text-muted); padding: 10px 4px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .nav-tabs-custom .btn.active { 
             background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; 
@@ -103,17 +104,34 @@
             border-color: var(--accent-gold) !important; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15) !important;
         }
         
-        /* 🔍 Search Container & Results Fix for Keyboard Overlay */
+        /* 🔍 Search Container & Perfect Screen Fix */
         .search-container-box {
             position: relative;
-            z-index: 999; /* Higher priority to stay above main layout */
+            z-index: 999;
         }
         .search-results { 
-            position: absolute; width: 100%; z-index: 9999; max-height: 280px; 
-            overflow-y: auto; background: var(--bg-card); border: 2px solid var(--accent-gold); 
-            border-radius: 14px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); margin-top: 6px; 
+            position: absolute; 
+            left: 0;
+            right: 0;
+            width: 100%; /* Fix strictly within input layout width */
+            z-index: 9999; 
+            max-height: 260px; 
+            overflow-y: auto; 
+            background: var(--bg-card); 
+            border: 2px solid var(--accent-gold); 
+            border-radius: 14px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); 
+            margin-top: 6px; 
+            box-sizing: border-box; /* Preventions for element stretching */
         }
-        .search-item { padding: 14px 18px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.2s; color: var(--text-main); }
+        .search-item { 
+            padding: 14px 16px; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border-color); 
+            transition: background 0.2s; 
+            color: var(--text-main); 
+            word-break: break-word;
+        }
         .search-item:hover { background-color: var(--bg-input); }
         
         /* 🛒 Cart & Badges */
@@ -130,11 +148,21 @@
         }
         .btn-premium-gold:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* Mode Switch Button */
+        /* Relocated Theme Button Styles */
         .theme-toggle-btn {
-            background: var(--bg-input); border: 1px solid var(--border-color);
-            color: var(--text-main); padding: 8px 12px; border-radius: 10px; font-weight: 600;
-            font-size: 13px; transition: all 0.2s;
+            background: var(--bg-input); 
+            border: 1px solid var(--border-color);
+            color: var(--text-main); 
+            height: 42px;
+            width: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px; 
+            font-size: 16px; 
+            transition: all 0.2s;
+            cursor: pointer;
+            flex-shrink: 0;
         }
 
         /* 🖨️ Print Zone Settings */
@@ -150,8 +178,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'ppc';  
-        const adminPassword = 'lsolso'; 
+        const homePassword = '1111';  
+        const adminPassword = 'ppc'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -169,7 +197,7 @@
     <div id="app-lock-screen">
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
-            <h4 class="fw-bold mb-1">ဝင်းသီရိ ကုန်စုံဆိုင်</h4>
+            <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
             <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM</p>
             <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size: 24px; letter-spacing: 6px;">
             <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkHomePassword()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
@@ -183,10 +211,9 @@
         <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
-                    <span style="color: var(--accent-gold);">✨</span> ဝင်းသီရိ ကုန်စုံဆိုင်
+                    <span style="color: var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
                 </span>
-                <div class="d-flex gap-2">
-                    <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
+                <div>
                     <button class="btn btn-sm btn-outline-danger px-3 py-1.5 fw-semibold" style="border-radius: 10px; font-size: 13px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
                 </div>
             </div>
@@ -197,7 +224,8 @@
                 <button id="btn-sales" class="btn flex-fill active" onclick="switchTab('sales')">🛒 အရောင်း</button>
                 <button id="btn-history" class="btn flex-fill" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
                 <button id="btn-dashboard" class="btn flex-fill" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
-                <button id="btn-admin" class="btn flex-fill" onclick="switchTab('admin')">⚙️ စီမံခန့်ခွဲရန်</button>
+                <button id="btn-admin" class="btn flex-fill" onclick="switchTab('admin')">⚙️ စီမံ</button>
+                <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn" title="Toggle Theme">🌙</button>
             </div>
         </div>
 
@@ -373,7 +401,7 @@
             } catch(e) {}
         }
 
-        // 🌗 Toggle Day/Night Theme Logic
+        // 🌗 Toggle Theme Logic
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -389,10 +417,10 @@
             const btn = document.getElementById('theme-btn');
             if(!btn) return;
             if(theme === 'dark') {
-                btn.innerHTML = '☀️ Light Mode';
+                btn.innerHTML = '☀️';
                 document.getElementById('nav-theme-color').setAttribute('content', '#0f172a');
             } else {
-                btn.innerHTML = '🌙 Dark Mode';
+                btn.innerHTML = '🌙';
                 document.getElementById('nav-theme-color').setAttribute('content', '#f8fafc');
             }
         }
@@ -432,7 +460,6 @@
         window.onload = function() {
             document.getElementById('hidden-form').action = scriptURL;
             
-            // Set initial theme state button text
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             updateThemeButtonUi(currentTheme);
 
@@ -455,7 +482,6 @@
             let searchInp = document.getElementById('name-search-input');
             if(searchInp) {
                 searchInp.addEventListener('keyup', filterProductNames);
-                // Auto Scroll view on focus to avoid keyboard covering
                 searchInp.addEventListener('focus', function() {
                     setTimeout(() => {
                         document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -773,7 +799,7 @@
             });
             printZone.innerHTML = `
                 <div style="width: 100%; box-sizing: border-box; padding: 15px; font-family: Arial, sans-serif; color: #000; background: white;">
-                    <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px;">ဝင်းသီရိ ကုန်စုံဆိုင်</div>
+                    <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px;">ကောင်းမြတ် ကုန်စုံဆိုင်</div>
                     <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
                     <table style="width: 100%; font-size: 15px; border-collapse: collapse; margin-bottom: 10px; line-height: 1.6;">
                         <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
