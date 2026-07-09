@@ -220,7 +220,7 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'ppc';  
+        const homePassword = 'gogo';  
         const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
@@ -255,9 +255,6 @@
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
                     <span style="color: var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
                 </span>
-                <div>
-                    <button class="btn btn-sm btn-outline-danger px-3 py-1.5 fw-semibold" style="border-radius: 10px; font-size: 13px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
-                </div>
             </div>
         </nav>
 
@@ -378,7 +375,10 @@
                 <div class="custom-card" style="border-top: 4px solid var(--accent-success) !important;">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h6 class="fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
-                        <button class="btn btn-sm btn-outline-danger py-1 px-3" style="font-size: 12px; border-radius: 8px;" onclick="logoutAdmin()">🔒 Admin ပိတ်မည်</button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size: 12px; border-radius: 8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
+                            <button class="btn btn-sm btn-secondary py-1 px-3 fw-bold" style="font-size: 12px; border-radius: 8px;" onclick="logoutAdmin()">🔒 Admin ထွက်မည်</button>
+                        </div>
                     </div>
                     <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3">
                         <input type="hidden" name="jsonData" id="form-json-data">
@@ -751,7 +751,7 @@
             suggestionsBox.innerHTML = '';
             
             if (filtered.length === 0) {
-                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">ရှာဖွေမှုမတွေ့ရှိပါ</div>';
+                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">$\phi$ ရှာဖွေမှုမတွေ့ရှိပါ</div>';
                 suggestionsBox.style.display = 'block';
                 return;
             }
@@ -984,8 +984,10 @@
         }
 
         function clearAllSalesHistoryLocal() {
-            if (confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေჩာပါသလား?")) {
-                localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory);
+            if (window.confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေჩာပါသလား?")) {
+                localStorage.removeItem('salesHistory'); 
+                salesHistory = []; 
+                displayHistory(salesHistory);
                 alert("✅ စက်ထဲရှိ မှတ်တမ်းများကို ရှင်းလင်းပြီးပါပြီ။");
             }
         }
