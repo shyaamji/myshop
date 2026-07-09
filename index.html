@@ -49,10 +49,10 @@
     </style>
 
     <script>
-        // ⚠️ သင့်ရဲ့ Google Script Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
+        // ⚠️ သင့်ရဲ့ Google Script Web App URL
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'wintr';  
-        const adminPassword = 'nono'; 
+        const homePassword = '459459';  
+        const adminPassword = '999777'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -77,10 +77,6 @@
     <div id="print-receipt-zone"></div>
 
     <div id="app-main-content">
-        <div id="install-banner" class="bg-warning text-dark text-center p-2.5 fw-bold small" style="display: none; cursor: pointer;" onclick="triggerPwaInstall()">
-            📲 ဤ POS စနစ်ကို ဖုန်းမျက်နှာပြင်ပေါ်တွင် App အဖြစ် ထည့်သွင်းရန် (Install App) နှိပ်ပါ။
-        </div>
-
         <nav class="navbar navbar-dark bg-dark sticky-top px-3 py-2.5 shadow-sm" style="background-color: #0f172a !important;">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 text-white">🛍️ ကောင်းမြတ် POS</span>
@@ -152,7 +148,7 @@
                 </div>
                 <div class="custom-card d-flex flex-column gap-2.5">
                     <input type="text" id="search-input" class="form-control form-control-lg" style="border-radius: 10px;" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
-                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2" style="border-radius: 10px;" onclick="clearAllSalesHistoryLocal()">⚠️ Google Sheet နှင့် စက်ထဲရှိ မှတ်တမ်းအားလုံး အပြီးအပိုင် ဖြုန်းမည်</button>
+                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2" style="border-radius: 10px;" onclick="clearAllSalesHistoryLocal()">⚠️ စက်ထဲရှိ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
                 </div>
                 <div id="history-list">
                     <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
@@ -161,7 +157,7 @@
 
             <div id="dashboard" class="tab-content">
                 <div class="custom-card text-center text-white shadow" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border: none;">
-                    <small class="fw-bold text-white-50 uppercase tracking-wider" style="font-size: 11px;">TODAY'S TOTAL SALES</small>
+                    <small class="fw-bold text-white-50" style="font-size: 11px;">TODAY'S TOTAL SALES</small>
                     <h2 class="fw-bold my-1 fs-1" id="today-sales-summary">0 Ks</h2>
                     <small class="small text-white-50" id="today-date-string"></small>
                 </div>
@@ -201,7 +197,7 @@
                 <div class="custom-card bg-white" style="border-top: 5px solid #10b981 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
-                        <button class="btn btn-xs btn-outline-danger py-0.5 px-2" style="font-size: 12px; border-radius: 6px;" onclick="logoutAdmin()">🔒 Admin ပိတ်မည်</button>
+                        <button class="btn btn-sm btn-outline-danger py-0.5 px-2" style="font-size: 12px; border-radius: 6px;" onclick="logoutAdmin()">🔒 Admin ပိတ်မည်</button>
                     </div>
                     <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-2">
                         <input type="hidden" name="jsonData" id="form-json-data">
@@ -218,7 +214,7 @@
                             <input type="number" id="new-price" class="form-control" style="border-radius: 8px;" placeholder="ဈေးနှုန်း">
                         </div>
                         <div class="col-6">
-                            <label class="text-muted small fw-bold mb-1">လက်ကျန်ခုရေ</label>
+                            <label class="text-muted small fw-bold mb-1">...လက်ကျန်ခုရေ</label>
                             <input type="number" id="new-stock" class="form-control" style="border-radius: 8px;" placeholder="စတော့">
                         </div>
                         <div class="col-12 mt-3">
@@ -273,7 +269,6 @@
             try {
                 let inputElement = document.getElementById('home-pass-input');
                 let input = inputElement ? inputElement.value.trim() : "";
-                
                 if (input === homePassword) {
                     sessionStorage.setItem('isAppUnlocked', 'true');
                     document.getElementById('app-lock-screen').style.display = 'none';
@@ -319,7 +314,7 @@
                     }
                 });
             }
-        }
+        };
 
         function switchTab(tabId) {
             if (tabId === 'admin') {
@@ -412,18 +407,15 @@
             if(todaySumEl) todaySumEl.innerText = totalSum.toLocaleString() + " Ks";
         }
 
-        // 📊 ၇ ရက်စာ ပြဇယားနှင့် နေ့ရက်အလိုက် ဇယားတွက်ချက်မှု လုပ်ဆောင်ချက်
         function updateSalesChartLogic() {
             try {
                 let salesMap = {};
-                // လွန်ခဲ့သော ၇ ရက်စာ ရက်စွဲစာရင်းကို အစီအစဉ်လိုက် တည်ဆောက်ခြင်း
                 for (let i = 6; i >= 0; i--) {
                     let d = new Date(); d.setDate(d.getDate() - i);
                     let dateStr = d.toLocaleDateString('en-GB'); 
                     salesMap[dateStr] = 0;
                 }
 
-                // ကျန်ရှိသော ရက်စွဲများအားလုံးကိုလည်း ရက်စွဲအလိုက် စုစည်းရန် Map အပြည့်အစုံတည်ဆောက်ခြင်း
                 let allDatesMap = {};
 
                 salesHistory.forEach(sale => {
@@ -442,12 +434,10 @@
 
                         let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
                         
-                        // ၇ ရက်စာပြဇယားအတွက် ထည့်သွင်းခြင်း
                         if (salesMap[formattedDate] !== undefined) {
                             salesMap[formattedDate] += cleanTotal;
                         }
 
-                        // ရက်စွဲအလိုက် ဇယားကွက်စာရင်းအတွက် ထည့်သွင်းခြင်း
                         if (allDatesMap[formattedDate] === undefined) {
                             allDatesMap[formattedDate] = 0;
                         }
@@ -455,12 +445,11 @@
                     }
                 });
 
-                // 📅 ရက်စွဲအလိုက် ဇယားကွက် (Table Body) ကို တည်ဆောက်ခြင်း
                 const tableBody = document.getElementById('date-sales-table-body');
                 if (tableBody) {
                     let sortedDates = Object.keys(allDatesMap).sort((a, b) => {
                         let p1 = a.split('/'), p2 = b.split('/');
-                        return new Date(p2[2], p2[1]-1, p2[0]) - new Date(p1[2], p1[1]-1, p1[0]); // လတ်တလောရက်စွဲကို အပေါ်ဆုံးထားရန်
+                        return new Date(p2[2], p2[1]-1, p2[0]) - new Date(p1[2], p1[1]-1, p1[0]);
                     });
 
                     if(sortedDates.length === 0) {
@@ -476,7 +465,6 @@
                     }
                 }
 
-                // 📈 Chart.js ဆွဲခြင်း လုပ်ငန်းစဉ်
                 let labels = Object.keys(salesMap);
                 let chartData = Object.values(salesMap);
 
@@ -561,13 +549,14 @@
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').focus();
             } else {
-                canScan = false; setTimeout(() => { canScan = true; }, 2000);
+                canScan = false; updateScannerStatusUi(false);
+                setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 2000);
                 addByProductObject(product);
             }
         }
 
         function updateScannerStatusUi(isScanning) {
-            let btn = document.getElementById('scanner-status-btn');
+            let btn = document.getElementById('scanner-status-btn'); if(!btn) return;
             btn.className = isScanning ? "btn btn-sm btn-success py-0.5 px-2 fw-bold" : "btn btn-sm btn-danger py-0.5 px-2 fw-bold";
             btn.innerText = isScanning ? "🟢 Scanning" : "🔴 Paused";
         }
@@ -583,23 +572,17 @@
         function changeQty(index, change) { playBeep(); cart[index].qty += change; if (cart[index].qty <= 0) cart.splice(index, 1); renderCart(); }
         
         function renderCart() {
-            const list = document.getElementById('cart-list'); 
-            const countBadge = document.getElementById('cart-count-badge');
-            let total = 0; 
-            let totalItems = 0;
-            
+            const list = document.getElementById('cart-list'); const countBadge = document.getElementById('cart-count-badge');
+            let total = 0; let totalItems = 0;
             if(cart.length === 0) { 
                 list.innerHTML = '<div class="text-center text-muted py-4 small">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>'; 
                 document.getElementById('cart-total').innerText = 0; 
                 if(countBadge) countBadge.innerText = "0 items";
                 return; 
             }
-            
             list.innerHTML = '';
             cart.forEach((item, index) => {
-                total += (item.price * item.qty);
-                totalItems += item.qty;
-                
+                total += (item.price * item.qty); totalItems += item.qty;
                 list.innerHTML += `
                     <div class="d-flex justify-content-between align-items-center py-2.5 border-bottom" style="border-color: #f1f5f9 !important;">
                         <div style="flex: 1; min-width: 0;" class="pe-2">
@@ -613,7 +596,6 @@
                         </div>
                     </div>`;
             });
-            
             document.getElementById('cart-total').innerText = total.toLocaleString();
             if(countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
         }
@@ -687,21 +669,9 @@
         }
 
         function clearAllSalesHistoryLocal() {
-            if (prompt("⚠️ ဒေတာအားလုံးကို Sheet ထဲကပါ အပြီးဖျက်ပါမည်။ အတည်ပြုရန် Admin Password ရိုက်ပါ -") === adminPassword) {
-                let btn = document.getElementById('clear-all-history-btn');
-                btn.disabled = true; btn.innerText = "⏳ Google Sheet မှ ဒေတာများ အကုန်ဖျက်နေပါသည်...";
-                let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "clearAllSales" }));
-                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
-                .then(() => {
-                    setTimeout(() => {
-                        localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory);
-                        btn.disabled = false; btn.innerText = "⚠️ Google Sheet နှင့် စက်ထဲရှိ မှတ်တမ်းအားလုံး အပြီးအပိုင် ဖြုန်းမည်";
-                        alert("✅ မှတ်တမ်းအားလုံးကို အပြီးအပိုင် ရှင်းလင်းပြီးပါပြီဗျာ။");
-                    }, 2500);
-                }).catch(err => {
-                    btn.disabled = false; btn.innerText = "⚠️ Google Sheet နှင့် စက်ထဲရှိ မှတ်တမ်းအားလုံး အပြီးအပိုင် ဖြုန်းမည်";
-                    alert("❌ ချိတ်ဆက်မှု မအောင်မြင်ပါ။");
-                });
+            if (confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေချာပါသလား?")) {
+                localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory);
+                alert("✅ စက်ထဲရှိ မှတ်တမ်းများကို ရှင်းလင်းပြီးပါပြီ။");
             }
         }
 
