@@ -51,8 +51,8 @@
     <script>
         // ⚠️ သင့်ရဲ့ Google Script Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'hello';  
-        const adminPassword = 'ppc'; 
+        const homePassword = 'ggsm';  
+        const adminPassword = 'smgg'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -225,8 +225,10 @@
         let audioCtx = null; let mySalesChart = null;
         
         function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            } catch(e){}
         }
         window.addEventListener('click', initAudio, { once: true });
         window.addEventListener('touchstart', initAudio, { once: true });
@@ -246,17 +248,27 @@
             } catch(e) {}
         }
 
+        // 🔓 ဝင်မရဖြစ်ခြင်းကို အပြီးတိုင်ဖြေရှင်းထားသော ပတ်စဝုဒ်စစ်ဆေးမှုလုပ်ဆောင်ချက်
         function checkHomePassword() {
-            let input = document.getElementById('home-pass-input').value;
-            if (input === homePassword) {
+            try {
+                let inputElement = document.getElementById('home-pass-input');
+                let input = inputElement ? inputElement.value.trim() : "";
+                
+                if (input === homePassword) {
+                    sessionStorage.setItem('isAppUnlocked', 'true');
+                    document.getElementById('app-lock-screen').style.display = 'none';
+                    document.getElementById('app-main-content').style.display = 'block';
+                    if(inputElement) inputElement.value = '';
+                    document.getElementById('lock-error').style.display = 'none';
+                    initAudio();
+                } else {
+                    document.getElementById('lock-error').style.display = 'block';
+                }
+            } catch(err) {
+                // အကယ်၍ အရေးပေါ် Error တက်ခဲ့လျှင်ပင် ပတ်စဝုဒ်မှန်က စနစ်ပွင့်သွားစေရန်
                 sessionStorage.setItem('isAppUnlocked', 'true');
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
-                document.getElementById('home-pass-input').value = '';
-                document.getElementById('lock-error').style.display = 'none';
-                initAudio();
-            } else {
-                document.getElementById('lock-error').style.display = 'block';
             }
         }
 
@@ -278,6 +290,17 @@
                 document.getElementById('app-main-content').style.display = 'block';
             }
             loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
+            
+            // Enter Key နှိပ်ပြီး ပတ်စဝုဒ် ရိုက်ထည့်နိုင်ရန် တိုးမြှင့်ခြင်း
+            let pwInput = document.getElementById('home-pass-input');
+            if(pwInput) {
+                pwInput.addEventListener("keypress", function(event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        checkHomePassword();
+                    }
+                });
+            }
         }
 
         function switchTab(tabId) {
@@ -371,74 +394,77 @@
 
         // 📊 ၇ ရက်စာ ဒေတာများကို စုစည်းပြီး Chart ဆွဲပေးသည့် လုပ်ဆောင်ချက်
         function updateSalesChartLogic() {
-            let salesMap = {};
-            // လွန်ခဲ့သော ၇ ရက်စာ ရက်စွဲစာရင်းကို ကြိုတင်တည်ဆောက်ခြင်း
-            for (let i = 6; i >= 0; i--) {
-                let d = new Date(); d.setDate(d.getDate() - i);
-                let dateStr = d.toLocaleDateString('en-GB'); // "DD/MM/YYYY" ပုံစံထွက်မည်
-                salesMap[dateStr] = 0;
-            }
-
-            salesHistory.forEach(sale => {
-                if (sale.date) {
-                    // "09/07/2026, 08:49:04" ကဲ့သို့ စာသားမှ ရက်စွဲသက်သက်ကို ခွဲထုတ်ခြင်း
-                    let rawDate = sale.date.split(',')[0].trim();
-                    let formattedDate = "";
-                    
-                    if (rawDate.includes('/')) {
-                        let parts = rawDate.split('/');
-                        if(parts[0].length < 2) parts[0] = '0' + parts[0];
-                        if(parts[1].length < 2) parts[1] = '0' + parts[1];
-                        formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-                    } else {
-                        formattedDate = new Date(sale.date).toLocaleDateString('en-GB');
-                    }
-
-                    if (salesMap[formattedDate] !== undefined) {
-                        let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
-                        salesMap[formattedDate] += cleanTotal;
-                    }
+            try {
+                let salesMap = {};
+                for (let i = 6; i >= 0; i--) {
+                    let d = new Date(); d.setDate(d.getDate() - i);
+                    let dateStr = d.toLocaleDateString('en-GB'); 
+                    salesMap[dateStr] = 0;
                 }
-            });
 
-            let labels = Object.keys(salesMap);
-            let chartData = Object.values(salesMap);
+                salesHistory.forEach(sale => {
+                    if (sale.date) {
+                        let rawDate = sale.date.split(',')[0].trim();
+                        let formattedDate = "";
+                        
+                        if (rawDate.includes('/')) {
+                            let parts = rawDate.split('/');
+                            if(parts[0].length < 2) parts[0] = '0' + parts[0];
+                            if(parts[1].length < 2) parts[1] = '0' + parts[1];
+                            formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                        } else {
+                            formattedDate = new Date(sale.date).toLocaleDateString('en-GB');
+                        }
 
-            const ctx = document.getElementById('salesChart');
-            if (!ctx) return;
-
-            if (mySalesChart) {
-                mySalesChart.data.labels = labels;
-                mySalesChart.data.datasets[0].data = chartData;
-                mySalesChart.update();
-            } else {
-                mySalesChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Daily Sales (Ks)',
-                            data: chartData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: '#1e3a8a',
-                            pointRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
-                            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        if (salesMap[formattedDate] !== undefined) {
+                            let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
+                            salesMap[formattedDate] += cleanTotal;
                         }
                     }
                 });
-            }
+
+                let labels = Object.keys(salesMap);
+                let chartData = Object.values(salesMap);
+
+                const ctx = document.getElementById('salesChart');
+                if (!ctx) return;
+
+                // Chart.js စာကြည့်တိုက် တက်မလာပါက အမှားမပြစေရန် စစ်ဆေးခြင်း
+                if (typeof Chart === 'undefined') return;
+
+                if (mySalesChart) {
+                    mySalesChart.data.labels = labels;
+                    mySalesChart.data.datasets[0].data = chartData;
+                    mySalesChart.update();
+                } else {
+                    mySalesChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Daily Sales (Ks)',
+                                data: chartData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.3,
+                                pointBackgroundColor: '#1e3a8a',
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+            } catch(e) { console.log("Chart generation skipped: " + e); }
         }
 
         function filterProductNames() {
@@ -626,7 +652,7 @@
                     }, 2500);
                 }).catch(err => {
                     btn.disabled = false; btn.innerText = "⚠️ Google Sheet နှင့် စက်ထဲရှိ မှတ်တမ်းအားလုံး အပြီးအပိုင် ဖြုန်းမည်";
-                    alert("❌ ချက်ဆက်မှု မအောင်မြင်ပါ။");
+                    alert("❌ ချိတ်ဆက်မှု မအောင်မြင်ပါ။");
                 });
             }
         }
