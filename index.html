@@ -51,8 +51,8 @@
     <script>
         // ⚠️ သင့်ရဲ့ Google Script Web App URL ကို ဒီနေရာမှာ အစားထိုးပါဗျာ
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'kpay';  
-        const adminPassword = 'wave'; 
+        const homePassword = 'hello';  
+        const adminPassword = 'ppc'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -640,4 +640,69 @@
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             arr.forEach((prod, mainIndex) => {
                 let stockBadge = `<span class="badge bg-success">စတော့ကျန်: ${prod.stock}</span>`;
-                if(prod.stock <= 0) stockBadge = `<span class="badge bg
+                if(prod.stock <= 0) stockBadge = `<span class="badge bg-danger">ကုန်သွားပြီ</span>`;
+                else if(prod.stock <= 5) stockBadge = `<span class="badge bg-warning text-dark">စတော့နည်းနေသည်: ${prod.stock}</span>`;
+
+                list.innerHTML += `<div class="list-group-item p-3 mb-2 rounded-4 border bg-white shadow-sm" style="border-radius:12px !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-1"><div class="fw-bold text-dark">${prod.name}</div><div>${stockBadge}</div></div>
+                    <div class="text-muted small mb-2 font-monospace">Barcode: ${prod.barcode}</div>
+                    <div class="row g-2">
+                        <div class="col-6"><small class="text-muted small">ဈေးနှုန်း</small><input type="number" id="p-price-${mainIndex}" class="form-control form-control-sm fw-bold text-primary" style="border-radius:6px;" value="${prod.price}"></div>
+                        <div class="col-6"><small class="text-muted small">လက်ကျန်စတော့</small><input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" style="border-radius:6px;" value="${prod.stock}"></div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-8"><button class="btn btn-sm btn-primary w-100 fw-bold" style="background-color:#1e3a8a; border:none; border-radius:6px;" id="edit-btn-${mainIndex}" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
+                        <div class="col-4"><button class="btn btn-sm btn-outline-danger w-100 fw-bold" style="border-radius:6px;" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်</button></div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function uploadProductToSheet(index) {
+            let priceVal = document.getElementById(`p-price-${index}`).value;
+            let stockVal = document.getElementById(`p-stock-${index}`).value;
+            productsDB[index].price = Number(priceVal); productsDB[index].stock = Number(stockVal);
+            let prod = productsDB[index];
+            let editBtn = document.getElementById(`edit-btn-${index}`);
+            editBtn.disabled = true; editBtn.innerText = "⏳...";
+            let payload = { action: "updateProduct", barcode: prod.barcode.toString(), name: prod.name, price: prod.price, stock: prod.stock };
+            let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+                setTimeout(() => { 
+                    editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
+                    alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ။`); loadProductsFromSheet(); 
+                }, 2000);
+            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်"; });
+        }
+
+        function deleteProductFromSheet(index) {
+            let prod = productsDB[index];
+            if (confirm(`⚠️ "${prod.name}" ကို ဖျက်မလား။`)) {
+                let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "deleteProduct", barcode: prod.barcode.toString() }));
+                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
+                productsDB.splice(index, 1); renderAdminProducts(productsDB);
+                setTimeout(() => { loadProductsFromSheet(); }, 2000);
+            }
+        }
+
+        function addNewProduct() {
+            let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
+            let name = document.getElementById('new-name').value.trim();
+            let price = document.getElementById('new-price').value.trim();
+            let stock = document.getElementById('new-stock').value.trim() || 0;
+            if(!name || !price) return alert("အချက်အလက်ဖြည့်ပါ");
+            let btn = document.getElementById('add-prod-btn'); btn.disabled = true;
+            let payload = { action: "updateProduct", barcode: barcode.toString(), name: name, price: Number(price), stock: Number(stock) };
+            let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+                setTimeout(() => {
+                    alert("သိမ်းဆည်းပြီးပါပြီ။"); btn.disabled = false;
+                    document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
+                    document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
+                    loadProductsFromSheet(); switchTab('sales');
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
