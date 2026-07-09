@@ -113,26 +113,68 @@
             position: absolute; 
             left: 0;
             right: 0;
-            width: 100%; /* Fix strictly within input layout width */
+            width: 100%; 
             z-index: 9999; 
-            max-height: 260px; 
+            max-height: 280px; 
             overflow-y: auto; 
             background: var(--bg-card); 
             border: 2px solid var(--accent-gold); 
             border-radius: 14px; 
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); 
             margin-top: 6px; 
-            box-sizing: border-box; /* Preventions for element stretching */
+            box-sizing: border-box; 
         }
         .search-item { 
-            padding: 14px 16px; 
-            cursor: pointer; 
+            padding: 12px 16px; 
             border-bottom: 1px solid var(--border-color); 
-            transition: background 0.2s; 
             color: var(--text-main); 
             word-break: break-word;
         }
-        .search-item:hover { background-color: var(--bg-input); }
+        .search-item:hover { background-color: rgba(180, 83, 9, 0.02); }
+        
+        /* 📱 Mobile Friendly Counter Buttons inside Suggestion Box */
+        .suggestion-counter-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+        }
+        .suggestion-counter-btn:active {
+            background: var(--accent-gold);
+            color: #ffffff;
+            transform: scale(0.95);
+        }
+        .suggestion-qty-display {
+            font-size: 15px;
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+        .suggestion-add-btn {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            color: #fff !important;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            transition: all 0.1s ease;
+        }
+        [data-theme="dark"] .suggestion-add-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #000 !important;
+        }
+        .suggestion-add-btn:active {
+            transform: scale(0.95);
+        }
         
         /* 🛒 Cart & Badges */
         .cart-item {
@@ -178,8 +220,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '1111';  
-        const adminPassword = 'ppc'; 
+        const homePassword = 'ppc';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -238,7 +280,10 @@
 
                 <div class="custom-card search-container-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
-                    <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off">
+                    <div class="position-relative">
+                        <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off">
+                        <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
+                    </div>
                     <div id="search-suggestions" class="search-results" style="display: none;"></div>
                 </div>
 
@@ -410,6 +455,11 @@
             updateThemeButtonUi(newTheme);
             if (document.getElementById('dashboard').classList.contains('active')) {
                 updateSalesChartLogic();
+            }
+            // If search result is currently open, redraw it to sync theme variables
+            let searchInp = document.getElementById('name-search-input');
+            if (searchInp && searchInp.value.trim() !== '') {
+                filterProductNames();
             }
         }
 
@@ -684,19 +734,96 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
+        // 🔍 Real-time Premium Suggestion Box Logic with UI Counters
         function filterProductNames() {
             let input = document.getElementById('name-search-input').value.toLowerCase().trim();
             let suggestionsBox = document.getElementById('search-suggestions');
-            if (input === '') { suggestionsBox.style.display = 'none'; return; }
+            let closeBtn = document.getElementById('close-search-btn');
+            
+            if (input === '') { 
+                suggestionsBox.style.display = 'none'; 
+                if (closeBtn) closeBtn.style.display = 'none';
+                return; 
+            }
+            
+            if (closeBtn) closeBtn.style.display = 'block';
             let filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
             suggestionsBox.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">ရှာဖွေမှုမတွေ့ရှိပါ</div>';
+                suggestionsBox.style.display = 'block';
+                return;
+            }
+
             filtered.forEach(prod => {
-                let div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
-                div.innerHTML = `<div><strong>${prod.name}</strong></div> <div style="color: var(--accent-gold);" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
-                div.onclick = function() { playBeep(); addByProductObject(prod); suggestionsBox.style.display = 'none'; document.getElementById('name-search-input').value=''; };
+                // Get current quantity from cart if already added
+                let cartItem = cart.find(i => i.barcode.toString() === prod.barcode.toString());
+                let currentQty = cartItem ? cartItem.qty : 0;
+
+                let div = document.createElement('div'); 
+                div.className = 'search-item d-flex justify-content-between align-items-center';
+                
+                // Left Side text content
+                let infoDiv = document.createElement('div');
+                infoDiv.style.flex = "1";
+                infoDiv.style.cursor = "pointer";
+                infoDiv.style.minWidth = "0";
+                infoDiv.style.marginRight = "8px";
+                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div> 
+                                     <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
+                
+                // Quick item tap -> Adds 1 item to cart directly
+                infoDiv.onclick = function() {
+                    playBeep();
+                    addByProductObject(prod);
+                    filterProductNames(); // Redraw quantities instantly
+                };
+
+                // Right Side interactive controller layout
+                let actionDiv = document.createElement('div');
+                actionDiv.className = "d-flex align-items-center gap-1";
+                
+                if (currentQty > 0) {
+                    // Show full luxury interactive counter inside suggestion box
+                    actionDiv.innerHTML = `
+                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
+                        <span class="suggestion-qty-display">${currentQty}</span>
+                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
+                    `;
+                } else {
+                    // Show clean Quick Add Button
+                    let addBtn = document.createElement('button');
+                    addBtn.className = "suggestion-add-btn";
+                    addBtn.innerText = "+ ထည့်မည်";
+                    addBtn.onclick = function() {
+                        playBeep();
+                        addByProductObject(prod);
+                        filterProductNames(); // Redraw UI immediately
+                    };
+                    actionDiv.appendChild(addBtn);
+                }
+
+                div.appendChild(infoDiv);
+                div.appendChild(actionDiv);
                 suggestionsBox.appendChild(div);
             });
             suggestionsBox.style.display = 'block';
+        }
+
+        // Handler to seamlessly update cart straight from suggestion elements
+        function changeQtyFromSuggestion(barcode, change) {
+            let cartIndex = cart.findIndex(i => i.barcode.toString() === barcode.toString());
+            if (cartIndex !== -1) {
+                changeQty(cartIndex, change);
+                filterProductNames(); // Refresh list ui seamlessly
+            }
+        }
+
+        function clearSearchInputAndBox() {
+            document.getElementById('name-search-input').value = '';
+            document.getElementById('search-suggestions').style.display = 'none';
+            document.getElementById('close-search-btn').style.display = 'none';
         }
 
         function filterAdminProductNames() {
@@ -730,6 +857,10 @@
                 canScan = false; updateScannerStatusUi(false);
                 setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 2000);
                 addByProductObject(product);
+                // If search view is currently matching this item, update it live
+                if(document.getElementById('name-search-input').value.trim() !== "") {
+                    filterProductNames();
+                }
             }
         }
 
@@ -747,7 +878,12 @@
             renderCart();
         }
 
-        function changeQty(index, change) { playBeep(); cart[index].qty += change; if (cart[index].qty <= 0) cart.splice(index, 1); renderCart(); }
+        function changeQty(index, change) { 
+            playBeep(); 
+            cart[index].qty += change; 
+            if (cart[index].qty <= 0) cart.splice(index, 1); 
+            renderCart(); 
+        }
         
         function renderCart() {
             const list = document.getElementById('cart-list'); const countBadge = document.getElementById('cart-count-badge');
@@ -768,9 +904,9 @@
                             <small class="font-monospace small fw-bold" style="color: var(--accent-gold);">${Number(item.price).toLocaleString()} Ks</small>
                         </div>
                         <div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border: 1px solid var(--border-color);">
-                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, -1)">-</button>
+                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, -1); filterProductNames();">-</button>
                             <span class="mx-2 fw-bold font-monospace" style="min-width: 20px; text-align: center; font-size: 14px; color: var(--text-main);">${item.qty}</span>
-                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, 1)">+</button>
+                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, 1); filterProductNames();">+</button>
                         </div>
                     </div>`;
             });
@@ -790,6 +926,7 @@
             let formData = new FormData(); formData.append('jsonData', JSON.stringify(saleData));
             fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
             cart = []; renderCart(); 
+            clearSearchInputAndBox();
         }
 
         function printVoucher(sale) {
