@@ -271,8 +271,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '444';  // User / ဝန်ထမ်း Password
-        const adminPassword = '333'; // Admin / ဆိုင်ရှင် Password
+        const homePassword = '1111';  // User / ဝန်ထမ်း Password
+        const adminPassword = '2222'; // Admin / ဆိုင်ရှင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -835,7 +835,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
-        // 🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေခြင်းနှင့် စနစ်အသစ်သုံး Counter UI ရေးဆွဲခြင်း
+        // 🔍 ပစ္စည်းရှာဖွေခြင်းနှင့် [ +ထည့်မည် ] Event ပြုပြင်ခြင်း
         function filterProductNames() {
             let inputElement = document.getElementById('name-search-input');
             let input = inputElement.value.toLowerCase().trim();
@@ -875,7 +875,6 @@
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
-                // Keyboard မပျောက်စေရန် 'mousedown' နှင့် 'touchstart' event များတွင် default behavior ကိုတားဆီးထားပါသည်
                 if (currentQty > 0) {
                     actionDiv.innerHTML = `
                         <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
@@ -887,12 +886,17 @@
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
+                    
+                    // Mobile Touch တွင် အလုပ်လုပ်စေရန် Event များကို သေချာချိတ်ဆက်ပေးခြင်း
                     addBtn.onmousedown = function(e) { e.preventDefault(); }; 
                     addBtn.ontouchstart = function(e) { e.preventDefault(); };
-                    addBtn.onclick = function() {
+                    
+                    // ပြဿနာဖြစ်စေသော Object String Parameter ကို တိုက်ရိုက်မပို့တော့ဘဲ Barcode ဖြင့်သာ ပေးပို့ခြင်း
+                    addBtn.onclick = function(e) {
+                        e.preventDefault();
                         playBeep();
-                        addByProductObject(prod);
-                        filterProductNames(); // အရေအတွက်တိုးရန် counter ကို ချက်ချင်းပြောင်းလဲပေးမည်
+                        addByBarcodeDirectly(prod.barcode);
+                        filterProductNames(); 
                         keepSearchInputFocus(); 
                     };
                     actionDiv.appendChild(addBtn);
@@ -905,11 +909,18 @@
             suggestionsBox.style.display = 'block';
         }
 
+        // Barcode ဖြင့် Database ထဲက ပစ္စည်းကို တိုက်ရိုက်ရှာပြီး Cart ထဲထည့်ပေးသော စနစ်သစ်
+        function addByBarcodeDirectly(barcode) {
+            let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
+            if (product) {
+                addByProductObject(product);
+            }
+        }
+
         function keepSearchInputFocus() {
             let searchInp = document.getElementById('name-search-input');
             if (searchInp) {
                 searchInp.focus();
-                // မိုဘိုင်းလ်ဖုန်း အချို့တွင် စာရိုက်ရန် cursor ပြန်လည်အလုပ်လုပ်စေရန် သေချာစေခြင်း
                 setTimeout(() => { searchInp.focus(); }, 10);
             }
         }
@@ -921,20 +932,16 @@
                 filterProductNames(); 
                 keepSearchInputFocus(); 
             } else if (change > 0) {
-                let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
-                if (product) {
-                    addByProductObject(product);
-                    filterProductNames();
-                    keepSearchInputFocus();
-                }
+                addByBarcodeDirectly(barcode);
+                filterProductNames();
+                keepSearchInputFocus();
             }
         }
 
-        // ✅ အမှန်ခြစ် နှိပ်လိုက်သည့်အခါမှ စာသားကိုရှင်းထုတ်ပြီး Keyboard ကို ဆက်ဖွင့်ထားမည့် လုပ်ဆောင်ချက်
         function confirmProductSelection() {
             playBeep();
             clearSearchInputAndBox();
-            keepSearchInputFocus(); // Keyboard လုံးဝကျမသွားစေရန် ထိန်းထားခြင်း
+            keepSearchInputFocus(); 
         }
 
         function clearSearchInputAndBox() {
@@ -1220,6 +1227,7 @@
             }
         }
 
+        // ➕ ပစ္စည်းအသစ်ထည့်သွင်းခြင်း
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
             let name = document.getElementById('new-name').value.trim();
