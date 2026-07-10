@@ -8,6 +8,7 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
     
+    <!-- Google Fonts, Bootstrap 5 & Chart.js -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -249,8 +250,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '999';  
-        const adminPassword = '777'; 
+        const homePassword = '1111';  // User / ဝန်ထမ်း Password
+        const adminPassword = '2222'; // Admin / ဆိုင်ရှင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -265,13 +266,14 @@
 </head>
 <body>
 
+    <!-- 🔒 Luxury Screen Lock (Dual Role Input) -->
     <div id="app-lock-screen">
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
             <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
             <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM</p>
             <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size: 24px; letter-spacing: 6px;">
-            <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkHomePassword()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
+            <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
             <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
         </div>
     </div>
@@ -279,31 +281,38 @@
     <div id="print-receipt-zone"></div>
 
     <div id="app-main-content">
+        <!-- Premium Top Header -->
         <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
                     <span style="color: var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
+                    <span id="role-badge" class="badge bg-secondary-subtle text-secondary font-monospace ms-2" style="font-size: 11px; vertical-align: middle;"></span>
                 </span>
             </div>
         </nav>
 
+        <!-- Navigation Tab Group -->
         <div class="container mt-4">
             <div class="nav-tabs-custom d-flex gap-1" role="group">
                 <button id="btn-sales" class="btn flex-fill active" onclick="switchTab('sales')">🛒 အရောင်း</button>
                 <button id="btn-history" class="btn flex-fill" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-                <button id="btn-dashboard" class="btn flex-fill" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
-                <button id="btn-admin" class="btn flex-fill" onclick="switchTab('admin')">⚙️ စီမံ</button>
+                <button id="btn-dashboard" class="btn flex-fill admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
+                <button id="btn-admin" class="btn flex-fill admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
+                <button id="btn-logout-tab" class="btn flex-fill text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
                 <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn" title="Toggle Theme">🌙</button>
             </div>
         </div>
 
+        <!-- Main Body Content -->
         <div class="container mt-4 pb-5">
             
+            <!-- 🛒 Sales Tab -->
             <div id="sales" class="tab-content active">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync Sheet</button>
                 </div>
 
+                <!-- 🔍 Product Search Container -->
                 <div class="custom-card search-container-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
@@ -323,6 +332,7 @@
                     <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
                 </div>
 
+                <!-- Shopping Cart Component -->
                 <div class="custom-card p-0 overflow-hidden border-0" style="background: var(--bg-card); border: 1px solid var(--border-color) !important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
                         <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
@@ -351,6 +361,7 @@
                 </div>
             </div>
 
+            <!-- 📜 History Tab -->
             <div id="history" class="tab-content">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
@@ -359,13 +370,14 @@
                     <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
                         <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
                     </form>
-                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5" style="border-radius: 12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
+                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius: 12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
                 </div>
                 <div id="history-list">
                     <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
                 </div>
             </div>
 
+            <!-- 📊 Dashboard Tab -->
             <div id="dashboard" class="tab-content">
                 <div class="custom-card text-center shadow-sm" style="background: var(--bg-card); border: 1px solid rgba(217, 119, 6, 0.15);">
                     <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">TODAY'S TOTAL SALES</small>
@@ -400,6 +412,7 @@
                 </div>
             </div>
 
+            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
@@ -410,7 +423,6 @@
                         <h6 class="fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
                         <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size: 12px; border-radius: 8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
-                            <button class="btn btn-sm btn-secondary py-1 px-3 fw-bold" style="font-size: 12px; border-radius: 8px;" onclick="logoutAdmin()">🔒 Admin ထွက်မည်</button>
                         </div>
                     </div>
                     <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3">
@@ -487,7 +499,6 @@
             }
         }
 
-        // 🌗 Toggle Theme Logic
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -515,12 +526,31 @@
             }
         }
 
-        function checkHomePassword() {
+        // 🔓 Dual-Role Dual-Login Authentication Engine
+        function checkUniversalLogin() {
             try {
                 let inputElement = document.getElementById('home-pass-input');
                 let input = inputElement ? inputElement.value.trim() : "";
-                if (input === homePassword) {
+                
+                if (input === adminPassword) {
+                    // Admin ဖြင့် ဝင်ရောက်ခြင်း
                     sessionStorage.setItem('isAppUnlocked', 'true');
+                    localStorage.setItem('isAdminAuthenticated', 'true');
+                    localStorage.setItem('currentUserRole', 'admin');
+                    setupRolePrivilegesUi();
+                    
+                    document.getElementById('app-lock-screen').style.display = 'none';
+                    document.getElementById('app-main-content').style.display = 'block';
+                    if(inputElement) inputElement.value = '';
+                    document.getElementById('lock-error').style.display = 'none';
+                    initAudio();
+                } else if (input === homePassword) {
+                    // ဝန်ထမ်း (User) ဖြင့် ဝင်ရောက်ခြင်း
+                    sessionStorage.setItem('isAppUnlocked', 'true');
+                    localStorage.removeItem('isAdminAuthenticated'); // Admin flag ကို ဖြုတ်ချမည်
+                    localStorage.setItem('currentUserRole', 'user');
+                    setupRolePrivilegesUi();
+                    
                     document.getElementById('app-lock-screen').style.display = 'none';
                     document.getElementById('app-main-content').style.display = 'block';
                     if(inputElement) inputElement.value = '';
@@ -536,9 +566,25 @@
             }
         }
 
+        // 🛡️ Role ပေါ်မူတည်ပြီး UI ခလုတ်များကို ထိန်းချုပ်ပေးမည့် မျက်နှာပြင်ပြောင်းလဲမှုစနစ်
+        function setupRolePrivilegesUi() {
+            const role = localStorage.getItem('currentUserRole') || 'user';
+            const badge = document.getElementById('role-badge');
+            
+            if(role === 'admin') {
+                if(badge) { badge.innerText = "Admin (ဆိုင်ရှင်)"; badge.className = "badge bg-danger-subtle text-danger font-monospace ms-2"; }
+                document.querySelectorAll('.admin-only-feature').forEach(el => el.removeAttribute('style'));
+            } else {
+                if(badge) { badge.innerText = "Staff (ဝန်ထမ်း)"; badge.className = "badge bg-secondary-subtle text-secondary font-monospace ms-2"; }
+                document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'none', 'important'));
+                switchTab('sales'); // ဝန်ထမ်းဆိုလျှင် တခြား Tab ထဲရောက်နေပါက အရောင်း Tab သို့ အတင်းရွှေ့မည်
+            }
+        }
+
         function lockAppImmediate() {
             sessionStorage.removeItem('isAppUnlocked');
             localStorage.removeItem('isAdminAuthenticated');
+            localStorage.removeItem('currentUserRole');
             window.location.reload();
         }
 
@@ -554,6 +600,7 @@
             updateThemeButtonUi(currentTheme);
 
             if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+                setupRolePrivilegesUi();
                 document.getElementById('app-lock-screen').style.display = 'none';
                 document.getElementById('app-main-content').style.display = 'block';
             }
@@ -564,7 +611,7 @@
                 pwInput.addEventListener("keypress", function(event) {
                     if (event.key === "Enter") {
                         event.preventDefault();
-                        checkHomePassword();
+                        checkUniversalLogin();
                     }
                 });
             }
@@ -581,27 +628,19 @@
         };
 
         function switchTab(tabId) {
-            if (tabId === 'admin') {
-                const isAuthed = localStorage.getItem('isAdminAuthenticated');
-                if (isAuthed !== 'true') {
-                    let passInput = prompt("🔒 Admin Password ရိုက်ထည့်ပေးပါဗျာ -", "");
-                    if (passInput === adminPassword) {
-                        localStorage.setItem('isAdminAuthenticated', 'true');
-                    } else {
-                        alert("❌ Admin Password မှားယွင်းနေပါသည်။"); return;
-                    }
-                }
+            const currentRole = localStorage.getItem('currentUserRole') || 'user';
+            // အကယ်၍ ဝန်ထမ်းက dashboard သို့မဟုတ် admin ကို နှိပ်ရင် တားဆီးရန်
+            if ((tabId === 'admin' || tabId === 'dashboard') && currentRole !== 'admin') {
+                alert("🔒 ဤအခန်းသို့ ဝင်ရောက်ရန် သင့်တွင် လုပ်ပိုင်ခွင့်မရှိပါဗျာ။");
+                return;
             }
+            
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-tabs-custom .btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
             if(tabId === 'admin') renderAdminProducts(productsDB);
             if(tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
-        }
-
-        function logoutAdmin() {
-            localStorage.removeItem('isAdminAuthenticated'); switchTab('sales');
         }
 
         function reloadOnlineSalesTab(btn) {
@@ -774,7 +813,6 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
-        // 🔍 Fix Keyboard Dismiss Issue on Appending/Reducing Qty
         function filterProductNames() {
             let input = document.getElementById('name-search-input').value.toLowerCase().trim();
             let suggestionsBox = document.getElementById('search-suggestions');
@@ -895,7 +933,16 @@
             if (!product) {
                 canScan = false; updateScannerStatusUi(false);
                 alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
-                localStorage.setItem('isAdminAuthenticated', 'true'); switchTab('admin');
+                
+                // ဝန်ထမ်းအဆင့်ဖြစ်ပါက ပစ္စည်းအသစ်သွားထည့်ခွင့်မပြုဘဲ တားဆီးရန်
+                const currentRole = localStorage.getItem('currentUserRole') || 'user';
+                if(currentRole !== 'admin') {
+                    alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် ဆိုင်ရှင် (Admin) ကို အကြောင်းကြားပေးပါရန်။");
+                    canScan = true; updateScannerStatusUi(true);
+                    return;
+                }
+                
+                switchTab('admin');
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').focus();
             } else {
@@ -1043,15 +1090,17 @@
         }
 
         function deleteSaleFromSheet(voucherId) {
-            if (prompt("အတည်ပြုရန် Admin Password ရိုက်ပါ") === adminPassword) {
+            // ဝန်ထမ်းဖျက်ရင်လည်း တားဆီးရန် သို့မဟုတ် ဆိုင်ရှင် Password ထည့်ခိုင်းရန်
+            if (prompt("⚠️ အတည်ပြုရန် Admin Password ရိုက်ပါ -") === adminPassword) {
                 salesHistory = salesHistory.filter(s => s.voucherId.toString() !== voucherId.toString());
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
                 let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: voucherId }));
                 fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
+            } else {
+                alert("❌ Password မှားယွင်းသဖြင့် ဖျက်ခွင့်မရှိပါဗျာ။");
             }
         }
 
-        // ✨ 🚀 Cloud ပေါ်က မှတ်တမ်းရော စက်ထဲကပါ တစ်ခါတည်း အကုန်ဖျက်မည့် Function အသစ်
         function clearAllSalesHistoryOnline(btn) {
             if (prompt("⚠️ အားလုံးဖျက်ရန် Admin Password ရိုက်ထည့်ပါဗျာ -") === adminPassword) {
                 if (window.confirm("🚨 Google Sheet (Cloud) ပေါ်က မှတ်တမ်းအားလုံးပါ လုံးဝပျက်သွားမှာဖြစ်လို့ သေချာပါသလားဗျာ?")) {
