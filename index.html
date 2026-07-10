@@ -213,7 +213,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 4px 0;
+            padding: 5px 0;
             font-size: 13.5px;
             border-bottom: 1px dashed rgba(15, 23, 42, 0.04);
         }
@@ -228,12 +228,13 @@
             padding-right: 10px;
         }
         .history-item-qty {
-            width: 50px;
+            width: 95px;
             text-align: center;
             color: var(--text-muted);
+            font-size: 12px;
         }
         .history-item-total {
-            width: 90px;
+            width: 95px;
             text-align: right;
             font-weight: 600;
         }
@@ -251,8 +252,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'hello';  // User / ဝန်ထမ်း Password
-        const adminPassword = '3838'; // Admin / ဆိုင်ရှင် Password
+        const homePassword = 'wtr';  // User / ဝန်ထမ်း Password
+        const adminPassword = 'ppc'; // Admin / ဆိုင်ရှင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -924,6 +925,7 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
+        // ⏱️ စကန်ဖတ်ပြီးလျှင် ၄ စက္ကန့် စောင့်ဆိုင်းစေမည့် ပြင်ဆင်ချက်အပိုင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
@@ -941,8 +943,16 @@
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').focus();
             } else {
-                canScan = false; updateScannerStatusUi(false);
-                setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 2000);
+                // စကန်ဖတ်မိပါက ချက်ချင်း "စကန်ပိတ်" လိုက်ပြီး UI ကိုပါ "Paused" ပြောင်းလဲမည်
+                canScan = false; 
+                updateScannerStatusUi(false);
+                
+                // ၄ စက္ကန့် (4000ms) ပြည့်မှ စကန်ကို Auto ပြန်ဖွင့်ပေးမည်ဖြစ်သည်
+                setTimeout(() => { 
+                    canScan = true; 
+                    updateScannerStatusUi(true); 
+                }, 4000);
+                
                 addByProductObject(product);
                 if(document.getElementById('name-search-input').value.trim() !== "") {
                     filterProductNames();
@@ -1050,7 +1060,6 @@
             setTimeout(() => { window.print(); }, 300);
         }
 
-        // 📜 History List Generator (Staff မှာ ဖျက်ခလုတ် ဖျောက်ထားပေးပါသည်)
         function displayHistory(data) {
             const list = document.getElementById('history-list'); 
             const currentRole = localStorage.getItem('currentUserRole') || 'user';
@@ -1060,15 +1069,14 @@
             data.forEach(sale => {
                 let itemsList = sale.items.map(i => `
                     <div class="history-item-row">
-                        <span class="history-item-name">🔹 ${i.name}</span>
-                        <span class="history-item-qty">x${i.qty}</span>
+                        <span class="history-item-name">${i.name}</span>
+                        <span class="history-item-qty">(${Number(i.price).toLocaleString()}) x${i.qty}</span>
                         <span class="history-item-total font-monospace">${(i.price * i.qty).toLocaleString()} Ks</span>
                     </div>
                 `).join('');
                 
                 let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
                 
-                // Admin ဆိုရင်ပဲ တစ်ခုချင်းဖျက်ခလုတ် ပေါ်ပါမယ်
                 let deleteButton = (currentRole === 'admin') ? 
                     `<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button>` : '';
 
@@ -1093,9 +1101,8 @@
             });
         }
 
-        // 🗑️ Admin တစ်ခုချင်းဖျက်ခြင်း (Password မတောင်းပါ)
         function deleteSaleFromSheet(voucherId) {
-            if (confirm("⚠️ ဤမှတ်တမ်းကို ဖျက်ပစ်မည်မှာ သေချာပါသလား?")) {
+            if (confirm("⚠️ ဤမှတ်တမ်းကို ဖျက်ပစ်မည်မှာ သေချက်ပါသလား?")) {
                 salesHistory = salesHistory.filter(s => s.voucherId.toString() !== voucherId.toString());
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
                 let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: voucherId }));
@@ -1103,7 +1110,6 @@
             }
         }
 
-        // ⚠️ Admin အားလုံးဖျက်ခြင်း (Password မတောင်းပါ)
         function clearAllSalesHistoryOnline(btn) {
             if (confirm("🚨 Google Sheet (Cloud) ပေါ်က မှတ်တမ်းအားလုံးပါ လုံးဝပျက်သွားမှာဖြစ်လို့ သေချာပါသလားဗျာ?")) {
                 btn.disabled = true; btn.innerText = "⏳ Cloud မှတ်တမ်းများကို ဖျက်နေပါသည်...";
