@@ -190,7 +190,7 @@
         }
         .btn-premium-gold:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* Relocated Theme Button Styles */
+        /* Theme Button Styles */
         .theme-toggle-btn {
             background: var(--bg-input); 
             border: 1px solid var(--border-color);
@@ -249,8 +249,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'hello';  
-        const adminPassword = 'lsolso'; 
+        const homePassword = '1111';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -481,7 +481,6 @@
             } catch(e) {}
         }
 
-        // Helper function to dismiss the keyboard on demand
         function dismissKeyboard(formElement) {
             if(document.activeElement) {
                 document.activeElement.blur();
@@ -498,7 +497,6 @@
             if (document.getElementById('dashboard').classList.contains('active')) {
                 updateSalesChartLogic();
             }
-            // If search result is currently open, redraw it to sync theme variables
             let searchInp = document.getElementById('name-search-input');
             if (searchInp && searchInp.value.trim() !== '') {
                 filterProductNames();
@@ -776,7 +774,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
-        // 🔍 Real-time Premium Suggestion Box Logic with UI Counters
+        // 🔍 Fix Keyboard Dismiss Issue on Appending/Reducing Qty
         function filterProductNames() {
             let input = document.getElementById('name-search-input').value.toLowerCase().trim();
             let suggestionsBox = document.getElementById('search-suggestions');
@@ -799,14 +797,12 @@
             }
 
             filtered.forEach(prod => {
-                // Get current quantity from cart if already added
                 let cartItem = cart.find(i => i.barcode.toString() === prod.barcode.toString());
                 let currentQty = cartItem ? cartItem.qty : 0;
 
                 let div = document.createElement('div'); 
                 div.className = 'search-item d-flex justify-content-between align-items-center';
                 
-                // Left Side text content
                 let infoDiv = document.createElement('div');
                 infoDiv.style.flex = "1";
                 infoDiv.style.cursor = "pointer";
@@ -815,33 +811,34 @@
                 infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div> 
                                      <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
                 
-                // Quick item tap -> Adds 1 item to cart directly
+                infoDiv.onmousedown = function(e) { e.preventDefault(); }; // Keyboard မကျသွားအောင်ကာကွယ်ခြင်း
                 infoDiv.onclick = function() {
                     playBeep();
                     addByProductObject(prod);
-                    filterProductNames(); // Redraw quantities instantly
+                    filterProductNames(); 
+                    keepSearchInputFocus(); // Focus ပြန်ထိန်းပေးခြင်း
                 };
 
-                // Right Side interactive controller layout
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
                 if (currentQty > 0) {
-                    // Show full luxury interactive counter inside suggestion box
+                    // Added onmousedown event to prevent focus loss and keyboard dismissal
                     actionDiv.innerHTML = `
-                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
                         <span class="suggestion-qty-display">${currentQty}</span>
-                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
                     `;
                 } else {
-                    // Show clean Quick Add Button
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
+                    addBtn.onmousedown = function(e) { e.preventDefault(); }; // Keyboard မကျသွားအောင်ကာကွယ်ခြင်း
                     addBtn.onclick = function() {
                         playBeep();
                         addByProductObject(prod);
-                        filterProductNames(); // Redraw UI immediately
+                        filterProductNames(); 
+                        keepSearchInputFocus(); // Focus ပြန်ထိန်းပေးခြင်း
                     };
                     actionDiv.appendChild(addBtn);
                 }
@@ -853,12 +850,20 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // Handler to seamlessly update cart straight from suggestion elements
+        // Search Input Focus ကို အတင်းပြန်ထိန်းပေးမည့် Function
+        function keepSearchInputFocus() {
+            let searchInp = document.getElementById('name-search-input');
+            if (searchInp) {
+                searchInp.focus();
+            }
+        }
+
         function changeQtyFromSuggestion(barcode, change) {
             let cartIndex = cart.findIndex(i => i.barcode.toString() === barcode.toString());
             if (cartIndex !== -1) {
                 changeQty(cartIndex, change);
-                filterProductNames(); // Refresh list ui seamlessly
+                filterProductNames(); 
+                keepSearchInputFocus(); // ပြောင်းလဲပြီးတိုင်း Keyboard ဆက်ပွင့်နေစေရန်
             }
         }
 
@@ -899,7 +904,6 @@
                 canScan = false; updateScannerStatusUi(false);
                 setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 2000);
                 addByProductObject(product);
-                // If search view is currently matching this item, update it live
                 if(document.getElementById('name-search-input').value.trim() !== "") {
                     filterProductNames();
                 }
@@ -1006,12 +1010,10 @@
             setTimeout(() => { window.print(); }, 300);
         }
 
-        // 📜 Render Clean Aligned History Layout Natively
         function displayHistory(data) {
             const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; }
             list.innerHTML = '';
             data.forEach(sale => {
-                // Modified into perfectly grid-aligned rows instead of single line spacing strings
                 let itemsList = sale.items.map(i => `
                     <div class="history-item-row">
                         <span class="history-item-name">🔹 ${i.name}</span>
@@ -1052,7 +1054,7 @@
         }
 
         function clearAllSalesHistoryLocal() {
-            if (window.confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေჩာပါသလား?")) {
+            if (window.confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေချာပါသလား?")) {
                 localStorage.removeItem('salesHistory'); 
                 salesHistory = []; 
                 displayHistory(salesHistory);
