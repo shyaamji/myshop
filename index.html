@@ -249,8 +249,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '1111';  
-        const adminPassword = '2222'; 
+        const homePassword = '999';  
+        const adminPassword = '777'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -359,7 +359,7 @@
                     <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
                         <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
                     </form>
-                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5" style="border-radius: 12px;" onclick="clearAllSalesHistoryLocal()">⚠️ စက်ထဲရှိ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
+                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5" style="border-radius: 12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
                 </div>
                 <div id="history-list">
                     <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
@@ -811,19 +811,18 @@
                 infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div> 
                                      <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
                 
-                infoDiv.onmousedown = function(e) { e.preventDefault(); }; // Keyboard မကျသွားအောင်ကာကွယ်ခြင်း
+                infoDiv.onmousedown = function(e) { e.preventDefault(); }; 
                 infoDiv.onclick = function() {
                     playBeep();
                     addByProductObject(prod);
                     filterProductNames(); 
-                    keepSearchInputFocus(); // Focus ပြန်ထိန်းပေးခြင်း
+                    keepSearchInputFocus(); 
                 };
 
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
                 if (currentQty > 0) {
-                    // Added onmousedown event to prevent focus loss and keyboard dismissal
                     actionDiv.innerHTML = `
                         <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
                         <span class="suggestion-qty-display">${currentQty}</span>
@@ -833,12 +832,12 @@
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
-                    addBtn.onmousedown = function(e) { e.preventDefault(); }; // Keyboard မကျသွားအောင်ကာကွယ်ခြင်း
+                    addBtn.onmousedown = function(e) { e.preventDefault(); }; 
                     addBtn.onclick = function() {
                         playBeep();
                         addByProductObject(prod);
                         filterProductNames(); 
-                        keepSearchInputFocus(); // Focus ပြန်ထိန်းပေးခြင်း
+                        keepSearchInputFocus(); 
                     };
                     actionDiv.appendChild(addBtn);
                 }
@@ -850,7 +849,6 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // Search Input Focus ကို အတင်းပြန်ထိန်းပေးမည့် Function
         function keepSearchInputFocus() {
             let searchInp = document.getElementById('name-search-input');
             if (searchInp) {
@@ -863,7 +861,7 @@
             if (cartIndex !== -1) {
                 changeQty(cartIndex, change);
                 filterProductNames(); 
-                keepSearchInputFocus(); // ပြောင်းလဲပြီးတိုင်း Keyboard ဆက်ပွင့်နေစေရန်
+                keepSearchInputFocus(); 
             }
         }
 
@@ -1053,12 +1051,30 @@
             }
         }
 
-        function clearAllSalesHistoryLocal() {
-            if (window.confirm("⚠️ စက်ထဲက အရောင်းမှတ်တမ်းတွေကို ရှင်းလင်းမှာ သေချာပါသလား?")) {
-                localStorage.removeItem('salesHistory'); 
-                salesHistory = []; 
-                displayHistory(salesHistory);
-                alert("✅ စက်ထဲရှိ မှတ်တမ်းများကို ရှင်းလင်းပြီးပါပြီ။");
+        // ✨ 🚀 Cloud ပေါ်က မှတ်တမ်းရော စက်ထဲကပါ တစ်ခါတည်း အကုန်ဖျက်မည့် Function အသစ်
+        function clearAllSalesHistoryOnline(btn) {
+            if (prompt("⚠️ အားလုံးဖျက်ရန် Admin Password ရိုက်ထည့်ပါဗျာ -") === adminPassword) {
+                if (window.confirm("🚨 Google Sheet (Cloud) ပေါ်က မှတ်တမ်းအားလုံးပါ လုံးဝပျက်သွားမှာဖြစ်လို့ သေချာပါသလားဗျာ?")) {
+                    btn.disabled = true; btn.innerText = "⏳ Cloud မှတ်တမ်းများကို ဖျက်နေပါသည်...";
+                    
+                    let payload = { action: "clearAllSales" };
+                    let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
+                    
+                    fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+                        setTimeout(() => {
+                            localStorage.removeItem('salesHistory'); 
+                            salesHistory = []; 
+                            displayHistory(salesHistory);
+                            btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
+                            alert("✅ Google Sheet ရော ဖုန်းထဲကပါ အရောင်းမှတ်တမ်းအားလုံးကို အောင်မြင်စွာ ရှင်းလင်းပြီးပါပြီဗျာ။");
+                        }, 2000);
+                    }).catch(() => {
+                        btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
+                        alert("❌ အင်တာနက် လိုင်းမကောင်းသဖြင့် အဆင်မပြေဖြစ်သွားပါသည်။ နောက်မှ ပြန်စမ်းကြည့်ပေးပါ။");
+                    });
+                }
+            } else {
+                alert("❌ Password မှားယွင်းနေပါသည်။");
             }
         }
 
