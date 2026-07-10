@@ -207,6 +207,35 @@
             flex-shrink: 0;
         }
 
+        /* 📜 History Row Table Styles */
+        .history-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 4px 0;
+            font-size: 13.5px;
+            border-bottom: 1px dashed rgba(15, 23, 42, 0.04);
+        }
+        [data-theme="dark"] .history-item-row {
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.03);
+        }
+        .history-item-name {
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+            padding-right: 10px;
+        }
+        .history-item-qty {
+            width: 50px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .history-item-total {
+            width: 90px;
+            text-align: right;
+            font-weight: 600;
+        }
+
         /* 🖨️ Print Zone Settings */
         #print-receipt-zone { display: none; }
         @media print {
@@ -220,8 +249,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'gogo';  
-        const adminPassword = '2222'; 
+        const homePassword = 'hello';  
+        const adminPassword = 'lsolso'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -278,7 +307,9 @@
                 <div class="custom-card search-container-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
-                        <input type="text" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off">
+                        <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
+                        </form>
                         <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
                     </div>
                     <div id="search-suggestions" class="search-results" style="display: none;"></div>
@@ -325,7 +356,9 @@
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
                 </div>
                 <div class="custom-card d-flex flex-column gap-3">
-                    <input type="text" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()">
+                    <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                        <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
+                    </form>
                     <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5" style="border-radius: 12px;" onclick="clearAllSalesHistoryLocal()">⚠️ စက်ထဲရှိ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
                 </div>
                 <div id="history-list">
@@ -408,7 +441,9 @@
                 <div class="custom-card">
                     <h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6>
                     <div class="position-relative mb-4">
-                        <input type="text" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()">
+                        <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                            <input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search">
+                        </form>
                         <div id="admin-search-suggestions" class="search-results" style="display: none;"></div>
                     </div>
                     <div id="admin-product-list" class="d-flex flex-column gap-2"></div>
@@ -444,6 +479,13 @@
                 gainNode.connect(audioCtx.destination);
                 oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.08);
             } catch(e) {}
+        }
+
+        // Helper function to dismiss the keyboard on demand
+        function dismissKeyboard(formElement) {
+            if(document.activeElement) {
+                document.activeElement.blur();
+            }
         }
 
         // 🌗 Toggle Theme Logic
@@ -751,7 +793,7 @@
             suggestionsBox.innerHTML = '';
             
             if (filtered.length === 0) {
-                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">$\phi$ ရှာဖွေမှုမတွေ့ရှိပါ</div>';
+                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">ရှာဖွေမှုမတွေ့ရှိပါ</div>';
                 suggestionsBox.style.display = 'block';
                 return;
             }
@@ -964,13 +1006,39 @@
             setTimeout(() => { window.print(); }, 300);
         }
 
+        // 📜 Render Clean Aligned History Layout Natively
         function displayHistory(data) {
             const list = document.getElementById('history-list'); if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; }
             list.innerHTML = '';
             data.forEach(sale => {
-                let itemsList = sale.items.map(i => `<div class="d-flex justify-content-between text-secondary" style="font-size:14px;"><span>${i.name} x ${i.qty}</span><span class="font-monospace">${(i.price * i.qty).toLocaleString()} Ks</span></div>`).join('');
+                // Modified into perfectly grid-aligned rows instead of single line spacing strings
+                let itemsList = sale.items.map(i => `
+                    <div class="history-item-row">
+                        <span class="history-item-name">🔹 ${i.name}</span>
+                        <span class="history-item-qty">x${i.qty}</span>
+                        <span class="history-item-total font-monospace">${(i.price * i.qty).toLocaleString()} Ks</span>
+                    </div>
+                `).join('');
+                
                 let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
-                list.innerHTML += `<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color: var(--accent-gold);">ID: ${sale.voucherId}</span><small class="text-muted font-monospace">${sale.date || ''}</small></div><div class="small mb-2">ဝယ်သူ: <b>${sale.customerName}</b></div><hr class="my-2" style="border-color: var(--border-color); border-style: dashed;"><div class="py-1">${itemsList}</div><hr class="my-2" style="border-color: var(--border-color); border-style: dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">${sale.total} Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button><button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button></div></div></div>`;
+                list.innerHTML += `
+                    <div class="custom-card">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold" style="color: var(--accent-gold);">ID: ${sale.voucherId}</span>
+                            <small class="text-muted font-monospace">${sale.date || ''}</small>
+                        </div>
+                        <div class="small mb-2">ဝယ်သူ: <b>${sale.customerName}</b></div>
+                        <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
+                        <div class="py-1">${itemsList}</div>
+                        <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <h5 class="fw-bold text-success mb-0 font-monospace">${sale.total} Ks</h5>
+                            <div>
+                                <button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button>
+                                <button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button>
+                            </div>
+                        </div>
+                    </div>`;
             });
         }
 
