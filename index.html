@@ -176,6 +176,25 @@
         .suggestion-add-btn:active {
             transform: scale(0.95);
         }
+
+        /* ✅ Confirm Checkmark Button Styles */
+        .suggestion-confirm-btn {
+            background: #10b981;
+            color: white !important;
+            border: none;
+            font-weight: bold;
+            font-size: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+        }
+        .suggestion-confirm-btn:active {
+            transform: scale(0.9);
+        }
         
         /* 🛒 Cart & Badges */
         .cart-item {
@@ -252,8 +271,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '222';  // User / ဝန်ထမ်း Password
-        const adminPassword = '444'; // Admin / ဆိုင်ရှင် Password
+        const homePassword = '444';  // User / ဝန်ထမ်း Password
+        const adminPassword = '333'; // Admin / ဆိုင်ရှင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -564,7 +583,6 @@
             }
         }
 
-        // 🛡️ Role ပေါ်မူတည်ပြီး UI ခလုတ်များကို ထိန်းချုပ်ပေးမည့် မျက်နှာပြင်ပြောင်းလဲမှုစနစ်
         function setupRolePrivilegesUi() {
             const role = localStorage.getItem('currentUserRole') || 'user';
             const badge = document.getElementById('role-badge');
@@ -573,13 +591,13 @@
                 if(badge) { 
                     badge.innerText = "Admin"; 
                     badge.className = "badge bg-danger-subtle text-danger font-monospace ms-2"; 
-                    badge.style.display = "inline-block"; // Admin ဆိုရင် Badge ပြမယ်
+                    badge.style.display = "inline-block";
                 }
                 document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'block', 'important'));
             } else {
                 if(badge) { 
                     badge.innerText = ""; 
-                    badge.style.display = "none"; // ဝန်ထမ်း (Staff) ဆိုရင် Badge ကို လုံးဝဖျောက်မယ်
+                    badge.style.display = "none";
                 }
                 document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'none', 'important'));
                 switchTab('sales');
@@ -623,7 +641,7 @@
             
             let searchInp = document.getElementById('name-search-input');
             if(searchInp) {
-                searchInp.addEventListener('keyup', filterProductNames);
+                searchInp.addEventListener('input', filterProductNames);
                 searchInp.addEventListener('focus', function() {
                     setTimeout(() => {
                         document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -817,6 +835,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
+        // 🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေခြင်းနှင့် စနစ်အသစ်သုံး Counter UI ရေးဆွဲခြင်း
         function filterProductNames() {
             let inputElement = document.getElementById('name-search-input');
             let input = inputElement.value.toLowerCase().trim();
@@ -848,46 +867,32 @@
                 
                 let infoDiv = document.createElement('div');
                 infoDiv.style.flex = "1";
-                infoDiv.style.cursor = "pointer";
                 infoDiv.style.minWidth = "0";
                 infoDiv.style.marginRight = "8px";
                 infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div> 
                                      <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
                 
-                infoDiv.onmousedown = function(e) { e.preventDefault(); }; 
-                infoDiv.onclick = function() {
-                    playBeep();
-                    addByProductObject(prod);
-                    
-                    // ✨ စာသားကို ရှင်းထုတ်ပြီး Input ကို ဆက် Focus ပေးထားကာ Suggestion List ကို ခဏပိတ်ပါမည်
-                    inputElement.value = '';
-                    suggestionsBox.style.display = 'none';
-                    if (closeBtn) closeBtn.style.display = 'none';
-                    keepSearchInputFocus(); 
-                };
-
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
+                // Keyboard မပျောက်စေရန် 'mousedown' နှင့် 'touchstart' event များတွင် default behavior ကိုတားဆီးထားပါသည်
                 if (currentQty > 0) {
                     actionDiv.innerHTML = `
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
                         <span class="suggestion-qty-display">${currentQty}</span>
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
+                        <button class="suggestion-confirm-btn ms-1" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="confirmProductSelection()" title="Confirm">✅</button>
                     `;
                 } else {
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
                     addBtn.onmousedown = function(e) { e.preventDefault(); }; 
+                    addBtn.ontouchstart = function(e) { e.preventDefault(); };
                     addBtn.onclick = function() {
                         playBeep();
                         addByProductObject(prod);
-                        
-                        // ✨ စာသားကို ရှင်းထုတ်ပြီး Input ကို ဆက် Focus ပေးထားကာ Suggestion List ကို ခဏပိတ်ပါမည်
-                        inputElement.value = '';
-                        suggestionsBox.style.display = 'none';
-                        if (closeBtn) closeBtn.style.display = 'none';
+                        filterProductNames(); // အရေအတွက်တိုးရန် counter ကို ချက်ချင်းပြောင်းလဲပေးမည်
                         keepSearchInputFocus(); 
                     };
                     actionDiv.appendChild(addBtn);
@@ -904,6 +909,8 @@
             let searchInp = document.getElementById('name-search-input');
             if (searchInp) {
                 searchInp.focus();
+                // မိုဘိုင်းလ်ဖုန်း အချို့တွင် စာရိုက်ရန် cursor ပြန်လည်အလုပ်လုပ်စေရန် သေချာစေခြင်း
+                setTimeout(() => { searchInp.focus(); }, 10);
             }
         }
 
@@ -913,7 +920,21 @@
                 changeQty(cartIndex, change);
                 filterProductNames(); 
                 keepSearchInputFocus(); 
+            } else if (change > 0) {
+                let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
+                if (product) {
+                    addByProductObject(product);
+                    filterProductNames();
+                    keepSearchInputFocus();
+                }
             }
+        }
+
+        // ✅ အမှန်ခြစ် နှိပ်လိုက်သည့်အခါမှ စာသားကိုရှင်းထုတ်ပြီး Keyboard ကို ဆက်ဖွင့်ထားမည့် လုပ်ဆောင်ချက်
+        function confirmProductSelection() {
+            playBeep();
+            clearSearchInputAndBox();
+            keepSearchInputFocus(); // Keyboard လုံးဝကျမသွားစေရန် ထိန်းထားခြင်း
         }
 
         function clearSearchInputAndBox() {
