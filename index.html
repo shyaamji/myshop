@@ -140,23 +140,23 @@
             color: var(--text-main);
             font-weight: bold;
             font-size: 16px;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.1s ease;
+            cursor: pointer;
         }
         .suggestion-counter-btn:active {
             background: var(--accent-gold);
             color: #ffffff;
-            transform: scale(0.95);
+            transform: scale(0.9);
         }
         .suggestion-qty-display {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
-            min-width: 24px;
+            min-width: 28px;
             text-align: center;
         }
         .suggestion-add-btn {
@@ -165,16 +165,17 @@
             border: none;
             font-weight: bold;
             font-size: 14px;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 10px;
-            transition: all 0.1s ease;
+            cursor: pointer;
+            transition: transform 0.1s;
         }
         [data-theme="dark"] .suggestion-add-btn {
             background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
             color: #000 !important;
         }
         .suggestion-add-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
         /* ✅ Confirm Checkmark Button Styles */
@@ -184,13 +185,13 @@
             border: none;
             font-weight: bold;
             font-size: 15px;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.1s ease;
+            cursor: pointer;
         }
         .suggestion-confirm-btn:active {
             transform: scale(0.9);
@@ -271,8 +272,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = '1111';  // User / ဝန်ထမ်း Password
-        const adminPassword = '2222'; // Admin / ဆိုင်ရှင် Password
+        const homePassword = 'ab';  
+        const adminPassword = 'cd'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -280,7 +281,6 @@
             });
         }
 
-        // Apply Saved Theme immediately
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
@@ -489,6 +489,7 @@
     <script>
         let canScan = true; let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null;
+        let selectedSuggestionsMap = {}; // ရှာဖွေမှုထဲက လက်ရှိရွေးထားတဲ့ အရေအတွက်မှတ်ရန်
         
         function initAudio() {
             try {
@@ -547,27 +548,15 @@
             }
         }
 
-        // 🔓 Dual-Role Login Authentication Engine
         function checkUniversalLogin() {
             try {
                 let inputElement = document.getElementById('home-pass-input');
                 let input = inputElement ? inputElement.value.trim() : "";
                 
-                if (input === adminPassword) {
+                if (input === adminPassword || input === homePassword) {
                     sessionStorage.setItem('isAppUnlocked', 'true');
-                    localStorage.setItem('currentUserRole', 'admin');
+                    localStorage.setItem('currentUserRole', input === adminPassword ? 'admin' : 'user');
                     setupRolePrivilegesUi();
-                    
-                    document.getElementById('app-lock-screen').style.display = 'none';
-                    document.getElementById('app-main-content').style.display = 'block';
-                    if(inputElement) inputElement.value = '';
-                    document.getElementById('lock-error').style.display = 'none';
-                    initAudio();
-                } else if (input === homePassword) {
-                    sessionStorage.setItem('isAppUnlocked', 'true');
-                    localStorage.setItem('currentUserRole', 'user');
-                    setupRolePrivilegesUi();
-                    
                     document.getElementById('app-lock-screen').style.display = 'none';
                     document.getElementById('app-main-content').style.display = 'block';
                     if(inputElement) inputElement.value = '';
@@ -684,15 +673,6 @@
             }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Online"; });
         }
 
-        function reloadOnlineAdminTab(btn) {
-            btn.disabled = true; btn.innerText = "⏳ Loading...";
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
-                productsDB = data; renderAdminProducts(productsDB);
-                btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
-                alert("⚙️ ဒေတာအသစ် ပြန်တင်ပေးပြီးပါပြီဗျာ။");
-            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
-        }
-
         function loadProductsFromSheet() {
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; 
@@ -740,14 +720,12 @@
                     let dateStr = d.toLocaleDateString('en-GB'); 
                     salesMap[dateStr] = 0;
                 }
-
                 let allDatesMap = {};
 
                 salesHistory.forEach(sale => {
                     if (sale.date) {
                         let rawDate = sale.date.split(',')[0].trim();
                         let formattedDate = "";
-                        
                         if (rawDate.includes('/')) {
                             let parts = rawDate.split('/');
                             if(parts[0].length < 2) parts[0] = '0' + parts[0];
@@ -756,16 +734,9 @@
                         } else {
                             formattedDate = new Date(sale.date).toLocaleDateString('en-GB');
                         }
-
                         let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
-                        
-                        if (salesMap[formattedDate] !== undefined) {
-                            salesMap[formattedDate] += cleanTotal;
-                        }
-
-                        if (allDatesMap[formattedDate] === undefined) {
-                            allDatesMap[formattedDate] = 0;
-                        }
+                        if (salesMap[formattedDate] !== undefined) salesMap[formattedDate] += cleanTotal;
+                        if (allDatesMap[formattedDate] === undefined) allDatesMap[formattedDate] = 0;
                         allDatesMap[formattedDate] += cleanTotal;
                     }
                 });
@@ -776,7 +747,6 @@
                         let p1 = a.split('/'), p2 = b.split('/');
                         return new Date(p2[2], p2[1]-1, p2[0]) - new Date(p1[2], p1[1]-1, p1[0]);
                     });
-
                     if(sortedDates.length === 0) {
                         tableBody.innerHTML = `<tr><td colspan="2" class="text-muted py-3">အရောင်းမှတ်တမ်းမရှိသေးပါ။</td></tr>`;
                     } else {
@@ -792,7 +762,6 @@
 
                 let labels = Object.keys(salesMap);
                 let chartData = Object.values(salesMap);
-
                 const ctx = document.getElementById('salesChart');
                 if (!ctx || typeof Chart === 'undefined') return;
 
@@ -802,9 +771,7 @@
                 const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
                 const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
 
-                if (mySalesChart) {
-                    mySalesChart.destroy();
-                }
+                if (mySalesChart) mySalesChart.destroy();
                 
                 mySalesChart = new Chart(ctx, {
                     type: 'line',
@@ -835,7 +802,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
-        // 🔍 ပစ္စည်းရှာဖွေခြင်းနှင့် [ +ထည့်မည် ] Event ပြုပြင်ခြင်း
+        // 🔍 ပြင်ဆင်လိုက်သော ရှာဖွေမှုစနစ် (စစချင်း +ထည့်မည် သာပြပြီး နှိပ်လိုက်မှ +-✅ ပေါ်လာမည်)
         function filterProductNames() {
             let inputElement = document.getElementById('name-search-input');
             let input = inputElement.value.toLowerCase().trim();
@@ -859,8 +826,9 @@
             }
 
             filtered.forEach(prod => {
-                let cartItem = cart.find(i => i.barcode.toString() === prod.barcode.toString());
-                let currentQty = cartItem ? cartItem.qty : 0;
+                let barcodeStr = prod.barcode.toString();
+                // အကယ်၍ ခလုတ်မနှိပ်ရသေးရင် Map ထဲမှာ ရှိမှာမဟုတ်ပါ
+                let currentSelectedQty = selectedSuggestionsMap[barcodeStr] || 0;
 
                 let div = document.createElement('div'); 
                 div.className = 'search-item d-flex justify-content-between align-items-center';
@@ -869,35 +837,39 @@
                 infoDiv.style.flex = "1";
                 infoDiv.style.minWidth = "0";
                 infoDiv.style.marginRight = "8px";
-                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div> 
+                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px; color: var(--text-main);">${prod.name}</div> 
                                      <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
                 
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
-                if (currentQty > 0) {
+                // ၁။ ထည့်မည်ကို နှိပ်ပြီးမှသာ +-✅ ပေါ်စေရန် စစ်ဆေးခြင်း
+                if (currentSelectedQty > 0) {
                     actionDiv.innerHTML = `
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', -1)">-</button>
-                        <span class="suggestion-qty-display">${currentQty}</span>
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="changeQtyFromSuggestion('${prod.barcode}', 1)">+</button>
-                        <button class="suggestion-confirm-btn ms-1" onmousedown="event.preventDefault();" ontouchstart="event.preventDefault();" onclick="confirmProductSelection()" title="Confirm">✅</button>
+                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
+                        <span class="suggestion-qty-display text-dark-emphasis">${currentSelectedQty}</span>
+                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
+                        <button class="suggestion-confirm-btn ms-1" onclick="confirmProductSelection()" title="Confirm">✅</button>
                     `;
                 } else {
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
                     
-                    // Mobile Touch တွင် အလုပ်လုပ်စေရန် Event များကို သေချာချိတ်ဆက်ပေးခြင်း
-                    addBtn.onmousedown = function(e) { e.preventDefault(); }; 
-                    addBtn.ontouchstart = function(e) { e.preventDefault(); };
-                    
-                    // ပြဿနာဖြစ်စေသော Object String Parameter ကို တိုက်ရိုက်မပို့တော့ဘဲ Barcode ဖြင့်သာ ပေးပို့ခြင်း
                     addBtn.onclick = function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         playBeep();
-                        addByBarcodeDirectly(prod.barcode);
+                        dismissKeyboard(); // ဖုန်းကီးဘုတ်ကို အလိုအလျောက် ပိတ်ချပေးရန်
+                        
+                        // အဆင့် (၁) - ယာယီအကွက်ထဲတွင် အရေအတွက် ၁ ခု စတိုးလုပ်ပြီး +-✅ ကို ပေါ်စေခြင်း
+                        selectedSuggestionsMap[barcodeStr] = 1;
+                        
+                        // အဆင့် (၂) - ခြင်းတောင်း (Cart) ထဲသို့ တိုက်ရိုက်ထည့်သွင်းခြင်း
+                        addByBarcodeDirectly(barcodeStr);
+                        
+                        // ရလဒ်ကို ချက်ချင်း UI ပေါ်တွင် ပြန်ပြောင်းလဲစေရန်
                         filterProductNames(); 
-                        keepSearchInputFocus(); 
                     };
                     actionDiv.appendChild(addBtn);
                 }
@@ -909,45 +881,53 @@
             suggestionsBox.style.display = 'block';
         }
 
-        // Barcode ဖြင့် Database ထဲက ပစ္စည်းကို တိုက်ရိုက်ရှာပြီး Cart ထဲထည့်ပေးသော စနစ်သစ်
         function addByBarcodeDirectly(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (product) {
-                addByProductObject(product);
-            }
-        }
-
-        function keepSearchInputFocus() {
-            let searchInp = document.getElementById('name-search-input');
-            if (searchInp) {
-                searchInp.focus();
-                setTimeout(() => { searchInp.focus(); }, 10);
+                let item = cart.find(i => i.barcode.toString() === barcode.toString());
+                if (item) {
+                    item.qty = selectedSuggestionsMap[barcode.toString()] || item.qty;
+                } else {
+                    cart.push({ ...product, qty: 1 });
+                }
+                renderCart();
             }
         }
 
         function changeQtyFromSuggestion(barcode, change) {
-            let cartIndex = cart.findIndex(i => i.barcode.toString() === barcode.toString());
-            if (cartIndex !== -1) {
-                changeQty(cartIndex, change);
-                filterProductNames(); 
-                keepSearchInputFocus(); 
-            } else if (change > 0) {
-                addByBarcodeDirectly(barcode);
-                filterProductNames();
-                keepSearchInputFocus();
+            playBeep();
+            let bStr = barcode.toString();
+            if (!selectedSuggestionsMap[bStr]) selectedSuggestionsMap[bStr] = 0;
+            
+            selectedSuggestionsMap[bStr] += change;
+            
+            if (selectedSuggestionsMap[bStr] <= 0) {
+                delete selectedSuggestionsMap[bStr];
+                let cartIndex = cart.findIndex(i => i.barcode.toString() === bStr);
+                if (cartIndex !== -1) cart.splice(cartIndex, 1);
+            } else {
+                let item = cart.find(i => i.barcode.toString() === bStr);
+                if (item) {
+                    item.qty = selectedSuggestionsMap[bStr];
+                } else {
+                    let product = productsDB.find(p => p.barcode.toString() === bStr);
+                    if (product) cart.push({ ...product, qty: selectedSuggestionsMap[bStr] });
+                }
             }
+            renderCart();
+            filterProductNames(); 
         }
 
         function confirmProductSelection() {
             playBeep();
             clearSearchInputAndBox();
-            keepSearchInputFocus(); 
         }
 
         function clearSearchInputAndBox() {
             document.getElementById('name-search-input').value = '';
             document.getElementById('search-suggestions').style.display = 'none';
             document.getElementById('close-search-btn').style.display = 'none';
+            selectedSuggestionsMap = {}; // ယာယီမှတ်တမ်းကို ဖျက်သိမ်းခြင်း
         }
 
         function filterAdminProductNames() {
@@ -974,30 +954,22 @@
             if (!product) {
                 canScan = false; updateScannerStatusUi(false);
                 alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
-                
                 const currentRole = localStorage.getItem('currentUserRole') || 'user';
                 if(currentRole !== 'admin') {
                     alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
                     canScan = true; updateScannerStatusUi(true);
                     return;
                 }
-                
                 switchTab('admin');
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').focus();
             } else {
-                canScan = false; 
-                updateScannerStatusUi(false);
+                canScan = false; updateScannerStatusUi(false);
+                setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 3000);
                 
-                setTimeout(() => { 
-                    canScan = true; 
-                    updateScannerStatusUi(true); 
-                }, 4000);
-                
-                addByProductObject(product);
-                if(document.getElementById('name-search-input').value.trim() !== "") {
-                    filterProductNames();
-                }
+                let item = cart.find(i => i.barcode.toString() === barcode.toString());
+                if (item) item.qty++; else cart.push({ ...product, qty: 1 });
+                renderCart();
             }
         }
 
@@ -1009,16 +981,16 @@
 
         function resumeScannerManual() { canScan = true; updateScannerStatusUi(true); playBeep(); }
         
-        function addByProductObject(product) {
-            let item = cart.find(i => i.barcode === product.barcode);
-            if (item) item.qty++; else cart.push({ ...product, qty: 1 });
-            renderCart();
-        }
-
         function changeQty(index, change) { 
             playBeep(); 
             cart[index].qty += change; 
-            if (cart[index].qty <= 0) cart.splice(index, 1); 
+            let bStr = cart[index].barcode.toString();
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1); 
+                delete selectedSuggestionsMap[bStr];
+            } else {
+                selectedSuggestionsMap[bStr] = cart[index].qty;
+            }
             renderCart(); 
         }
         
@@ -1037,7 +1009,7 @@
                 list.innerHTML += `
                     <div class="cart-item d-flex justify-content-between align-items-center">
                         <div style="flex: 1; min-width: 0;" class="pe-2">
-                            <h6 class="fw-bold mb-1 text-truncate" style="font-size: 14px;">${item.name}</h6>
+                            <h6 class="fw-bold mb-1 text-truncate" style="font-size: 14px; color: var(--text-main);">${item.name}</h6>
                             <small class="font-monospace small fw-bold" style="color: var(--accent-gold);">${Number(item.price).toLocaleString()} Ks</small>
                         </div>
                         <div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border: 1px solid var(--border-color);">
@@ -1117,7 +1089,6 @@
                 `).join('');
                 
                 let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
-                
                 let deleteButton = (currentRole === 'admin') ? 
                     `<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button>` : '';
 
@@ -1154,21 +1125,16 @@
         function clearAllSalesHistoryOnline(btn) {
             if (confirm("🚨 Google Sheet (Cloud) ပေါ်က မှတ်တမ်းအားလုံးပါ လုံးဝပျက်သွားမှာဖြစ်လို့ သေချာပါသလားဗျာ?")) {
                 btn.disabled = true; btn.innerText = "⏳ Cloud မှတ်တမ်းများကို ဖျက်နေပါသည်...";
-                
                 let payload = { action: "clearAllSales" };
                 let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
-                
                 fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
                     setTimeout(() => {
-                        localStorage.removeItem('salesHistory'); 
-                        salesHistory = []; 
-                        displayHistory(salesHistory);
+                        localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory);
                         btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
                         alert("✅ အားလုံးကို အောင်မြင်စွာ ရှင်းလင်းပြီးပါပြီဗျာ။");
                     }, 2000);
                 }).catch(() => {
                     btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
-                    alert("❌ အင်တာနက် လိုင်းမကောင်းသဖြင့် အဆင်မပြေဖြစ်သွားပါသည်။");
                 });
             }
         }
@@ -1227,7 +1193,6 @@
             }
         }
 
-        // ➕ ပစ္စည်းအသစ်ထည့်သွင်းခြင်း
         function addNewProduct() {
             let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
             let name = document.getElementById('new-name').value.trim();
