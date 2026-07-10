@@ -272,8 +272,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'hello';  
-        const adminPassword = 'ppc'; 
+        const homePassword = '1111';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -489,7 +489,6 @@
     <script>
         let canScan = true; let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null;
-        let selectedSuggestionsMap = {}; // ရှာဖွေမှုထဲက လက်ရှိရွေးထားတဲ့ အရေအတွက်မှတ်ရန်
         
         function initAudio() {
             try {
@@ -802,7 +801,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
-        // 🔍 ပြင်ဆင်လိုက်သော ရှာဖွေမှုစနစ် (စစချင်း +ထည့်မည် သာပြပြီး နှိပ်လိုက်မှ +-✅ ပေါ်လာမည်)
+        // 🔍 ပြင်ဆင်ပြီးသား ရှာဖွေမှုစနစ် (ခြင်းတောင်းထဲက အရေအတွက်ကို တိုက်ရိုက်ချိတ်ဆက်ပြသခြင်း)
         function filterProductNames() {
             let inputElement = document.getElementById('name-search-input');
             let input = inputElement.value.toLowerCase().trim();
@@ -827,8 +826,10 @@
 
             filtered.forEach(prod => {
                 let barcodeStr = prod.barcode.toString();
-                // အကယ်၍ ခလုတ်မနှိပ်ရသေးရင် Map ထဲမှာ ရှိမှာမဟုတ်ပါ
-                let currentSelectedQty = selectedSuggestionsMap[barcodeStr] || 0;
+                
+                // ခြင်းတောင်းထဲမှာ အဆိုပါပစ္စည်း ရှိမရှိ စစ်ဆေးပြီး အရေအတွက်ကို ယူခြင်း
+                let cartItem = cart.find(i => i.barcode.toString() === barcodeStr);
+                let currentSelectedQty = cartItem ? cartItem.qty : 0;
 
                 let div = document.createElement('div'); 
                 div.className = 'search-item d-flex justify-content-between align-items-center';
@@ -843,7 +844,7 @@
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
-                // ၁။ ထည့်မည်ကို နှိပ်ပြီးမှသာ +-✅ ပေါ်စေရန် စစ်ဆေးခြင်း
+                // ခြင်းတောင်းထဲမှာ ရှိပြီးသားဆိုရင် (အရေအတွက် > 0 ဖြစ်နေရင်) +-✅ ကို တိုက်ရိုက်ပြမည်
                 if (currentSelectedQty > 0) {
                     actionDiv.innerHTML = `
                         <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
@@ -860,15 +861,12 @@
                         e.preventDefault();
                         e.stopPropagation();
                         playBeep();
-                        dismissKeyboard(); // ဖုန်းကီးဘုတ်ကို အလိုအလျောက် ပိတ်ချပေးရန်
+                        dismissKeyboard(); 
                         
-                        // အဆင့် (၁) - ယာယီအကွက်ထဲတွင် အရေအတွက် ၁ ခု စတိုးလုပ်ပြီး +-✅ ကို ပေါ်စေခြင်း
-                        selectedSuggestionsMap[barcodeStr] = 1;
-                        
-                        // အဆင့် (၂) - ခြင်းတောင်း (Cart) ထဲသို့ တိုက်ရိုက်ထည့်သွင်းခြင်း
+                        // ခြင်းတောင်းထဲကို တိုက်ရိုက် ၁ ခု အနေနဲ့ စတင်ထည့်သွင်းခြင်း
                         addByBarcodeDirectly(barcodeStr);
                         
-                        // ရလဒ်ကို ချက်ချင်း UI ပေါ်တွင် ပြန်ပြောင်းလဲစေရန်
+                        // UI ကို ချက်ချင်း Update လုပ်ရန်
                         filterProductNames(); 
                     };
                     actionDiv.appendChild(addBtn);
@@ -886,7 +884,7 @@
             if (product) {
                 let item = cart.find(i => i.barcode.toString() === barcode.toString());
                 if (item) {
-                    item.qty = selectedSuggestionsMap[barcode.toString()] || item.qty;
+                    item.qty++;
                 } else {
                     cart.push({ ...product, qty: 1 });
                 }
@@ -897,23 +895,18 @@
         function changeQtyFromSuggestion(barcode, change) {
             playBeep();
             let bStr = barcode.toString();
-            if (!selectedSuggestionsMap[bStr]) selectedSuggestionsMap[bStr] = 0;
+            let itemIndex = cart.findIndex(i => i.barcode.toString() === bStr);
             
-            selectedSuggestionsMap[bStr] += change;
-            
-            if (selectedSuggestionsMap[bStr] <= 0) {
-                delete selectedSuggestionsMap[bStr];
-                let cartIndex = cart.findIndex(i => i.barcode.toString() === bStr);
-                if (cartIndex !== -1) cart.splice(cartIndex, 1);
-            } else {
-                let item = cart.find(i => i.barcode.toString() === bStr);
-                if (item) {
-                    item.qty = selectedSuggestionsMap[bStr];
-                } else {
-                    let product = productsDB.find(p => p.barcode.toString() === bStr);
-                    if (product) cart.push({ ...product, qty: selectedSuggestionsMap[bStr] });
+            if (itemIndex !== -1) {
+                cart[itemIndex].qty += change;
+                if (cart[itemIndex].qty <= 0) {
+                    cart.splice(itemIndex, 1);
                 }
+            } else if (change > 0) {
+                let product = productsDB.find(p => p.barcode.toString() === bStr);
+                if (product) cart.push({ ...product, qty: 1 });
             }
+            
             renderCart();
             filterProductNames(); 
         }
@@ -927,7 +920,6 @@
             document.getElementById('name-search-input').value = '';
             document.getElementById('search-suggestions').style.display = 'none';
             document.getElementById('close-search-btn').style.display = 'none';
-            selectedSuggestionsMap = {}; // ယာယီမှတ်တမ်းကို ဖျက်သိမ်းခြင်း
         }
 
         function filterAdminProductNames() {
@@ -984,12 +976,8 @@
         function changeQty(index, change) { 
             playBeep(); 
             cart[index].qty += change; 
-            let bStr = cart[index].barcode.toString();
             if (cart[index].qty <= 0) {
                 cart.splice(index, 1); 
-                delete selectedSuggestionsMap[bStr];
-            } else {
-                selectedSuggestionsMap[bStr] = cart[index].qty;
             }
             renderCart(); 
         }
