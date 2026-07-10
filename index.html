@@ -252,8 +252,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyOFs6cEhBP-lcvxlz_Ot_zrPTD2kQwdcUrsSYVUek4tFyOGBIbIGEF8t8vQ4rueU7M/exec'; 
-        const homePassword = 'wtr';  // User / ဝန်ထမ်း Password
-        const adminPassword = 'ppc'; // Admin / ဆိုင်ရှင် Password
+        const homePassword = '1111';  // User / ဝန်ထမ်း Password
+        const adminPassword = '2222'; // Admin / ဆိုင်ရှင် Password
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -288,7 +288,7 @@
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
                     <span style="color: var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
-                    <span id="role-badge" class="badge bg-secondary-subtle text-secondary font-monospace ms-2" style="font-size: 11px; vertical-align: middle;"></span>
+                    <span id="role-badge" class="badge font-monospace ms-2" style="font-size: 11px; vertical-align: middle; display: none;"></span>
                 </span>
             </div>
         </nav>
@@ -570,10 +570,17 @@
             const badge = document.getElementById('role-badge');
             
             if(role === 'admin') {
-                if(badge) { badge.innerText = "Admin (ဆိုင်ရှင်)"; badge.className = "badge bg-danger-subtle text-danger font-monospace ms-2"; }
+                if(badge) { 
+                    badge.innerText = "Admin"; 
+                    badge.className = "badge bg-danger-subtle text-danger font-monospace ms-2"; 
+                    badge.style.display = "inline-block"; // Admin ဆိုရင် Badge ပြမယ်
+                }
                 document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'block', 'important'));
             } else {
-                if(badge) { badge.innerText = "Staff (ဝန်ထမ်း)"; badge.className = "badge bg-secondary-subtle text-secondary font-monospace ms-2"; }
+                if(badge) { 
+                    badge.innerText = ""; 
+                    badge.style.display = "none"; // ဝန်ထမ်း (Staff) ဆိုရင် Badge ကို လုံးဝဖျောက်မယ်
+                }
                 document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'none', 'important'));
                 switchTab('sales');
             }
@@ -925,7 +932,6 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
-        // ⏱️ စကန်ဖတ်ပြီးလျှင် ၄ စက္ကန့် စောင့်ဆိုင်းစေမည့် ပြင်ဆင်ချက်အပိုင်း
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
             if (!product) {
@@ -934,7 +940,7 @@
                 
                 const currentRole = localStorage.getItem('currentUserRole') || 'user';
                 if(currentRole !== 'admin') {
-                    alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် ဆိုင်ရှင် (Admin) ကို အကြောင်းကြားပေးပါရန်။");
+                    alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
                     canScan = true; updateScannerStatusUi(true);
                     return;
                 }
@@ -943,11 +949,9 @@
                 document.getElementById('new-barcode').value = barcode;
                 document.getElementById('new-name').focus();
             } else {
-                // စကန်ဖတ်မိပါက ချက်ချင်း "စကန်ပိတ်" လိုက်ပြီး UI ကိုပါ "Paused" ပြောင်းလဲမည်
                 canScan = false; 
                 updateScannerStatusUi(false);
                 
-                // ၄ စက္ကန့် (4000ms) ပြည့်မှ စကန်ကို Auto ပြန်ဖွင့်ပေးမည်ဖြစ်သည်
                 setTimeout(() => { 
                     canScan = true; 
                     updateScannerStatusUi(true); 
