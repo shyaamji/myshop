@@ -133,7 +133,7 @@
         }
         .search-item:hover { background-color: rgba(180, 83, 9, 0.02); }
         
-        /* 📱 Mobile Friendly Counter Buttons inside Suggestion Box */
+        /* 📱 Mobile Friendly Counter Buttons */
         .suggestion-counter-btn {
             border: 1px solid var(--border-color);
             background: var(--bg-input);
@@ -178,7 +178,6 @@
             transform: scale(0.92);
         }
 
-        /* ✅ Confirm Checkmark Button Styles */
         .suggestion-confirm-btn {
             background: #10b981;
             color: white !important;
@@ -211,7 +210,6 @@
         }
         .btn-premium-gold:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* Theme Button Styles */
         .theme-toggle-btn {
             background: var(--bg-input); 
             border: 1px solid var(--border-color);
@@ -285,7 +283,7 @@
 </head>
 <body>
 
-    <!-- 🔒 Luxury Screen Lock (Dual Role Input) -->
+    <!-- 🔒 Luxury Screen Lock -->
     <div id="app-lock-screen">
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
@@ -568,13 +566,12 @@
             }
         }
 
-        // 🔐 တင်းကျပ်ထားသော လုံခြုံရေးအဆင့်မြှင့်တင်ထားသည့် ဝင်ရောက်မှုစနစ် Logic သစ်
+        // 🔒 Robust Dual-Type String/Number Login Security System
         function checkUniversalLogin() {
             let inputElement = document.getElementById('home-pass-input');
-            let input = inputElement ? inputElement.value.trim() : "";
+            let input = inputElement ? inputElement.value.toString().trim() : "";
             let errorEl = document.getElementById('lock-error');
             
-            // Password လုံးဝမရိုက်ဘဲ Blank ဝင်တာကို တားဆီးခြင်း
             if (input === "") {
                 errorEl.innerText = "❌ ကျေးဇူးပြု၍ Password ရိုက်ထည့်ပေးပါဗျာ။";
                 errorEl.style.display = 'block';
@@ -589,10 +586,10 @@
             .then(cloudPasswords => {
                 if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
                 
-                let latestAdmin = cloudPasswords.adminPassword ? cloudPasswords.adminPassword.toString().trim() : "";
-                let latestUser = cloudPasswords.userPassword ? cloudPasswords.userPassword.toString().trim() : "";
+                // စာသား သို့မဟုတ် ဂဏန်းများအားလုံးကို String သို့ပြောင်းပြီး ကွက်လွတ်ဖြတ်ကာ နှိုင်းယှဉ်ခြင်း
+                let latestAdmin = cloudPasswords.adminPassword !== undefined && cloudPasswords.adminPassword !== null ? cloudPasswords.adminPassword.toString().trim() : "";
+                let latestUser = cloudPasswords.userPassword !== undefined && cloudPasswords.userPassword !== null ? cloudPasswords.userPassword.toString().trim() : "";
 
-                // Google Sheet ထဲမှာ လက်ရှိ တကယ်ရှိနေတဲ့ Password သစ်တွေနဲ့သာ စစ်ဆေးပါမည်
                 if (input === latestAdmin && latestAdmin !== "") {
                     executeLoginSuccess(input, 'admin');
                 } else if (input === latestUser && latestUser !== "") {
@@ -603,7 +600,6 @@
                 }
             })
             .catch(err => {
-                // အင်တာနက်ပြတ်တောက်နေချိန် သို့မဟုတ် Response မရခဲ့ရင် Bypass ပေးမဝင်တော့ပါ
                 if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
                 errorEl.innerText = "❌ ချိတ်ဆက်မှုမအောင်မြင်ပါ။ အင်တာနက်လိုင်းကို ပြန်စစ်ပေးပါဦးဗျာ။";
                 errorEl.style.display = 'block';
@@ -1350,7 +1346,7 @@
                     editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
                     alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ။`); loadProductsFromSheet(); 
                 }, 2000);
-            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်"; });
+            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြ return မည်"; });
         }
 
         function deleteProductFromSheet(index) {
