@@ -272,8 +272,6 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbz_Vejs9yQDSceMdvobQMcURKPIOTb_FZnODxtgjnOlueRYKAc92QJpv-k8HlSwV5Nj/exec'; 
-        const homePassword = '7';  
-        const adminPassword = '9'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -294,7 +292,7 @@
             <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
             <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM</p>
             <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size: 24px; letter-spacing: 6px;">
-            <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
+            <button id="main-login-btn" class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
             <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
         </div>
     </div>
@@ -549,28 +547,67 @@
             }
         }
 
+        // 🔐 Google Sheet ထံမှ လက်ရှိ Password သတ်မှတ်ချက်များကို တိုက်ရိုက်ခေါ်ယူပြီး စစ်ဆေးပေးမည့် စနစ်သစ် Logic
         function checkUniversalLogin() {
             try {
                 let inputElement = document.getElementById('home-pass-input');
                 let input = inputElement ? inputElement.value.trim() : "";
                 
-                if (input === adminPassword || input === homePassword) {
-                    sessionStorage.setItem('isAppUnlocked', 'true');
-                    localStorage.setItem('currentUserRole', input === adminPassword ? 'admin' : 'user');
-                    setupRolePrivilegesUi();
-                    document.getElementById('app-lock-screen').style.display = 'none';
-                    document.getElementById('app-main-content').style.display = 'block';
-                    if(inputElement) inputElement.value = '';
-                    document.getElementById('lock-error').style.display = 'none';
-                    initAudio();
-                } else {
-                    document.getElementById('lock-error').style.display = 'block';
-                }
+                let loginBtn = document.getElementById("main-login-btn");
+                if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ စစ်ဆေးနေသည်..."; }
+
+                // Google Web App ထံမှ password ခေါ်ယူခြင်း
+                fetch(scriptURL + '?getPasswords=true&t=' + new Date().getTime())
+                .then(res => res.json())
+                .then(cloudPasswords => {
+                    if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
+                    
+                    let latestAdmin = cloudPasswords.adminPassword ? cloudPasswords.adminPassword.toString().trim() : "";
+                    let latestUser = cloudPasswords.userPassword ? cloudPasswords.userPassword.toString().trim() : "";
+
+                    // 💡 အကယ်၍ Google Sheet ပေါ်တွင် Password လုံးဝ မရှိသေးလျှင် (ပထမဆုံးအကြိမ်) အလွတ်ဖြင့် တိုက်ရိုက် ဝင်ခွင့်ပေးမည်
+                    if (latestAdmin === "" && latestUser === "") {
+                        executeLoginSuccess(input, 'admin'); 
+                    } 
+                    // 💡 Sheet ပေါ်တွင် Password သတ်မှတ်ချက် ရှိနေပါက မှန်ကန်မှ ပေးဝင်မည်
+                    else {
+                        if (input === latestAdmin && latestAdmin !== "") {
+                            executeLoginSuccess(input, 'admin');
+                        } else if (input === latestUser && latestUser !== "") {
+                            executeLoginSuccess(input, 'user');
+                        } else {
+                            document.getElementById('lock-error').style.display = 'block';
+                        }
+                    }
+                })
+                .catch(err => {
+                    if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
+                    // အင်တာနက်ပြတ်တောက်နေချိန်တွင် ရိုက်ထည့်မှုအလွတ်ဖြစ်ပါက Backup အနေဖြင့် အရေးပေါ် ဝင်ခွင့်ပြုခြင်း
+                    if (input === "") {
+                        executeLoginSuccess(input, 'admin');
+                    } else {
+                        document.getElementById('lock-error').style.display = 'block';
+                    }
+                });
             } catch(err) {
-                sessionStorage.setItem('isAppUnlocked', 'true');
-                document.getElementById('app-lock-screen').style.display = 'none';
-                document.getElementById('app-main-content').style.display = 'block';
+                executeLoginSuccess("", 'admin');
             }
+        }
+
+        // Login အောင်မြင်သွားလျှင် Session သိမ်းဆည်းပြီး App မျက်နှာပြင် ဖွင့်ပေးမည့် Function
+        function executeLoginSuccess(passwordValue, role) {
+            sessionStorage.setItem('isAppUnlocked', 'true');
+            sessionStorage.setItem('sessionLoginPassword', passwordValue); 
+            localStorage.setItem('currentUserRole', role);
+            
+            setupRolePrivilegesUi();
+            document.getElementById('app-lock-screen').style.display = 'none';
+            document.getElementById('app-main-content').style.display = 'block';
+            
+            let inputElement = document.getElementById('home-pass-input');
+            if(inputElement) inputElement.value = '';
+            document.getElementById('lock-error').style.display = 'none';
+            initAudio();
         }
 
         function setupRolePrivilegesUi() {
@@ -847,7 +884,6 @@
                 infoDiv.style.minWidth = "0";
                 infoDiv.style.marginRight = "8px";
                 
-                // စတော့ လက်ကျန် အရေအတွက်ကို ရှာဖွေမှုအကွက်ထဲတွင် တိုက်ရိုက်ပြသပေးခြင်း
                 let stockText = prod.stock > 0 ? `(လက်ကျန်: ${prod.stock} ခု)` : `<span class="text-danger">(ကုန်သွားပြီ)</span>`;
                 
                 infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px; color: var(--text-main);">${prod.name} <small class="text-muted fw-normal">${stockText}</small></div> 
@@ -1073,15 +1109,13 @@
             if(countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
         }
 
-        // 🛒 Checkout လုပ်လျှင် စတော့လျှော့ပေးမည့် အပိုင်း
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
             
-            // 1. ဒေသတွင်းစတော့ခ် (Local productsDB) ကို အရင်လျှော့ချပါမည်
             for (let item of cart) {
                 let dbProduct = productsDB.find(p => p.barcode.toString() === item.barcode.toString());
                 if (dbProduct) {
-                    dbProduct.stock = Math.max(0, dbProduct.stock - item.qty); // စတော့ခ်အား နှုတ်ပစ်ခြင်း
+                    dbProduct.stock = Math.max(0, dbProduct.stock - item.qty); 
                 }
             }
 
@@ -1104,7 +1138,6 @@
             
             printVoucher(saleData);
             
-            // 2. Google Sheet ဆီသို့ Online ဒေတာ Sync ပို့လွှတ်ခြင်း
             let formData = new FormData(); 
             formData.append('jsonData', JSON.stringify(saleData));
             
@@ -1115,7 +1148,6 @@
                 console.log("Online Cloud Sync Fail: stored in local.", err);
             });
 
-            // ခြင်းတောင်းကို ရှင်းထုတ်ပြီး UI အသစ်ပြန်ပြောင်းခြင်း
             cart = []; 
             renderCart(); 
             clearSearchInputAndBox();
