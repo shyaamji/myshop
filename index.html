@@ -288,7 +288,7 @@
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
             <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
-            <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM</p>
+            <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM v2.0</p>
             <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size: 24px; letter-spacing: 6px;">
             <button id="main-login-btn" class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
             <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
@@ -566,7 +566,7 @@
             }
         }
 
-        // 🔒 Robust Dual-Type String/Number Login Security System
+        // 🔒 Ultra Shockproof Dual-Type Password Verification System
         function checkUniversalLogin() {
             let inputElement = document.getElementById('home-pass-input');
             let input = inputElement ? inputElement.value.toString().trim() : "";
@@ -579,7 +579,7 @@
             }
             
             let loginBtn = document.getElementById("main-login-btn");
-            if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ စစ်ဆေးနေသည်..."; }
+            if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ Cloud မှ စစ်ဆေးနေသည်..."; }
 
             fetch(scriptURL + '?getPasswords=true&t=' + new Date().getTime())
             .then(res => res.json())
@@ -595,7 +595,7 @@
                 } else if (input === latestUser && latestUser !== "") {
                     executeLoginSuccess(input, 'user');
                 } else {
-                    errorEl.innerText = "❌ Password မှားယွင်းနေပါသည်။ စာလုံးအကြီးအသေး ပြန်စစ်ပါ။";
+                    errorEl.innerText = "❌ Password မှားယွင်းနေပါသည်။ (Sheet ထဲရှိ Password နှင့် တိုက်စစ်ပါ)";
                     errorEl.style.display = 'block';
                 }
             })
@@ -1073,7 +1073,7 @@
                 alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
                 const currentRole = localStorage.getItem('currentUserRole') || 'user';
                 if(currentRole !== 'admin') {
-                    alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
+                    alert("🔒 ပစ္စည်းအသက်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
                     canScan = true; updateScannerStatusUi(true);
                     return;
                 }
@@ -1092,7 +1092,7 @@
                 let item = cart.find(i => i.barcode.toString() === barcode.toString());
                 if (item) {
                     if (item.qty >= product.stock) {
-                        alert(`⚠️ စတော့ လက်ကျန်ထက် ပိုတိုး၍ မရနိုင်တော့ပါဗျာ။`);
+                        alert(`⚠️ စတော့ခ် လက်ကျန်ထက် ပိုတိုး၍ မရနိုင်တော့ပါဗျာ။`);
                         return;
                     }
                     item.qty++;
@@ -1243,7 +1243,7 @@
             const list = document.getElementById('history-list'); 
             const currentRole = localStorage.getItem('currentUserRole') || 'user';
             
-            if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; }
+            if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4 small">%ှတ်တမ်းမရှိပါ</div>'; return; }
             list.innerHTML = '';
             data.forEach(sale => {
                 let itemsList = sale.items.map(i => `
@@ -1346,7 +1346,7 @@
                     editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
                     alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ။`); loadProductsFromSheet(); 
                 }, 2000);
-            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြ return မည်"; });
+            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်"; });
         }
 
         function deleteProductFromSheet(index) {
