@@ -470,7 +470,7 @@
                     <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
                 </div>
 
-                <!-- 🔐 NEW: Password Management Section -->
+                <!-- 🔐 PASSWORD MANAGEMENT SECTION -->
                 <div class="custom-card" style="border-top: 4px solid var(--accent-gold) !important;">
                     <h6 class="fw-bold mb-3" style="color: var(--accent-gold);">🔐 စနစ်သုံး Password များ ပြောင်းလဲသတ်မှတ်ရန်</h6>
                     <p class="text-muted small mb-4">Google Sheet ထဲမှာ Password သစ်များသွားသိမ်းရန် ဤနေရာတွင် တိုက်ရိုက်ရိုက်ထည့်ပြီး ပြောင်းလဲနိုင်ပါတယ်ဗျာ။</p>
@@ -568,47 +568,46 @@
             }
         }
 
-        // 🔐 Google Sheet ထံမှ လက်ရှိ Password သတ်မှတ်ချက်များကို တိုက်ရိုက်ခေါ်ယူပြီး စစ်ဆေးပေးမည့် စနစ်သစ် Logic
+        // 🔐 တင်းကျပ်ထားသော လုံခြုံရေးအဆင့်မြှင့်တင်ထားသည့် ဝင်ရောက်မှုစနစ် Logic သစ်
         function checkUniversalLogin() {
-            try {
-                let inputElement = document.getElementById('home-pass-input');
-                let input = inputElement ? inputElement.value.trim() : "";
-                
-                let loginBtn = document.getElementById("main-login-btn");
-                if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ စစ်ဆေးနေသည်..."; }
-
-                fetch(scriptURL + '?getPasswords=true&t=' + new Date().getTime())
-                .then(res => res.json())
-                .then(cloudPasswords => {
-                    if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
-                    
-                    let latestAdmin = cloudPasswords.adminPassword ? cloudPasswords.adminPassword.toString().trim() : "";
-                    let latestUser = cloudPasswords.userPassword ? cloudPasswords.userPassword.toString().trim() : "";
-
-                    if (latestAdmin === "" && latestUser === "") {
-                        executeLoginSuccess(input, 'admin'); 
-                    } 
-                    else {
-                        if (input === latestAdmin && latestAdmin !== "") {
-                            executeLoginSuccess(input, 'admin');
-                        } else if (input === latestUser && latestUser !== "") {
-                            executeLoginSuccess(input, 'user');
-                        } else {
-                            document.getElementById('lock-error').style.display = 'block';
-                        }
-                    }
-                })
-                .catch(err => {
-                    if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
-                    if (input === "") {
-                        executeLoginSuccess(input, 'admin');
-                    } else {
-                        document.getElementById('lock-error').style.display = 'block';
-                    }
-                });
-            } catch(err) {
-                executeLoginSuccess("", 'admin');
+            let inputElement = document.getElementById('home-pass-input');
+            let input = inputElement ? inputElement.value.trim() : "";
+            let errorEl = document.getElementById('lock-error');
+            
+            // Password လုံးဝမရိုက်ဘဲ Blank ဝင်တာကို တားဆီးခြင်း
+            if (input === "") {
+                errorEl.innerText = "❌ ကျေးဇူးပြု၍ Password ရိုက်ထည့်ပေးပါဗျာ။";
+                errorEl.style.display = 'block';
+                return;
             }
+            
+            let loginBtn = document.getElementById("main-login-btn");
+            if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ စစ်ဆေးနေသည်..."; }
+
+            fetch(scriptURL + '?getPasswords=true&t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(cloudPasswords => {
+                if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
+                
+                let latestAdmin = cloudPasswords.adminPassword ? cloudPasswords.adminPassword.toString().trim() : "";
+                let latestUser = cloudPasswords.userPassword ? cloudPasswords.userPassword.toString().trim() : "";
+
+                // Google Sheet ထဲမှာ လက်ရှိ တကယ်ရှိနေတဲ့ Password သစ်တွေနဲ့သာ စစ်ဆေးပါမည်
+                if (input === latestAdmin && latestAdmin !== "") {
+                    executeLoginSuccess(input, 'admin');
+                } else if (input === latestUser && latestUser !== "") {
+                    executeLoginSuccess(input, 'user');
+                } else {
+                    errorEl.innerText = "❌ Password မှားယွင်းနေပါသည်။ စာလုံးအကြီးအသေး ပြန်စစ်ပါ။";
+                    errorEl.style.display = 'block';
+                }
+            })
+            .catch(err => {
+                // အင်တာနက်ပြတ်တောက်နေချိန် သို့မဟုတ် Response မရခဲ့ရင် Bypass ပေးမဝင်တော့ပါ
+                if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
+                errorEl.innerText = "❌ ချိတ်ဆက်မှုမအောင်မြင်ပါ။ အင်တာနက်လိုင်းကို ပြန်စစ်ပေးပါဦးဗျာ။";
+                errorEl.style.display = 'block';
+            });
         }
 
         function executeLoginSuccess(passwordValue, role) {
@@ -654,7 +653,6 @@
             window.location.reload();
         }
 
-        // 🔐 NEW: Google Sheet ထဲသို့ Password သစ်များ တိုက်ရိုက်ပို့ပြီး သိမ်းမည့် Function
         function updateSystemPasswordsOnline() {
             let adminPw = document.getElementById('admin-new-pw-input').value.trim();
             let userPw = document.getElementById('user-new-pw-input').value.trim();
