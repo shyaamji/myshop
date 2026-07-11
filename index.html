@@ -272,8 +272,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzQs7Gc8YPI4Wcu5z_lDGR5o76QUrkAHo1FhY8bvX7NMK8hCJxjNohlwImniqMqu3p-/exec'; 
-        const homePassword = '7';  
-        const adminPassword = '9'; 
+        const homePassword = '1111';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -348,8 +348,7 @@
                 <div class="custom-card p-2">
                     <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
                         <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
-                        <!-- ကနဦးအစတွင် Scanner အား ပိတ်ထားသည့် ပုံစံဖြင့် ပြောင်းလဲထားပါသည် -->
-                        <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
+                        <button id="scanner-status-btn" class="btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="resumeScannerManual()">🟢 Scanning</button>
                     </div>
                     <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
                 </div>
@@ -488,9 +487,7 @@
     </div>
 
     <script>
-        let canScan = false; // 👈 ကနဦးတွင် စကန်ဖတ်ခြင်းကို ပိတ်ထားသည် (Auto Start မဖြစ်စေရန်)
-        let html5QrcodeScanner = null;
-        let cart = []; let productsDB = []; let salesHistory = [];
+        let canScan = true; let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null;
         
         function initAudio() {
@@ -804,6 +801,7 @@
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
+        // 🔍 ပြင်ဆင်ပြီးသား ရှာဖွေမှုစနစ် (ခြင်းတောင်းထဲက အရေအတွက်ကို တိုက်ရိုက်ချိတ်ဆက်ပြသခြင်း)
         function filterProductNames() {
             let inputElement = document.getElementById('name-search-input');
             let input = inputElement.value.toLowerCase().trim();
@@ -828,6 +826,8 @@
 
             filtered.forEach(prod => {
                 let barcodeStr = prod.barcode.toString();
+                
+                // ခြင်းတောင်းထဲမှာ အဆိုပါပစ္စည်း ရှိမရှိ စစ်ဆေးပြီး အရေအတွက်ကို ယူခြင်း
                 let cartItem = cart.find(i => i.barcode.toString() === barcodeStr);
                 let currentSelectedQty = cartItem ? cartItem.qty : 0;
 
@@ -844,6 +844,7 @@
                 let actionDiv = document.createElement('div');
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
+                // ခြင်းတောင်းထဲမှာ ရှိပြီးသားဆိုရင် (အရေအတွက် > 0 ဖြစ်နေရင်) +-✅ ကို တိုက်ရိုက်ပြမည်
                 if (currentSelectedQty > 0) {
                     actionDiv.innerHTML = `
                         <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
@@ -861,7 +862,11 @@
                         e.stopPropagation();
                         playBeep();
                         dismissKeyboard(); 
+                        
+                        // ခြင်းတောင်းထဲကို တိုက်ရိုက် ၁ ခု အနေနဲ့ စတင်ထည့်သွင်းခြင်း
                         addByBarcodeDirectly(barcodeStr);
+                        
+                        // UI ကို ချက်ချင်း Update လုပ်ရန်
                         filterProductNames(); 
                     };
                     actionDiv.appendChild(addBtn);
@@ -933,26 +938,8 @@
         }
 
         function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
-
-        // 🔄 Manual Toggle Scanner စနစ် (Auto-start ပိတ်ရန်)
-        function toggleScannerManual() {
-            playBeep();
-            if (!html5QrcodeScanner) {
-                // ခလုတ်နှိပ်မှသာ ကင်မရာ Instance ကို စတင်တည်ဆောက်ပြီး ပွင့်စေပါမည်
-                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-                html5QrcodeScanner.render(onScanSuccess);
-                canScan = true;
-                updateScannerStatusUi(true);
-            } else {
-                if (canScan) {
-                    canScan = false;
-                    updateScannerStatusUi(false);
-                } else {
-                    canScan = true;
-                    updateScannerStatusUi(true);
-                }
-            }
-        }
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
 
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
@@ -970,13 +957,7 @@
                 document.getElementById('new-name').focus();
             } else {
                 canScan = false; updateScannerStatusUi(false);
-                setTimeout(() => { 
-                    // အကယ်၍ Scanner ကို Manual ပိတ်မထားရင် ၃ စက္ကန့်အကြာမှာ Auto-resume ပြန်လုပ်ပေးပါမည်
-                    if (html5QrcodeScanner) {
-                        canScan = true; 
-                        updateScannerStatusUi(true); 
-                    }
-                }, 3000);
+                setTimeout(() => { canScan = true; updateScannerStatusUi(true); }, 3000);
                 
                 let item = cart.find(i => i.barcode.toString() === barcode.toString());
                 if (item) item.qty++; else cart.push({ ...product, qty: 1 });
@@ -986,9 +967,11 @@
 
         function updateScannerStatusUi(isScanning) {
             let btn = document.getElementById('scanner-status-btn'); if(!btn) return;
-            btn.className = isScanning ? "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm" : "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+            btn.className = isScanning ? "btn btn-sm btn-success py-1 px-3 fw-bold" : "btn btn-sm btn-danger py-1 px-3 fw-bold";
             btn.innerText = isScanning ? "🟢 Scanning" : "🔴 Paused";
         }
+
+        function resumeScannerManual() { canScan = true; updateScannerStatusUi(true); playBeep(); }
         
         function changeQty(index, change) { 
             playBeep(); 
