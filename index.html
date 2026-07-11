@@ -272,8 +272,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzCknK8RNpBNgPn5Lo5pjn7R7IMiT0-5syaMKZa9w5x2JjeibLpF341NZ4976qej9PL/exec'; 
-        const homePassword = 'km';  
-        const adminPassword = 'kmkm'; 
+        const homePassword = '1111';  
+        const adminPassword = '2222'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -348,6 +348,7 @@
                 <div class="custom-card p-2">
                     <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
                         <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
+                        <!-- ကနဦးအစတွင် Scanner အား ပိတ်ထားသည့် ပုံစံဖြင့် ပြောင်းလဲထားပါသည် -->
                         <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
                     </div>
                     <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
@@ -487,7 +488,7 @@
     </div>
 
     <script>
-        let canScan = false; 
+        let canScan = false; // 👈 ကနဦးတွင် စကန်ဖတ်ခြင်းကို ပိတ်ထားသည် (Auto Start မဖြစ်စေရန်)
         let html5QrcodeScanner = null;
         let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null;
@@ -674,15 +675,6 @@
             }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Online"; });
         }
 
-        function reloadOnlineAdminTab(btn) {
-            btn.disabled = true; btn.innerText = "⏳ Loading...";
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
-                productsDB = data; btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
-                renderAdminProducts(productsDB);
-                alert("⚙️ ပစ္စည်းစာရင်းအသစ်များကို Sheet မှ တစ်ပြိုင်နက် Sync လုပ်ပြီးပါပြီ။");
-            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
-        }
-
         function loadProductsFromSheet() {
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; 
@@ -846,11 +838,7 @@
                 infoDiv.style.flex = "1";
                 infoDiv.style.minWidth = "0";
                 infoDiv.style.marginRight = "8px";
-                
-                // စတော့ လက်ကျန် အရေအတွက်ကို ရှာဖွေမှုအကွက်ထဲတွင် တိုက်ရိုက်ပြသပေးခြင်း
-                let stockText = prod.stock > 0 ? `(လက်ကျန်: ${prod.stock} ခု)` : `<span class="text-danger">(ကုန်သွားပြီ)</span>`;
-                
-                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px; color: var(--text-main);">${prod.name} <small class="text-muted fw-normal">${stockText}</small></div> 
+                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px; color: var(--text-main);">${prod.name}</div> 
                                      <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
                 
                 let actionDiv = document.createElement('div');
@@ -891,16 +879,8 @@
             if (product) {
                 let item = cart.find(i => i.barcode.toString() === barcode.toString());
                 if (item) {
-                    if (item.qty >= product.stock) {
-                        alert(`⚠️ စတော့ လက်ကျန်ထက် ပိုရောင်းလို့မရပါဗျာ။ (လက်ကျန်: ${product.stock} ခုသာ ရှိပါသည်)`);
-                        return;
-                    }
                     item.qty++;
                 } else {
-                    if (product.stock <= 0) {
-                        alert("⚠️ ဤပစ္စည်းသည် စတော့ကုန်နေပါပြီဗျာ။");
-                        return;
-                    }
                     cart.push({ ...product, qty: 1 });
                 }
                 renderCart();
@@ -911,23 +891,15 @@
             playBeep();
             let bStr = barcode.toString();
             let itemIndex = cart.findIndex(i => i.barcode.toString() === bStr);
-            let product = productsDB.find(p => p.barcode.toString() === bStr);
             
             if (itemIndex !== -1) {
-                if (change > 0 && cart[itemIndex].qty >= product.stock) {
-                    alert(`⚠️ စတော့ လက်ကျန်ထက် ပိုရောင်းလို့မရပါဗျာ။ (လက်ကျန်: ${product.stock} ခုသာ ရှိပါသည်)`);
-                    return;
-                }
                 cart[itemIndex].qty += change;
                 if (cart[itemIndex].qty <= 0) {
                     cart.splice(itemIndex, 1);
                 }
-            } else if (change > 0 && product) {
-                if (product.stock <= 0) {
-                    alert("⚠️ ဤပစ္စည်းသည် စတော့ကုန်နေပါပြီဗျာ။");
-                    return;
-                }
-                cart.push({ ...product, qty: 1 });
+            } else if (change > 0) {
+                let product = productsDB.find(p => p.barcode.toString() === bStr);
+                if (product) cart.push({ ...product, qty: 1 });
             }
             
             renderCart();
@@ -962,9 +934,11 @@
 
         function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
 
+        // 🔄 Manual Toggle Scanner စနစ် (Auto-start ပိတ်ရန်)
         function toggleScannerManual() {
             playBeep();
             if (!html5QrcodeScanner) {
+                // ခလုတ်နှိပ်မှသာ ကင်မရာ Instance ကို စတင်တည်ဆောက်ပြီး ပွင့်စေပါမည်
                 html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
                 html5QrcodeScanner.render(onScanSuccess);
                 canScan = true;
@@ -997,6 +971,7 @@
             } else {
                 canScan = false; updateScannerStatusUi(false);
                 setTimeout(() => { 
+                    // အကယ်၍ Scanner ကို Manual ပိတ်မထားရင် ၃ စက္ကန့်အကြာမှာ Auto-resume ပြန်လုပ်ပေးပါမည်
                     if (html5QrcodeScanner) {
                         canScan = true; 
                         updateScannerStatusUi(true); 
@@ -1004,19 +979,7 @@
                 }, 3000);
                 
                 let item = cart.find(i => i.barcode.toString() === barcode.toString());
-                if (item) {
-                    if (item.qty >= product.stock) {
-                        alert(`⚠️ စတော့ လက်ကျန်ထက် ပိုတိုး၍ မရနိုင်တော့ပါဗျာ။`);
-                        return;
-                    }
-                    item.qty++;
-                } else {
-                    if (product.stock <= 0) {
-                        alert("⚠️ ဤပစ္စည်းသည် စတော့ကုန်နေပါပြီဗျာ။");
-                        return;
-                    }
-                    cart.push({ ...product, qty: 1 });
-                }
+                if (item) item.qty++; else cart.push({ ...product, qty: 1 });
                 renderCart();
             }
         }
@@ -1029,14 +992,6 @@
         
         function changeQty(index, change) { 
             playBeep(); 
-            let item = cart[index];
-            let product = productsDB.find(p => p.barcode.toString() === item.barcode.toString());
-            
-            if (change > 0 && item.qty >= product.stock) {
-                alert(`⚠️ စတော့ခ် လက်ကျန်ထက် ပိုရောင်း၍မရပါဗျာ။`);
-                return;
-            }
-            
             cart[index].qty += change; 
             if (cart[index].qty <= 0) {
                 cart.splice(index, 1); 
@@ -1073,53 +1028,19 @@
             if(countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
         }
 
-        // 🛒 Checkout လုပ်လျှင် စတော့လျှော့ပေးမည့် အပိုင်း
         function checkout() {
             if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
-            
-            // 1. ဒေသတွင်းစတော့ခ် (Local productsDB) ကို အရင်လျှော့ချပါမည်
-            for (let item of cart) {
-                let dbProduct = productsDB.find(p => p.barcode.toString() === item.barcode.toString());
-                if (dbProduct) {
-                    dbProduct.stock = Math.max(0, dbProduct.stock - item.qty); // စတော့ခ်အား နှုတ်ပစ်ခြင်း
-                }
-            }
-
             let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
             let voucherId = "WM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
             
-            let saleData = { 
-                action: "addSale", 
-                voucherId: voucherId, 
-                customerName: customerName, 
-                items: cart, 
-                total: total, 
-                date: new Date().toLocaleString() 
-            };
-            
-            salesHistory.unshift(saleData); 
-            localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); 
-            displayHistory(salesHistory); 
-            
+            let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total, date: new Date().toLocaleString() };
+            salesHistory.unshift(saleData); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
             printVoucher(saleData);
-            
-            // 2. Google Sheet ဆီသို့ Online ဒေတာ Sync ပို့လွှတ်ခြင်း
-            let formData = new FormData(); 
-            formData.append('jsonData', JSON.stringify(saleData));
-            
-            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
-            .then(() => {
-                console.log("Online Cloud Sheet Sync: Success");
-            }).catch(err => {
-                console.log("Online Cloud Sync Fail: stored in local.", err);
-            });
-
-            // ခြင်းတောင်းကို ရှင်းထုတ်ပြီး UI အသစ်ပြန်ပြောင်းခြင်း
-            cart = []; 
-            renderCart(); 
+            let formData = new FormData(); formData.append('jsonData', JSON.stringify(saleData));
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
+            cart = []; renderCart(); 
             clearSearchInputAndBox();
-            if(document.getElementById('admin').classList.contains('active')) renderAdminProducts(productsDB);
         }
 
         function printVoucher(sale) {
