@@ -336,7 +336,7 @@
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
                         <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
+                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="รိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
                         </form>
                         <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
                     </div>
@@ -437,6 +437,7 @@
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
                 </div>
 
+                <!-- ➕ Add Product Section -->
                 <div class="custom-card" style="border-top: 4px solid var(--accent-success) !important;">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h6 class="fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
@@ -469,6 +470,26 @@
                     <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
                 </div>
 
+                <!-- 🔐 NEW: Password Management Section -->
+                <div class="custom-card" style="border-top: 4px solid var(--accent-gold) !important;">
+                    <h6 class="fw-bold mb-3" style="color: var(--accent-gold);">🔐 စနစ်သုံး Password များ ပြောင်းလဲသတ်မှတ်ရန်</h6>
+                    <p class="text-muted small mb-4">Google Sheet ထဲမှာ Password သစ်များသွားသိမ်းရန် ဤနေရာတွင် တိုက်ရိုက်ရိုက်ထည့်ပြီး ပြောင်းလဲနိုင်ပါတယ်ဗျာ။</p>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="text-secondary small fw-bold mb-1">🔑 Admin Password သစ်</label>
+                            <input type="text" id="admin-new-pw-input" class="form-control font-monospace" placeholder="Admin Password အသစ်">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="text-secondary small fw-bold mb-1">👤 Staff (User) Password သစ်</label>
+                            <input type="text" id="user-new-pw-input" class="form-control font-monospace" placeholder="Staff Password အသစ်">
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="button" id="update-pw-btn" class="btn btn-premium-gold w-100 fw-bold py-3" onclick="updateSystemPasswordsOnline()">💾 Password များသိမ်းမည်</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📝 Product List Management -->
                 <div class="custom-card">
                     <h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6>
                     <div class="position-relative mb-4">
@@ -556,7 +577,6 @@
                 let loginBtn = document.getElementById("main-login-btn");
                 if(loginBtn) { loginBtn.disabled = true; loginBtn.innerText = "⏳ စစ်ဆေးနေသည်..."; }
 
-                // Google Web App ထံမှ password ခေါ်ယူခြင်း
                 fetch(scriptURL + '?getPasswords=true&t=' + new Date().getTime())
                 .then(res => res.json())
                 .then(cloudPasswords => {
@@ -565,11 +585,9 @@
                     let latestAdmin = cloudPasswords.adminPassword ? cloudPasswords.adminPassword.toString().trim() : "";
                     let latestUser = cloudPasswords.userPassword ? cloudPasswords.userPassword.toString().trim() : "";
 
-                    // 💡 အကယ်၍ Google Sheet ပေါ်တွင် Password လုံးဝ မရှိသေးလျှင် (ပထမဆုံးအကြိမ်) အလွတ်ဖြင့် တိုက်ရိုက် ဝင်ခွင့်ပေးမည်
                     if (latestAdmin === "" && latestUser === "") {
                         executeLoginSuccess(input, 'admin'); 
                     } 
-                    // 💡 Sheet ပေါ်တွင် Password သတ်မှတ်ချက် ရှိနေပါက မှန်ကန်မှ ပေးဝင်မည်
                     else {
                         if (input === latestAdmin && latestAdmin !== "") {
                             executeLoginSuccess(input, 'admin');
@@ -582,7 +600,6 @@
                 })
                 .catch(err => {
                     if(loginBtn) { loginBtn.disabled = false; loginBtn.innerText = "🔓 စနစ်ထဲသို့ဝင်မည်"; }
-                    // အင်တာနက်ပြတ်တောက်နေချိန်တွင် ရိုက်ထည့်မှုအလွတ်ဖြစ်ပါက Backup အနေဖြင့် အရေးပေါ် ဝင်ခွင့်ပြုခြင်း
                     if (input === "") {
                         executeLoginSuccess(input, 'admin');
                     } else {
@@ -594,7 +611,6 @@
             }
         }
 
-        // Login အောင်မြင်သွားလျှင် Session သိမ်းဆည်းပြီး App မျက်နှာပြင် ဖွင့်ပေးမည့် Function
         function executeLoginSuccess(passwordValue, role) {
             sessionStorage.setItem('isAppUnlocked', 'true');
             sessionStorage.setItem('sessionLoginPassword', passwordValue); 
@@ -636,6 +652,46 @@
             sessionStorage.removeItem('isAppUnlocked');
             localStorage.removeItem('currentUserRole');
             window.location.reload();
+        }
+
+        // 🔐 NEW: Google Sheet ထဲသို့ Password သစ်များ တိုက်ရိုက်ပို့ပြီး သိမ်းမည့် Function
+        function updateSystemPasswordsOnline() {
+            let adminPw = document.getElementById('admin-new-pw-input').value.trim();
+            let userPw = document.getElementById('user-new-pw-input').value.trim();
+            
+            if(adminPw === "" && userPw === "") {
+                alert("⚠️ ကျေးဇူးပြု၍ ပြောင်းလဲလိုသော Password အနည်းဆုံးတစ်ခု ရိုက်ထည့်ပေးပါဗျာ။");
+                return;
+            }
+            
+            let btn = document.getElementById('update-pw-btn');
+            btn.disabled = true;
+            btn.innerText = "⏳ Cloud Sheet သို့ သိမ်းဆည်းနေပါသည်...";
+            
+            let payload = {
+                action: "updatePasswords",
+                adminPassword: adminPw,
+                userPassword: userPw
+            };
+            
+            let formData = new FormData();
+            formData.append('jsonData', JSON.stringify(payload));
+            
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
+            .then(() => {
+                setTimeout(() => {
+                    alert("✅ Password များကို Google Sheet ထဲတွင် အောင်မြင်စွာ ပြောင်းလဲသိမ်းဆည်းပြီးပါပြီဗျာ။ နောက်တစ်ကြိမ် App ဝင်လျှင် ဤ Password သစ်များကို ရိုက်ထည့်ရပါမည်။");
+                    btn.disabled = false;
+                    btn.innerText = "💾 Password များသိမ်းမည်";
+                    document.getElementById('admin-new-pw-input').value = "";
+                    document.getElementById('user-new-pw-input').value = "";
+                }, 2000);
+            })
+            .catch(err => {
+                alert("❌ ချိတ်ဆက်မှု အဆင်မပြေဖြစ်သွားပါသည်၊ အင်တာနက်ပြန်စစ်ပေးပါဗျာ။");
+                btn.disabled = false;
+                btn.innerText = "💾 Password များသိမ်းမည်";
+            });
         }
 
         try {
