@@ -8,7 +8,6 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
     
-    <!-- Google Fonts, Bootstrap 5 & Chart.js -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -259,6 +258,28 @@
             font-weight: 600;
         }
 
+        /* 🔄 Scanner Dynamic Row Order Positioning (စကန်ဖတ်ချိန်တွင် အပေါ်သို့တက်စေမည့် CSS) */
+        .sales-grid-layout {
+            display: flex;
+            flex-direction: column;
+        }
+        .scanner-card-box {
+            order: 2; /* ပုံမှန်အချိန်တွင် အလယ် (ဒုတိယ) နေရာ */
+            transition: all 0.3s ease-in-out;
+        }
+        .scanner-card-box.scan-active-mode {
+            order: 1; /* စကန်ဖတ်ချိန်တွင် ထိပ်ဆုံး (ပထမ) နေရာသို့ ရောက်သွားမည် */
+        }
+        .search-card-box {
+            order: 1;
+        }
+        .search-card-box.scan-active-mode {
+            order: 2; /* စကန်ဖတ်ချိန်တွင် ဒုတိယနေရာသို့ ဆင်းသွားမည် */
+        }
+        .cart-card-box {
+            order: 3;
+        }
+
         /* 🖨️ Print Zone Settings */
         #print-receipt-zone { display: none; }
         @media print {
@@ -272,8 +293,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyDE-IwHX7vggUsp2FWlA5rgtA8IQRo71eyLI_Poc1oLg4bc5cNsVygzi0PvtY0qrRr/exec'; 
-        const homePassword = 'kk';  
-        const adminPassword = 'kkk'; 
+        const homePassword = 'ss';  
+        const adminPassword = 'sss'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -287,7 +308,6 @@
 </head>
 <body>
 
-    <!-- 🔒 Luxury Screen Lock (Dual Role Input) -->
     <div id="app-lock-screen">
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
@@ -302,7 +322,6 @@
     <div id="print-receipt-zone"></div>
 
     <div id="app-main-content">
-        <!-- Premium Top Header -->
         <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
@@ -312,7 +331,6 @@
             </div>
         </nav>
 
-        <!-- Navigation Tab Group -->
         <div class="container mt-4">
             <div class="nav-tabs-custom d-flex gap-1" role="group">
                 <button id="btn-sales" class="btn flex-fill active" onclick="switchTab('sales')">🛒 အရောင်း</button>
@@ -324,65 +342,63 @@
             </div>
         </div>
 
-        <!-- Main Body Content -->
         <div class="container mt-4 pb-5">
             
-            <!-- 🛒 Sales Tab -->
             <div id="sales" class="tab-content active">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync Sheet</button>
                 </div>
 
-                <!-- 🔍 Product Search Container -->
-                <div class="custom-card search-container-box" id="main-search-card">
-                    <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
-                    <div class="position-relative">
-                        <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
-                        </form>
-                        <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
-                    </div>
-                    <div id="search-suggestions" class="search-results" style="display: none;"></div>
-                </div>
-
-                <div class="custom-card p-2">
-                    <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
-                        <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
-                        <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
-                    </div>
-                    <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
-                </div>
-
-                <!-- Shopping Cart Component -->
-                <div class="custom-card p-0 overflow-hidden border-0" style="background: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                    <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
-                        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
-                            <span>🛒</span> ဝယ်ယူနေသော ပစ္စည်းစာရင်း
-                        </h6>
-                        <span class="badge rounded-pill bg-light text-dark border font-monospace" id="cart-count-badge" style="font-size: 12px; padding: 6px 12px; border-color: var(--border-color) !important;">0 items</span>
-                    </div>
+                <div class="sales-grid-layout">
                     
-                    <div id="cart-list" class="px-3 py-3" style="max-height: 320px; overflow-y: auto;">
-                        <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+                    <div class="custom-card search-container-box search-card-box" id="main-search-card">
+                        <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
+                        <div class="position-relative">
+                            <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                                <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
+                            </form>
+                            <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
+                        </div>
+                        <div id="search-suggestions" class="search-results" style="display: none;"></div>
                     </div>
-                    
-                    <div class="p-4" style="background: var(--bg-input); border-top: 1px solid var(--border-color);">
-                        <div class="row align-items-center g-3">
-                            <div class="col-6">
-                                <small class="text-secondary d-block fw-bold mb-1" style="font-size: 11px; letter-spacing: 1px;">TOTAL DUE</small>
-                                <h3 class="fw-bold mb-0 font-monospace" style="font-size: 26px;"><span id="cart-total" style="color: var(--accent-gold);">0</span> <span style="font-size: 15px;" class="text-muted">Ks</span></h3>
-                            </div>
-                            <div class="col-6 text-end">
-                                <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="checkout()">
-                                    <span>Voucher ထုတ်မည်</span> ➡️
-                                </button>
+
+                    <div class="custom-card p-2 scanner-card-box" id="main-scanner-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
+                            <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
+                            <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
+                        </div>
+                        <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
+                    </div>
+
+                    <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background: var(--bg-card); border: 1px solid var(--border-color) !important;">
+                        <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
+                            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                <span>🛒</span> ဝယ်ယူနေသော ပစ္စည်းစာရင်း
+                            </h6>
+                            <span class="badge rounded-pill bg-light text-dark border font-monospace" id="cart-count-badge" style="font-size: 12px; padding: 6px 12px; border-color: var(--border-color) !important;">0 items</span>
+                        </div>
+                        
+                        <div id="cart-list" class="px-3 py-3" style="max-height: 320px; overflow-y: auto;">
+                            <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+                        </div>
+                        
+                        <div class="p-4" style="background: var(--bg-input); border-top: 1px solid var(--border-color);">
+                            <div class="row align-items-center g-3">
+                                <div class="col-6">
+                                    <small class="text-secondary d-block fw-bold mb-1" style="font-size: 11px; letter-spacing: 1px;">TOTAL DUE</small>
+                                    <h3 class="fw-bold mb-0 font-monospace" style="font-size: 26px;"><span id="cart-total" style="color: var(--accent-gold);">0</span> <span style="font-size: 15px;" class="text-muted">Ks</span></h3>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="checkout()">
+                                        <span>Voucher ထုတ်မည်</span> ➡️
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- 📜 History Tab -->
+                </div> </div>
+
             <div id="history" class="tab-content">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
@@ -398,7 +414,6 @@
                 </div>
             </div>
 
-            <!-- 📊 Dashboard Tab -->
             <div id="dashboard" class="tab-content">
                 <div class="custom-card text-center shadow-sm" style="background: var(--bg-card); border: 1px solid rgba(217, 119, 6, 0.15);">
                     <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">TODAY'S TOTAL SALES</small>
@@ -433,7 +448,6 @@
                 </div>
             </div>
 
-            <!-- ⚙️ Admin Tab -->
             <div id="admin" class="tab-content">
                 <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
@@ -844,7 +858,6 @@
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
                 if (currentSelectedQty > 0) {
-                    // 🌟 Keyboard မကျသွားအောင် ခလုတ်တွေအားလုံးမှာ onmousedown="event.preventDefault();" ထည့်သွင်းထားပါတယ်
                     actionDiv.innerHTML = `
                         <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
                         <span class="suggestion-qty-display text-dark-emphasis">${currentSelectedQty}</span>
@@ -856,14 +869,12 @@
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
                     
-                    // 🌟 ဤနေရာတွင် မလိုလားအပ်ဘဲ Keyboard ကျသွားခြင်းမှ ကာကွယ်ရန် ကောင်းမွန်သော နည်းလမ်းကို သုံးထားပါတယ်
                     addBtn.onmousedown = function(e) {
-                        e.preventDefault(); // Browser ရဲ့ Default focus ခိုးတဲ့စနစ်ကို ပိတ်ပစ်ပါတယ်
+                        e.preventDefault(); 
                         playBeep();
                         addByBarcodeDirectly(barcodeStr);
                         filterProductNames(); 
                         
-                        // Keyboard မပျောက်ဘဲ စာဆက်ရိုက်နိုင်အောင် Input ကို အတင်းပြန် Focus ခေါ်ထားပါတယ်
                         setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
                     };
                     actionDiv.appendChild(addBtn);
@@ -906,13 +917,12 @@
             
             renderCart();
             filterProductNames(); 
-            // Focus မပျောက်အောင် ထိန်းထားခြင်း
             setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
         }
 
         function confirmProductSelection() {
             playBeep();
-            dismissKeyboard(); // ✅ ✅ ကိုနှိပ်လိုက်မှ Keyboard ကို ပိတ်ပစ်မည်
+            dismissKeyboard(); 
             clearSearchInputAndBox();
         }
 
@@ -939,33 +949,61 @@
 
         function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
 
+        /* 🔄 Scanner Dynamic Positioning Controller (စကန်ဖတ်ချိန် အပေါ်မြှင့်တင်ပေးမည့် စနစ်) */
         function toggleScannerManual() {
             playBeep();
+            
+            let scannerCard = document.getElementById('main-scanner-card');
+            let searchCard = document.getElementById('main-search-card');
+
             if (!html5QrcodeScanner) {
                 html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
                 html5QrcodeScanner.render(onScanSuccess);
                 canScan = true;
                 updateScannerStatusUi(true);
+                
+                // 🚀 Start Scan လုပ်ချိန်တွင် Scanner ကတ်ကို ထိပ်ဆုံးသို့ ရွှေ့မည်
+                if(scannerCard) scannerCard.classList.add('scan-active-mode');
+                if(searchCard) searchCard.classList.add('scan-active-mode');
             } else {
                 if (canScan) {
                     canScan = false;
                     updateScannerStatusUi(false);
+                    
+                    // 💤 Paused လုပ်ချိန်တွင် ပုံမှန်အောက်နေရာသို့ ပြန်ချမည်
+                    if(scannerCard) scannerCard.classList.remove('scan-active-mode');
+                    if(searchCard) searchCard.classList.remove('scan-active-mode');
                 } else {
                     canScan = true;
                     updateScannerStatusUi(true);
+                    
+                    // 🚀 ပြန်ဖွင့်ချိန်တွင် အပေါ်သို့ မြှင့်တင်မည်
+                    if(scannerCard) scannerCard.classList.add('scan-active-mode');
+                    if(searchCard) searchCard.classList.add('scan-active-mode');
                 }
             }
         }
 
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
+            
+            let scannerCard = document.getElementById('main-scanner-card');
+            let searchCard = document.getElementById('main-search-card');
+
             if (!product) {
                 canScan = false; updateScannerStatusUi(false);
+                
+                // Alert ပြချိန်တွင် ပုံမှန်နေရာ ပြန်ချထားပေးရန်
+                if(scannerCard) scannerCard.classList.remove('scan-active-mode');
+                if(searchCard) searchCard.classList.remove('scan-active-mode');
+
                 alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
                 const currentRole = localStorage.getItem('currentUserRole') || 'user';
                 if(currentRole !== 'admin') {
                     alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
                     canScan = true; updateScannerStatusUi(true);
+                    if(scannerCard) scannerCard.classList.add('scan-active-mode');
+                    if(searchCard) searchCard.classList.add('scan-active-mode');
                     return;
                 }
                 switchTab('admin');
@@ -973,10 +1011,15 @@
                 document.getElementById('new-name').focus();
             } else {
                 canScan = false; updateScannerStatusUi(false);
+                if(scannerCard) scannerCard.classList.remove('scan-active-mode');
+                if(searchCard) searchCard.classList.remove('scan-active-mode');
+
                 setTimeout(() => { 
                     if (html5QrcodeScanner) {
                         canScan = true; 
                         updateScannerStatusUi(true); 
+                        if(scannerCard) scannerCard.classList.add('scan-active-mode');
+                        if(searchCard) searchCard.classList.add('scan-active-mode');
                     }
                 }, 3000);
                 
