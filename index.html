@@ -348,7 +348,6 @@
                 <div class="custom-card p-2">
                     <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
                         <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
-                        <!-- ကနဦးအစတွင် Scanner အား ပိတ်ထားသည့် ပုံစံဖြင့် ပြောင်းလဲထားပါသည် -->
                         <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
                     </div>
                     <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
@@ -488,7 +487,7 @@
     </div>
 
     <script>
-        let canScan = false; // 👈 ကနဦးတွင် စကန်ဖတ်ခြင်းကို ပိတ်ထားသည် (Auto Start မဖြစ်စေရန်)
+        let canScan = false; 
         let html5QrcodeScanner = null;
         let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null;
@@ -860,7 +859,7 @@
                         e.preventDefault();
                         e.stopPropagation();
                         playBeep();
-                        dismissKeyboard(); 
+                        // ❌ dismissKeyboard(); ကို ဖြုတ်လိုက်ပါပြီ (Keyboard ပွင့်လျက်အတိုင်း ထားရန်)
                         addByBarcodeDirectly(barcodeStr);
                         filterProductNames(); 
                     };
@@ -908,6 +907,7 @@
 
         function confirmProductSelection() {
             playBeep();
+            dismissKeyboard(); // ✅ ✅ ကိုနှိပ်လိုက်မှ Keyboard ကို ပိတ်ပစ်မည်
             clearSearchInputAndBox();
         }
 
@@ -934,11 +934,9 @@
 
         function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
 
-        // 🔄 Manual Toggle Scanner စနစ် (Auto-start ပိတ်ရန်)
         function toggleScannerManual() {
             playBeep();
             if (!html5QrcodeScanner) {
-                // ခလုတ်နှိပ်မှသာ ကင်မရာ Instance ကို စတင်တည်ဆောက်ပြီး ပွင့်စေပါမည်
                 html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
                 html5QrcodeScanner.render(onScanSuccess);
                 canScan = true;
@@ -971,7 +969,6 @@
             } else {
                 canScan = false; updateScannerStatusUi(false);
                 setTimeout(() => { 
-                    // အကယ်၍ Scanner ကို Manual ပိတ်မထားရင် ၃ စက္ကန့်အကြာမှာ Auto-resume ပြန်လုပ်ပေးပါမည်
                     if (html5QrcodeScanner) {
                         canScan = true; 
                         updateScannerStatusUi(true); 
