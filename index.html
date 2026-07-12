@@ -274,31 +274,6 @@
             @page { margin: 0; }
         }
 
-        /* New Styles for Added Features */
-        .quick-add-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        .quick-add-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 10px 5px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            word-break: break-word;
-        }
-        .quick-add-btn:active {
-            transform: scale(0.95);
-            background: var(--accent-gold);
-            color: #fff;
-        }
         .low-stock-alert-banner {
             background: rgba(239, 68, 110, 0.1);
             border: 1px solid var(--accent-danger);
@@ -313,8 +288,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyDE-IwHX7vggUsp2FWlA5rgtA8IQRo71eyLI_Poc1oLg4bc5cNsVygzi0PvtY0qrRr/exec'; 
-        const homePassword = 'kk';  
-        const adminPassword = 'kklso'; 
+        const homePassword = 'sd';  
+        const adminPassword = 'sdlso'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -380,15 +355,6 @@
                 <!-- 📱 Sales Grid Layout -->
                 <div class="sales-grid-layout">
                     
-                    <!-- Quick Add Shortcuts Section -->
-                    <div class="custom-card mb-3" id="quick-add-panel">
-                        <h6 class="fw-bold mb-2 text-secondary">⭐ အဝယ်များသော ပစ္စည်းဖြတ်လမ်းခလုတ်များ</h6>
-                        <div class="quick-add-grid" id="quick-add-buttons-container">
-                            <!-- Populated dynamically via JS based on predefined list or high sellers -->
-                            <div class="text-muted small">ပစ္စည်းများ တင်ဆောင်နေပါသည်...</div>
-                        </div>
-                    </div>
-
                     <!-- 🔍 Product Search Container -->
                     <div class="custom-card search-container-box search-card-box" id="main-search-card">
                         <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
@@ -576,7 +542,7 @@
                             <input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး">
                         </div>
                         <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">လက်ကျန်ခုရေ</label>
+                            <label class="text-secondary small fw-bold mb-1">...စတော့</label>
                             <input type="number" id="new-stock" class="form-control" placeholder="စတော့">
                         </div>
                         <div class="col-6">
@@ -610,9 +576,6 @@
         let html5QrcodeScanner = null;
         let cart = []; let productsDB = []; let salesHistory = [];
         let audioCtx = null; let mySalesChart = null; let myTopProductsChart = null;
-        
-        // Quick Add predefined shortcut names
-        const shortcutItemsList = ["ကြက်ဥ", "ရေသန့်", "အိတ်", "ကော်ဖီမစ်", "မြေပဲဆီ"];
 
         function initAudio() {
             try {
@@ -777,31 +740,6 @@
             if(tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
         }
 
-        function renderQuickAddButtons() {
-            const container = document.getElementById('quick-add-buttons-container');
-            if(!container) return;
-            container.innerHTML = '';
-            
-            let count = 0;
-            shortcutItemsList.forEach(name => {
-                let found = productsDB.find(p => p.name.includes(name));
-                if(found) {
-                    count++;
-                    let btn = document.createElement('div');
-                    btn.className = 'quick-add-btn';
-                    btn.innerText = found.name;
-                    btn.onclick = function() {
-                        playBeep();
-                        addByBarcodeDirectly(found.barcode);
-                    };
-                    container.appendChild(btn);
-                }
-            });
-            if(count === 0) {
-                container.innerHTML = '<div class="text-muted small">ဖြတ်လမ်းခလုတ်များအတွက် ကိုက်ညီသော ပစ္စည်းမတွေ့ပါ။</div>';
-            }
-        }
-
         function checkLowStockAlerts() {
             const container = document.getElementById('low-stock-alert-container');
             if(!container) return;
@@ -828,7 +766,6 @@
             btn.disabled = true; btn.innerText = "⏳ Loading...";
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
-                renderQuickAddButtons();
                 checkLowStockAlerts();
                 alert("🛒 ပစ္စည်းစာရင်းကို အောင်မြင်စွာ Update လုပ်ပြီးပါပြီ။");
             }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
@@ -848,7 +785,6 @@
         function loadProductsFromSheet() {
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; 
-                renderQuickAddButtons();
                 checkLowStockAlerts();
                 if(document.getElementById('admin').classList.contains('active')) renderAdminProducts(productsDB); 
             });
@@ -889,7 +825,6 @@
                 if(startTimestamp && saleDateObj.getTime() < startTimestamp) isInsideFilter = false;
                 if(endTimestamp && saleDateObj.getTime() > endTimestamp) isInsideFilter = false;
                 
-                // If no date filters are picked, default view is today's current date
                 if(!filterStart && !filterEnd) {
                     if(sale.date) {
                         let saleDateOnly = sale.date.split(',')[0].trim(); 
@@ -905,23 +840,20 @@
                     let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
                     totalSum += cleanTotal;
 
-                    // Breakdown Payments Mode
                     let pMode = sale.paymentMode || "Cash";
                     if(pMode === "Cash") cashSum += cleanTotal;
                     else if(pMode === "KPay") kpaySum += cleanTotal;
                     else if(pMode === "Wave") waveSum += cleanTotal;
 
-                    // Compute Profits
                     let saleCost = 0;
                     if(sale.items && Array.isArray(sale.items)) {
                         sale.items.forEach(i => {
                             let matchDB = productsDB.find(p => p.barcode.toString() === i.barcode.toString());
-                            let costPerItem = matchDB ? (Number(matchDB.cost) || 0) : 0;
+                            let costPerItem = matchDB ? (Number(matchDB.cost || matchDB.costPrice) || 0) : 0;
                             saleCost += (costPerItem * Number(i.qty));
                         });
                     }
                     
-                    // Standard Discount Reduction Check
                     let discountVal = sale.discount || "0";
                     let computedDiscount = 0;
                     let calculatedGross = 0;
@@ -981,7 +913,6 @@
                         allDatesMap[formattedDate] += cleanTotal;
                     }
 
-                    // Count top selling items quantities
                     if(sale.items && Array.isArray(sale.items)) {
                         sale.items.forEach(i => {
                             if(!productCountsMap[i.name]) productCountsMap[i.name] = 0;
@@ -1049,7 +980,6 @@
                     });
                 }
 
-                // Render Top Selling Chart Dashboard Module
                 const topCtx = document.getElementById('topProductsChart');
                 if(topCtx && typeof Chart !== 'undefined') {
                     let sortedProducts = Object.keys(productCountsMap).sort((a,b) => productCountsMap[b] - productCountsMap[a]);
@@ -1143,7 +1073,6 @@
                         playBeep();
                         addByBarcodeDirectly(barcodeStr);
                         filterProductNames(); 
-                        
                         setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
                     };
                     actionDiv.appendChild(addBtn);
@@ -1189,12 +1118,6 @@
             setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
         }
 
-        function confirmProductSelection() {
-            playBeep();
-            dismissKeyboard(); 
-            clearSearchInputAndBox();
-        }
-
         function clearSearchInputAndBox() {
             document.getElementById('name-search-input').value = '';
             document.getElementById('search-suggestions').style.display = 'none';
@@ -1220,7 +1143,6 @@
 
         function toggleScannerManual() {
             playBeep();
-            
             let scannerCard = document.getElementById('main-scanner-card');
             let searchCard = document.getElementById('main-search-card');
             let syncBtnContainer = document.getElementById('sync-button-container');
@@ -1230,7 +1152,6 @@
                 html5QrcodeScanner.render(onScanSuccess);
                 canScan = true;
                 updateScannerStatusUi(true);
-                
                 if(scannerCard) scannerCard.classList.add('scan-active-mode');
                 if(searchCard) searchCard.classList.add('scan-active-mode');
                 if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
@@ -1238,14 +1159,12 @@
                 if (canScan) {
                     canScan = false;
                     updateScannerStatusUi(false);
-                    
                     if(scannerCard) scannerCard.classList.remove('scan-active-mode');
                     if(searchCard) searchCard.classList.remove('scan-active-mode');
                     if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
                 } else {
                     canScan = true;
                     updateScannerStatusUi(true);
-                    
                     if(scannerCard) scannerCard.classList.add('scan-active-mode');
                     if(searchCard) searchCard.classList.add('scan-active-mode');
                     if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
@@ -1255,14 +1174,12 @@
 
         function addToCart(barcode) {
             let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
-            
             let scannerCard = document.getElementById('main-scanner-card');
             let searchCard = document.getElementById('main-search-card');
             let syncBtnContainer = document.getElementById('sync-button-container');
 
             if (!product) {
                 canScan = false; updateScannerStatusUi(false);
-                
                 if(scannerCard) scannerCard.classList.remove('scan-active-mode');
                 if(searchCard) searchCard.classList.remove('scan-active-mode');
                 if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
@@ -1343,7 +1260,6 @@
                     </div>`;
             });
 
-            // Calculate Discount
             let discountInput = document.getElementById('cart-discount-input').value.trim();
             let discountAmount = 0;
             if(discountInput.includes('%')) {
@@ -1404,7 +1320,7 @@
                         <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
                         <tr><td style="font-weight: bold;">ဝယ်သူ:</td><td style="text-align: right; font-weight: bold;">${sale.customerName}</td></tr>
                         <tr><td style="font-weight: bold;">နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
-                        <tr><td style="font-weight: bold;">Payment:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
+                        <tr><td style="font-weight: bold;">ပေးချေမှု:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
                     </table>
                     <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                         <thead>
@@ -1505,16 +1421,18 @@
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             arr.forEach((prod, mainIndex) => {
                 let limit = Number(prod.minStock) || 5;
+                let currentCost = prod.cost !== undefined ? prod.cost : (prod.costPrice !== undefined ? prod.costPrice : 0);
                 let stockBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">စတော့: ${prod.stock}</span>`;
                 if(prod.stock <= 0) stockBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">ကုန်သွားပြီ</span>`;
                 else if(prod.stock <= limit) stockBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ${prod.stock}</span>`;
 
                 list.innerHTML += `<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2" style="border-color: var(--border-color) !important;">
                     <div class="d-flex justify-content-between align-items-start"><div class="fw-bold fs-6">${prod.name}</div><div>${stockBadge}</div></div>
-                    <div class="text-muted small font-monospace">Barcode: ${prod.barcode} | အရင်း: ${(prod.cost || 0)} Ks</div>
+                    <div class="text-muted small font-monospace">Barcode: ${prod.barcode}</div>
                     <div class="row g-2 mt-1">
-                        <div class="col-6"><small class="text-secondary small mb-1 d-block">ဈေးနှုန်း</small><input type="number" id="p-price-${mainIndex}" class="form-control form-control-sm fw-bold text-danger" value="${prod.price}"></div>
-                        <div class="col-6"><small class="text-secondary small mb-1 d-block">...စတော့</small><input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">အရင်းဈေး</small><input type="number" id="p-cost-${mainIndex}" class="form-control form-control-sm fw-bold text-secondary" value="${currentCost}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">ရောင်းဈေး</small><input type="number" id="p-price-${mainIndex}" class="form-control form-control-sm fw-bold text-danger" value="${prod.price}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">စတော့</small><input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock}"></div>
                     </div>
                     <div class="row g-2 mt-2">
                         <div class="col-8"><button class="btn btn-sm btn-primary w-100 fw-bold py-2 btn-premium-gold" style="border:none; border-radius:10px;" id="edit-btn-${mainIndex}" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
@@ -1525,9 +1443,15 @@
         }
 
         function uploadProductToSheet(index) {
+            let costVal = document.getElementById(`p-cost-${index}`).value;
             let priceVal = document.getElementById(`p-price-${index}`).value;
             let stockVal = document.getElementById(`p-stock-${index}`).value;
-            productsDB[index].price = Number(priceVal); productsDB[index].stock = Number(stockVal);
+            
+            productsDB[index].cost = Number(costVal);
+            productsDB[index].costPrice = Number(costVal);
+            productsDB[index].price = Number(priceVal); 
+            productsDB[index].stock = Number(stockVal);
+            
             let prod = productsDB[index];
             let editBtn = document.getElementById(`edit-btn-${index}`);
             editBtn.disabled = true; editBtn.innerText = "⏳...";
@@ -1538,7 +1462,8 @@
                 name: prod.name, 
                 price: prod.price, 
                 stock: prod.stock,
-                cost: Number(prod.cost) || 0,
+                cost: Number(costVal),
+                costPrice: Number(costVal),
                 minStock: prod.minStock || 5
             };
             
@@ -1580,6 +1505,7 @@
                 price: Number(price), 
                 stock: Number(stock),
                 cost: Number(cost),
+                costPrice: Number(cost),
                 minStock: Number(minStock)
             };
             
