@@ -259,17 +259,17 @@
             font-weight: 600;
         }
 
-        /* 🔄 Scanner Dynamic Row Order Positioning (စကန်ဖတ်ချိန်တွင် အပေါ်ဆုံးသို့ ရောက်သွားစေမည့် စနစ်သစ်) */
+        /* 🔄 Scanner Dynamic Row Order Positioning */
         .sales-grid-layout {
             display: flex;
             flex-direction: column;
         }
         .scanner-card-box {
-            order: 2; /* ပုံမှန်အချိန်တွင် ဒုတိယနေရာ */
+            order: 2; 
         }
         .scanner-card-box.scan-active-mode {
-            order: 1; /* စကန်ဖတ်ချိန်တွင် နံပါတ် ၁ နေရာသို့ ရောက်သွားမည် */
-            margin-top: -4.5rem; /* ရှာဖွေရေးအကွက်နှင့် အပေါ်က Sync ခလုတ်တွေထက်ပါ ကျော်ပြီး အပေါ်ဆုံးထိ ရောက်စေရန် */
+            order: 1; 
+            margin-top: -4.5rem; 
             box-shadow: 0 15px 30px rgba(0,0,0,0.15);
             border: 2px solid var(--accent-gold);
         }
@@ -277,7 +277,7 @@
             order: 1;
         }
         .search-card-box.scan-active-mode {
-            order: 2; /* စကန်ဖတ်ချိန်တွင် အောက်သို့ ဆင်းသွားမည် */
+            order: 2; 
         }
         .cart-card-box {
             order: 3;
@@ -292,12 +292,48 @@
             #print-receipt-zone * { visibility: visible; }
             @page { margin: 0; }
         }
+
+        /* New Styles for Added Features */
+        .quick-add-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .quick-add-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 5px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            word-break: break-word;
+        }
+        .quick-add-btn:active {
+            transform: scale(0.95);
+            background: var(--accent-gold);
+            color: #fff;
+        }
+        .low-stock-alert-banner {
+            background: rgba(239, 68, 110, 0.1);
+            border: 1px solid var(--accent-danger);
+            color: var(--accent-danger);
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 600;
+        }
     </style>
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyDE-IwHX7vggUsp2FWlA5rgtA8IQRo71eyLI_Poc1oLg4bc5cNsVygzi0PvtY0qrRr/exec'; 
-        const homePassword = 'km';  
-        const adminPassword = 'kmlso'; 
+        const homePassword = 'sd';  
+        const adminPassword = 'sdlso'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -311,7 +347,7 @@
 </head>
 <body>
 
-    <!-- 🔒 Luxury Screen Lock (Dual Role Input) -->
+    <!-- 🔒 Universal Lock Screen -->
     <div id="app-lock-screen">
         <div class="lock-card text-center">
             <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
@@ -351,6 +387,9 @@
         <!-- Main Body Content -->
         <div class="container mt-4 pb-5">
             
+            <!-- Low Stock Notification Banner Area -->
+            <div id="low-stock-alert-container"></div>
+
             <!-- 🛒 Sales Tab -->
             <div id="sales" class="tab-content active">
                 <div id="sync-button-container" class="d-flex justify-content-end mb-3 transition-all" style="transition: all 0.3s;">
@@ -360,6 +399,15 @@
                 <!-- 📱 Sales Grid Layout -->
                 <div class="sales-grid-layout">
                     
+                    <!-- Quick Add Shortcuts Section -->
+                    <div class="custom-card mb-3" id="quick-add-panel">
+                        <h6 class="fw-bold mb-2 text-secondary">⭐ အဝယ်များသော ပစ္စည်းဖြတ်လမ်းခလုတ်များ</h6>
+                        <div class="quick-add-grid" id="quick-add-buttons-container">
+                            <!-- Populated dynamically via JS based on predefined list or high sellers -->
+                            <div class="text-muted small">ပစ္စည်းများ တင်ဆောင်နေပါသည်...</div>
+                        </div>
+                    </div>
+
                     <!-- 🔍 Product Search Container -->
                     <div class="custom-card search-container-box search-card-box" id="main-search-card">
                         <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
@@ -372,7 +420,7 @@
                         <div id="search-suggestions" class="search-results" style="display: none;"></div>
                     </div>
 
-                    <!-- 📷 Barcode Scanner Container (စကန်ဖတ်ချိန် အပေါ်ဆုံးထိ ကပ်သွားမည့် အကွက်) -->
+                    <!-- 📷 Barcode Scanner Container -->
                     <div class="custom-card p-2 scanner-card-box" id="main-scanner-card">
                         <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
                             <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
@@ -394,6 +442,24 @@
                             <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
                         </div>
                         
+                        <!-- Extra Checkout Adjustments Pane -->
+                        <div class="px-4 py-3 border-top" style="background: var(--bg-card);">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
+                                    <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="ဥပမာ- 500 သို့ 5%" oninput="renderCart()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
+                                    <select id="cart-payment-mode" class="form-control form-control-sm">
+                                        <option value="Cash">Cash (လက်ငင်း)</option>
+                                        <option value="KPay">KPay</option>
+                                        <option value="Wave">Wave Money</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="p-4" style="background: var(--bg-input); border-top: 1px solid var(--border-color);">
                             <div class="row align-items-center g-3">
                                 <div class="col-6">
@@ -409,7 +475,7 @@
                         </div>
                     </div>
 
-                </div> <!-- End .sales-grid-layout -->
+                </div> 
             </div>
 
             <!-- 📜 History Tab -->
@@ -430,16 +496,50 @@
 
             <!-- 📊 Dashboard Tab -->
             <div id="dashboard" class="tab-content">
-                <div class="custom-card text-center shadow-sm" style="background: var(--bg-card); border: 1px solid rgba(217, 119, 6, 0.15);">
-                    <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">TODAY'S TOTAL SALES</small>
-                    <h2 class="fw-bold my-2 fs-1" id="today-sales-summary" style="color: var(--accent-gold);">0 Ks</h2>
-                    <small class="small text-muted" id="today-date-string"></small>
+                <!-- Date Filters Box -->
+                <div class="custom-card">
+                    <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း (Filter)</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="small text-muted mb-1">စတင်မည့်ရက်</label>
+                            <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-muted mb-1">နောက်ဆုံးရက်</label>
+                            <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="custom-card text-center shadow-sm h-100 m-0" style="background: var(--bg-card); border: 1px solid rgba(217, 119, 6, 0.15);">
+                            <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">TOTAL SALES</small>
+                            <h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color: var(--accent-gold);">0 Ks</h2>
+                            <div class="small text-muted font-monospace" id="payment-split-summary" style="font-size: 11px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="custom-card text-center shadow-sm h-100 m-0" style="background: var(--bg-card); border: 1px solid rgba(16, 185, 129, 0.15);">
+                            <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">NET PROFIT (အမြတ်)</small>
+                            <h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2>
+                            <small class="small text-muted" id="today-date-string"></small>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="custom-card p-3">
                     <h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6>
                     <div style="position: relative; width: 100%; height: 220px;">
                         <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Selling Products Analytics Chart -->
+                <div class="custom-card p-3">
+                    <h6 class="fw-bold text-secondary mb-4">🏆 အရောင်းရဆုံး ပစ္စည်းပြဇယား (Top Selling Products)</h6>
+                    <div style="position: relative; width: 100%; height: 220px;">
+                        <canvas id="topProductsChart"></canvas>
                     </div>
                 </div>
 
@@ -487,12 +587,20 @@
                             <input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required>
                         </div>
                         <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">ဈေးနှုန်း (Ks)</label>
-                            <input type="number" id="new-price" class="form-control" placeholder="ဈေးနှုန်း">
+                            <label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label>
+                            <input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label>
+                            <input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး">
                         </div>
                         <div class="col-6">
                             <label class="text-secondary small fw-bold mb-1">လက်ကျန်ခုရေ</label>
                             <input type="number" id="new-stock" class="form-control" placeholder="စတော့">
+                        </div>
+                        <div class="col-6">
+                            <label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label>
+                            <input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5">
                         </div>
                         <div class="col-12 mt-4">
                             <button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color: var(--accent-success); border:none; border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
@@ -520,8 +628,11 @@
         let canScan = false; 
         let html5QrcodeScanner = null;
         let cart = []; let productsDB = []; let salesHistory = [];
-        let audioCtx = null; let mySalesChart = null;
+        let audioCtx = null; let mySalesChart = null; let myTopProductsChart = null;
         
+        // Quick Add predefined shortcut names
+        const shortcutItemsList = ["ကြက်ဥ", "ရေသန့်", "အိတ်", "ကော်ဖီမစ်", "မြေပဲဆီ"];
+
         function initAudio() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -685,10 +796,59 @@
             if(tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
         }
 
+        function renderQuickAddButtons() {
+            const container = document.getElementById('quick-add-buttons-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            let count = 0;
+            shortcutItemsList.forEach(name => {
+                let found = productsDB.find(p => p.name.includes(name));
+                if(found) {
+                    count++;
+                    let btn = document.createElement('div');
+                    btn.className = 'quick-add-btn';
+                    btn.innerText = found.name;
+                    btn.onclick = function() {
+                        playBeep();
+                        addByBarcodeDirectly(found.barcode);
+                    };
+                    container.appendChild(btn);
+                }
+            });
+            if(count === 0) {
+                container.innerHTML = '<div class="text-muted small">ဖြတ်လမ်းခလုတ်များအတွက် ကိုက်ညီသော ပစ္စည်းမတွေ့ပါ။</div>';
+            }
+        }
+
+        function checkLowStockAlerts() {
+            const container = document.getElementById('low-stock-alert-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            let lowItems = [];
+            productsDB.forEach(p => {
+                let minLimit = Number(p.minStock) || 5;
+                if(Number(p.stock) <= minLimit) {
+                    lowItems.push(`${p.name} (လက်ကျန်: ${p.stock} ခု)`);
+                }
+            });
+            
+            if(lowItems.length > 0) {
+                container.innerHTML = `
+                    <div class="low-stock-alert-banner">
+                        ⚠️ <b>စတော့နည်းပါးမှု သတိပေးချက်:</b> ${lowItems.slice(0, 3).join(', ')} ${lowItems.length > 3 ? ' စသည်ဖြင့်...' : ''} သည် သတ်မှတ်လက်ကျန်အောက် လျော့နည်းနေပါသည်။
+                    </div>
+                `;
+            }
+        }
+
         function reloadOnlineSalesTab(btn) {
             btn.disabled = true; btn.innerText = "⏳ Loading...";
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
+                renderQuickAddButtons();
+                checkLowStockAlerts();
                 alert("🛒 ပစ္စည်းစာရင်းကို အောင်မြင်စွာ Update လုပ်ပြီးပါပြီ။");
             }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
         }
@@ -707,6 +867,8 @@
         function loadProductsFromSheet() {
             fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
                 productsDB = data; 
+                renderQuickAddButtons();
+                checkLowStockAlerts();
                 if(document.getElementById('admin').classList.contains('active')) renderAdminProducts(productsDB); 
             });
         }
@@ -720,6 +882,12 @@
         }
 
         function calculateTodaySales() {
+            let filterStart = document.getElementById('filter-start-date').value;
+            let filterEnd = document.getElementById('filter-end-date').value;
+            
+            let startTimestamp = filterStart ? new Date(filterStart).setHours(0,0,0,0) : null;
+            let endTimestamp = filterEnd ? new Date(filterEnd).setHours(23,59,59,999) : null;
+
             let now = new Date();
             let d = String(now.getDate()).padStart(2, '0');
             let m = String(now.getMonth() + 1).padStart(2, '0');
@@ -727,20 +895,80 @@
             let todayFormat1 = `${d}/${m}/${y}`; let todayFormat2 = `${m}/${d}/${y}`;
             
             let todayDateStringEl = document.getElementById('today-date-string');
-            if(todayDateStringEl) todayDateStringEl.innerText = "ရက်စွဲ: " + now.toDateString();
+            if(todayDateStringEl) todayDateStringEl.innerText = "ဇယားကာလ: " + (filterStart ? filterStart : "ယနေ့ထိ");
             
             let totalSum = 0;
+            let totalProfit = 0;
+            let cashSum = 0, kpaySum = 0, waveSum = 0;
+
             salesHistory.forEach(sale => {
-                if(sale.date) {
-                    let saleDateOnly = sale.date.split(',')[0].trim(); 
-                    if(saleDateOnly.includes(todayFormat1) || saleDateOnly.includes(todayFormat2) || new Date(sale.date).toLocaleDateString() === now.toLocaleDateString()) {
-                        let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
-                        totalSum += cleanTotal;
+                let saleDateObj = new Date(sale.date);
+                let isInsideFilter = true;
+                
+                if(startTimestamp && saleDateObj.getTime() < startTimestamp) isInsideFilter = false;
+                if(endTimestamp && saleDateObj.getTime() > endTimestamp) isInsideFilter = false;
+                
+                // If no date filters are picked, default view is today's current date
+                if(!filterStart && !filterEnd) {
+                    if(sale.date) {
+                        let saleDateOnly = sale.date.split(',')[0].trim(); 
+                        if(!(saleDateOnly.includes(todayFormat1) || saleDateOnly.includes(todayFormat2) || saleDateObj.toLocaleDateString() === now.toLocaleDateString())) {
+                            isInsideFilter = false;
+                        }
+                    } else {
+                        isInsideFilter = false;
                     }
                 }
+
+                if(isInsideFilter) {
+                    let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
+                    totalSum += cleanTotal;
+
+                    // Breakdown Payments Mode
+                    let pMode = sale.paymentMode || "Cash";
+                    if(pMode === "Cash") cashSum += cleanTotal;
+                    else if(pMode === "KPay") kpaySum += cleanTotal;
+                    else if(pMode === "Wave") waveSum += cleanTotal;
+
+                    // Compute Profits
+                    let saleCost = 0;
+                    if(sale.items && Array.isArray(sale.items)) {
+                        sale.items.forEach(i => {
+                            let matchDB = productsDB.find(p => p.barcode.toString() === i.barcode.toString());
+                            let costPerItem = matchDB ? (Number(matchDB.cost) || 0) : 0;
+                            saleCost += (costPerItem * Number(i.qty));
+                        });
+                    }
+                    
+                    // Standard Discount Reduction Check
+                    let discountVal = sale.discount || "0";
+                    let computedDiscount = 0;
+                    let calculatedGross = 0;
+                    if(sale.items && Array.isArray(sale.items)) {
+                        sale.items.forEach(i => { calculatedGross += (Number(i.price) * Number(i.qty)); });
+                    }
+                    if(discountVal.toString().includes('%')) {
+                        let pct = parseFloat(discountVal.replace('%', '')) || 0;
+                        computedDiscount = calculatedGross * (pct / 100);
+                    } else {
+                        computedDiscount = Number(discountVal) || 0;
+                    }
+
+                    let revenueReal = cleanTotal; 
+                    totalProfit += (revenueReal - saleCost);
+                }
             });
+
             let todaySumEl = document.getElementById('today-sales-summary');
             if(todaySumEl) todaySumEl.innerText = totalSum.toLocaleString() + " Ks";
+
+            let paymentSplitEl = document.getElementById('payment-split-summary');
+            if(paymentSplitEl) {
+                paymentSplitEl.innerHTML = `💵 Cash: ${cashSum.toLocaleString()} | 📱 KPay: ${kpaySum.toLocaleString()} | 🌊 Wave: ${waveSum.toLocaleString()}`;
+            }
+
+            let profitEl = document.getElementById('today-profit-summary');
+            if(profitEl) profitEl.innerText = totalProfit.toLocaleString() + " Ks";
         }
 
         function updateSalesChartLogic() {
@@ -752,6 +980,7 @@
                     salesMap[dateStr] = 0;
                 }
                 let allDatesMap = {};
+                let productCountsMap = {};
 
                 salesHistory.forEach(sale => {
                     if (sale.date) {
@@ -769,6 +998,14 @@
                         if (salesMap[formattedDate] !== undefined) salesMap[formattedDate] += cleanTotal;
                         if (allDatesMap[formattedDate] === undefined) allDatesMap[formattedDate] = 0;
                         allDatesMap[formattedDate] += cleanTotal;
+                    }
+
+                    // Count top selling items quantities
+                    if(sale.items && Array.isArray(sale.items)) {
+                        sale.items.forEach(i => {
+                            if(!productCountsMap[i.name]) productCountsMap[i.name] = 0;
+                            productCountsMap[i.name] += Number(i.qty);
+                        });
                     }
                 });
 
@@ -794,42 +1031,78 @@
                 let labels = Object.keys(salesMap);
                 let chartData = Object.values(salesMap);
                 const ctx = document.getElementById('salesChart');
-                if (!ctx || typeof Chart === 'undefined') return;
+                if (ctx && typeof Chart !== 'undefined') {
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    const goldColor = isDark ? '#fbbf24' : '#b45309';
+                    const fillColor = isDark ? 'rgba(251, 191, 36, 0.08)' : 'rgba(180, 83, 9, 0.05)';
+                    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
+                    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
 
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                const goldColor = isDark ? '#fbbf24' : '#b45309';
-                const fillColor = isDark ? 'rgba(251, 191, 36, 0.08)' : 'rgba(180, 83, 9, 0.05)';
-                const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
-                const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-
-                if (mySalesChart) mySalesChart.destroy();
-                
-                mySalesChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Daily Sales (Ks)',
-                            data: chartData,
-                            borderColor: goldColor,
-                            backgroundColor: fillColor,
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3,
-                            pointBackgroundColor: goldColor,
-                            pointRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
-                            x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }
+                    if (mySalesChart) mySalesChart.destroy();
+                    
+                    mySalesChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Daily Sales (Ks)',
+                                data: chartData,
+                                borderColor: goldColor,
+                                backgroundColor: fillColor,
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.3,
+                                pointBackgroundColor: goldColor,
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+                                x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }
+                            }
                         }
-                    }
-                });
+                    });
+                }
+
+                // Render Top Selling Chart Dashboard Module
+                const topCtx = document.getElementById('topProductsChart');
+                if(topCtx && typeof Chart !== 'undefined') {
+                    let sortedProducts = Object.keys(productCountsMap).sort((a,b) => productCountsMap[b] - productCountsMap[a]);
+                    let topLabels = sortedProducts.slice(0, 5);
+                    let topData = topLabels.map(l => productCountsMap[l]);
+
+                    if (myTopProductsChart) myTopProductsChart.destroy();
+
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    const barColor = isDark ? '#fbbf24' : '#b45309';
+                    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+
+                    myTopProductsChart = new Chart(topCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: topLabels,
+                            datasets: [{
+                                data: topData,
+                                backgroundColor: barColor,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { color: textColor, font: { size: 10 } } },
+                                x: { ticks: { color: textColor, font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+
             } catch(e) { console.log("Dashboard rendering skipped: " + e); }
         }
 
@@ -965,7 +1238,6 @@
 
         function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
 
-        /* 🔄 Scanner Dynamic Positioning Controller (စကန်ဖတ်ချိန် အပေါ်ဆုံးထိ ဆွဲတင်ပေးမည့် စနစ်သစ်) */
         function toggleScannerManual() {
             playBeep();
             
@@ -979,7 +1251,6 @@
                 canScan = true;
                 updateScannerStatusUi(true);
                 
-                // 🚀 Start Scan: အပေါ်ဆုံးကို ဆွဲတင်ပြီး Sync ခလုတ်ကို ခေတ္တဖျောက်မည်
                 if(scannerCard) scannerCard.classList.add('scan-active-mode');
                 if(searchCard) searchCard.classList.add('scan-active-mode');
                 if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
@@ -988,7 +1259,6 @@
                     canScan = false;
                     updateScannerStatusUi(false);
                     
-                    // 💤 Paused: ပုံမှန်အောက်နေရာသို့ ပြန်ချပြီး Sync ခလုတ်ကို ပြန်ပြမည်
                     if(scannerCard) scannerCard.classList.remove('scan-active-mode');
                     if(searchCard) searchCard.classList.remove('scan-active-mode');
                     if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
@@ -996,7 +1266,6 @@
                     canScan = true;
                     updateScannerStatusUi(true);
                     
-                    // 🚀 Resume Scan: အပေါ်ဆုံးကို ပြန်တင်မည်
                     if(scannerCard) scannerCard.classList.add('scan-active-mode');
                     if(searchCard) searchCard.classList.add('scan-active-mode');
                     if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
@@ -1014,7 +1283,6 @@
             if (!product) {
                 canScan = false; updateScannerStatusUi(false);
                 
-                // Alert ကျလာချိန် ကာကွယ်ရန် ပုံမှန်နေရာ ပြန်ချထားပေးခြင်း
                 if(scannerCard) scannerCard.classList.remove('scan-active-mode');
                 if(searchCard) searchCard.classList.remove('scan-active-mode');
                 if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
@@ -1094,7 +1362,21 @@
                         </div>
                     </div>`;
             });
-            document.getElementById('cart-total').innerText = total.toLocaleString();
+
+            // Calculate Discount
+            let discountInput = document.getElementById('cart-discount-input').value.trim();
+            let discountAmount = 0;
+            if(discountInput.includes('%')) {
+                let pct = parseFloat(discountInput.replace('%', '')) || 0;
+                discountAmount = total * (pct / 100);
+            } else {
+                discountAmount = Number(discountInput) || 0;
+            }
+            
+            let grandTotal = total - discountAmount;
+            if(grandTotal < 0) grandTotal = 0;
+
+            document.getElementById('cart-total').innerText = grandTotal.toLocaleString();
             if(countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
         }
 
@@ -1103,19 +1385,35 @@
             let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
             let voucherId = "WM-" + Date.now().toString().slice(-6);
             let total = document.getElementById('cart-total').innerText;
+            let discountVal = document.getElementById('cart-discount-input').value.trim() || "0";
+            let paymentMode = document.getElementById('cart-payment-mode').value;
             
-            let saleData = { action: "addSale", voucherId: voucherId, customerName: customerName, items: cart, total: total, date: new Date().toLocaleString() };
+            let saleData = { 
+                action: "addSale", 
+                voucherId: voucherId, 
+                customerName: customerName, 
+                items: cart, 
+                total: total, 
+                discount: discountVal,
+                paymentMode: paymentMode,
+                date: new Date().toLocaleString() 
+            };
+            
             salesHistory.unshift(saleData); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
             printVoucher(saleData);
             let formData = new FormData(); formData.append('jsonData', JSON.stringify(saleData));
             fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
-            cart = []; renderCart(); 
+            cart = []; 
+            document.getElementById('cart-discount-input').value = '';
+            renderCart(); 
             clearSearchInputAndBox();
         }
 
         function printVoucher(sale) {
             const printZone = document.getElementById('print-receipt-zone'); let itemsHTML = '';
+            let subtotal = 0;
             sale.items.forEach(i => { 
+                subtotal += (Number(i.price) * Number(i.qty));
                 itemsHTML += `<tr style="font-size: 16px; font-weight: bold; border-bottom: 1px dashed #bbb;"><td style="text-align: left; padding: 10px 0; word-break: break-word; max-width: 120px;">${i.name}</td><td style="text-align: right; padding: 10px 0;">${Number(i.price).toLocaleString()}</td><td style="text-align: center; padding: 10px 0;">${i.qty}</td><td style="text-align: right; padding: 10px 0;">${(i.price * i.qty).toLocaleString()}</td></tr>`; 
             });
             printZone.innerHTML = `
@@ -1126,6 +1424,7 @@
                         <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
                         <tr><td style="font-weight: bold;">ဝယ်သူ:</td><td style="text-align: right; font-weight: bold;">${sale.customerName}</td></tr>
                         <tr><td style="font-weight: bold;">နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
+                        <tr><td style="font-weight: bold;">ရှင်းခွင့်:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
                     </table>
                     <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                         <thead>
@@ -1139,8 +1438,10 @@
                         <tbody>${itemsHTML}</tbody>
                     </table>
                     <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
-                    <table style="width: 100%; font-size: 22px; font-weight: bold;">
-                        <tr><td>စုစုပေါင်း:</td><td style="text-align: right; color: #000;">${sale.total} Ks</td></tr>
+                    <table style="width: 100%; font-size: 16px; border-collapse: collapse;">
+                        <tr><td>ကျသင့်ငွေ:</td><td style="text-align: right;">${subtotal.toLocaleString()} Ks</td></tr>
+                        <tr><td>Discount:</td><td style="text-align: right;">-${sale.discount || 0}</td></tr>
+                        <tr style="font-size: 22px; font-weight: bold;"><td>စုစုပေါင်း:</td><td style="text-align: right; color: #000;">${sale.total} Ks</td></tr>
                     </table>
                     <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
                     <div style="text-align: center; font-size: 14px; font-weight: bold; margin-top: 15px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
@@ -1173,7 +1474,8 @@
                             <span class="fw-bold" style="color: var(--accent-gold);">ID: ${sale.voucherId}</span>
                             <small class="text-muted font-monospace">${sale.date || ''}</small>
                         </div>
-                        <div class="small mb-2">ဝယ်သူ: <b>${sale.customerName}</b></div>
+                        <div class="small mb-1">ဝယ်သူ: <b>${sale.customerName}</b> | 💳 စနစ်: <b>${sale.paymentMode || 'Cash'}</b></div>
+                        <div class="small mb-2 text-danger">Discount လျှော့ပေးမှု: <b>${sale.discount || '0'}</b></div>
                         <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
                         <div class="py-1">${itemsList}</div>
                         <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
@@ -1222,13 +1524,14 @@
         function renderAdminProducts(arr) {
             const list = document.getElementById('admin-product-list'); list.innerHTML = '';
             arr.forEach((prod, mainIndex) => {
+                let limit = Number(prod.minStock) || 5;
                 let stockBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">စတော့: ${prod.stock}</span>`;
                 if(prod.stock <= 0) stockBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">ကုန်သွားပြီ</span>`;
-                else if(prod.stock <= 5) stockBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ${prod.stock}</span>`;
+                else if(prod.stock <= limit) stockBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ${prod.stock}</span>`;
 
                 list.innerHTML += `<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2" style="border-color: var(--border-color) !important;">
                     <div class="d-flex justify-content-between align-items-start"><div class="fw-bold fs-6">${prod.name}</div><div>${stockBadge}</div></div>
-                    <div class="text-muted small font-monospace">Barcode: ${prod.barcode}</div>
+                    <div class="text-muted small font-monospace">Barcode: ${prod.barcode} | အရင်း: ${(prod.cost || 0)} Ks</div>
                     <div class="row g-2 mt-1">
                         <div class="col-6"><small class="text-secondary small mb-1 d-block">ဈေးနှုန်း</small><input type="number" id="p-price-${mainIndex}" class="form-control form-control-sm fw-bold text-danger" value="${prod.price}"></div>
                         <div class="col-6"><small class="text-secondary small mb-1 d-block">...စတော့</small><input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock}"></div>
@@ -1248,11 +1551,22 @@
             let prod = productsDB[index];
             let editBtn = document.getElementById(`edit-btn-${index}`);
             editBtn.disabled = true; editBtn.innerText = "⏳...";
-            let payload = { action: "updateProduct", barcode: prod.barcode.toString(), name: prod.name, price: prod.price, stock: prod.stock };
+            
+            let payload = { 
+                action: "updateProduct", 
+                barcode: prod.barcode.toString(), 
+                name: prod.name, 
+                price: prod.price, 
+                stock: prod.stock,
+                cost: prod.cost || 0,
+                minStock: prod.minStock || 5
+            };
+            
             let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
             fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
                 setTimeout(() => { 
                     editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
+                    checkLowStockAlerts();
                     alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ။`); loadProductsFromSheet(); 
                 }, 2000);
             }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်"; });
@@ -1272,16 +1586,30 @@
             let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
             let name = document.getElementById('new-name').value.trim();
             let price = document.getElementById('new-price').value.trim();
+            let cost = document.getElementById('new-cost').value.trim() || 0;
             let stock = document.getElementById('new-stock').value.trim() || 0;
+            let minStock = document.getElementById('new-min-stock').value.trim() || 5;
+            
             if(!name || !price) return alert("အချက်အလက်ဖြည့်ပါ");
             let btn = document.getElementById('add-prod-btn'); btn.disabled = true;
-            let payload = { action: "updateProduct", barcode: barcode.toString(), name: name, price: Number(price), stock: Number(stock) };
+            
+            let payload = { 
+                action: "updateProduct", 
+                barcode: barcode.toString(), 
+                name: name, 
+                price: Number(price), 
+                stock: Number(stock),
+                cost: Number(cost),
+                minStock: Number(minStock)
+            };
+            
             let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
             fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
                 setTimeout(() => {
                     alert("သိမ်းဆည်းပြီးပါပြီ။"); btn.disabled = false;
                     document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
                     document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
+                    document.getElementById('new-cost').value = '0'; document.getElementById('new-min-stock').value = '5';
                     loadProductsFromSheet(); switchTab('sales');
                 }, 1500);
             });
