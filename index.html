@@ -140,8 +140,8 @@
             color: var(--text-main);
             font-weight: bold;
             font-size: 16px;
-            width: 38px;
-            height: 38px;
+            width: 44px;
+            height: 44px;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -156,7 +156,7 @@
         .suggestion-qty-display {
             font-size: 16px;
             font-weight: 700;
-            min-width: 28px;
+            min-width: 32px;
             text-align: center;
         }
         .suggestion-add-btn {
@@ -176,25 +176,6 @@
         }
         .suggestion-add-btn:active {
             transform: scale(0.92);
-        }
-
-        /* ✅ Confirm Checkmark Button Styles */
-        .suggestion-confirm-btn {
-            background: #10b981;
-            color: white !important;
-            border: none;
-            font-weight: bold;
-            font-size: 15px;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .suggestion-confirm-btn:active {
-            transform: scale(0.9);
         }
         
         /* 🛒 Cart & Badges */
@@ -332,8 +313,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyDE-IwHX7vggUsp2FWlA5rgtA8IQRo71eyLI_Poc1oLg4bc5cNsVygzi0PvtY0qrRr/exec'; 
-        const homePassword = 'sd';  
-        const adminPassword = 'sdlso'; 
+        const homePassword = 'kk';  
+        const adminPassword = 'kklso'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1151,7 +1132,6 @@
                         <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
                         <span class="suggestion-qty-display text-dark-emphasis">${currentSelectedQty}</span>
                         <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
-                        <button class="suggestion-confirm-btn ms-1" onmousedown="event.preventDefault(); confirmProductSelection()" title="Confirm">✅</button>
                     `;
                 } else {
                     let addBtn = document.createElement('button');
@@ -1424,7 +1404,7 @@
                         <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
                         <tr><td style="font-weight: bold;">ဝယ်သူ:</td><td style="text-align: right; font-weight: bold;">${sale.customerName}</td></tr>
                         <tr><td style="font-weight: bold;">နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
-                        <tr><td style="font-weight: bold;">ရှင်းခွင့်:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
+                        <tr><td style="font-weight: bold;">Payment:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
                     </table>
                     <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                         <thead>
@@ -1558,7 +1538,7 @@
                 name: prod.name, 
                 price: prod.price, 
                 stock: prod.stock,
-                cost: prod.cost || 0,
+                cost: Number(prod.cost) || 0,
                 minStock: prod.minStock || 5
             };
             
