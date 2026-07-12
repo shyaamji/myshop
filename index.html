@@ -272,8 +272,8 @@
 
     <script>
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyDE-IwHX7vggUsp2FWlA5rgtA8IQRo71eyLI_Poc1oLg4bc5cNsVygzi0PvtY0qrRr/exec'; 
-        const homePassword = 'ok';  
-        const adminPassword = 'okbaby'; 
+        const homePassword = 'kk';  
+        const adminPassword = 'kkk'; 
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -516,7 +516,7 @@
             } catch(e) {}
         }
 
-        function dismissKeyboard(formElement) {
+        function dismissKeyboard() {
             if(document.activeElement) {
                 document.activeElement.blur();
             }
@@ -844,24 +844,27 @@
                 actionDiv.className = "d-flex align-items-center gap-1";
                 
                 if (currentSelectedQty > 0) {
+                    // 🌟 Keyboard မကျသွားအောင် ခလုတ်တွေအားလုံးမှာ onmousedown="event.preventDefault();" ထည့်သွင်းထားပါတယ်
                     actionDiv.innerHTML = `
-                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
                         <span class="suggestion-qty-display text-dark-emphasis">${currentSelectedQty}</span>
-                        <button class="suggestion-counter-btn" onclick="changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
-                        <button class="suggestion-confirm-btn ms-1" onclick="confirmProductSelection()" title="Confirm">✅</button>
+                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
+                        <button class="suggestion-confirm-btn ms-1" onmousedown="event.preventDefault(); confirmProductSelection()" title="Confirm">✅</button>
                     `;
                 } else {
                     let addBtn = document.createElement('button');
                     addBtn.className = "suggestion-add-btn";
                     addBtn.innerText = "+ ထည့်မည်";
                     
-                    addBtn.onclick = function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    // 🌟 ဤနေရာတွင် မလိုလားအပ်ဘဲ Keyboard ကျသွားခြင်းမှ ကာကွယ်ရန် ကောင်းမွန်သော နည်းလမ်းကို သုံးထားပါတယ်
+                    addBtn.onmousedown = function(e) {
+                        e.preventDefault(); // Browser ရဲ့ Default focus ခိုးတဲ့စနစ်ကို ပိတ်ပစ်ပါတယ်
                         playBeep();
-                        // ❌ dismissKeyboard(); ကို ဖြုတ်လိုက်ပါပြီ (Keyboard ပွင့်လျက်အတိုင်း ထားရန်)
                         addByBarcodeDirectly(barcodeStr);
                         filterProductNames(); 
+                        
+                        // Keyboard မပျောက်ဘဲ စာဆက်ရိုက်နိုင်အောင် Input ကို အတင်းပြန် Focus ခေါ်ထားပါတယ်
+                        setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
                     };
                     actionDiv.appendChild(addBtn);
                 }
@@ -903,6 +906,8 @@
             
             renderCart();
             filterProductNames(); 
+            // Focus မပျောက်အောင် ထိန်းထားခြင်း
+            setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
         }
 
         function confirmProductSelection() {
