@@ -8,1588 +8,1535 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
     
-    <!-- Google Fonts, Bootstrap 5 & Chart.js -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* 🎨 Theme Variable Configuration */
         :root, [data-theme="light"] {
             --bg-main: #f1f5f9;
             --bg-card: #ffffff;
             --bg-input: #f8fafc;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --accent-gold: #b45309; 
+            --accent-gold: #b45309;
             --accent-success: #10b981;
             --accent-danger: #ef4444;
-            --border-color: rgba(15, 23, 42, 0.08);
-            --chart-grid: rgba(0, 0, 0, 0.03);
+            --border-color: rgba(15,23,42,0.08);
+            --chart-grid: rgba(0,0,0,0.03);
         }
-
         [data-theme="dark"] {
             --bg-main: #0b0f19;
             --bg-card: #151c2c;
             --bg-input: #1e2640;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --accent-gold: #fbbf24; 
+            --accent-gold: #fbbf24;
             --accent-success: #10b981;
             --accent-danger: #f43f5e;
-            --border-color: rgba(255, 255, 255, 0.05);
-            --chart-grid: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255,255,255,0.05);
+            --chart-grid: rgba(255,255,255,0.03);
         }
-
-        body { 
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
-            background-color: var(--bg-main); 
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        
-        /* 🔒 Premium Lock Screen */
-        #app-lock-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-main);
-            z-index: 99999; display: flex; align-items: center; justify-content: center; color: var(--text-main); 
-        }
-        .lock-card { 
-            background: var(--bg-card);
-            border: 1px solid var(--border-color); border-radius: 24px; 
-            padding: 2.5rem 2rem; width: 90%; max-width: 380px; 
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); 
-        }
-        
-        #app-main-content { display: none; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* 📱 Premium Top Navbar & Navigation Tab */
-        .premium-nav {
-            background-color: var(--bg-card) !important;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .nav-tabs-custom { 
-            background: var(--bg-card); border-radius: 16px; padding: 6px; 
-            border: 1px solid var(--border-color); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-            align-items: center;
-        }
-        .nav-tabs-custom .btn { 
-            border: none; border-radius: 12px; font-weight: 600; font-size: 13px; 
-            color: var(--text-muted); padding: 10px 4px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .nav-tabs-custom .btn.active { 
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; 
-            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); font-weight: 700;
-        }
-        [data-theme="dark"] .nav-tabs-custom .btn.active {
-            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #000000;
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-        }
-        
-        /* 📦 Luxury Card & Form Components */
-        .custom-card { 
-            background: var(--bg-card); border: 1px solid var(--border-color); 
-            border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .form-control {
-            background-color: var(--bg-input) !important; border: 1px solid var(--border-color) !important;
-            color: var(--text-main) !important; border-radius: 12px; padding: 12px 16px;
-        }
-        .form-control:focus {
-            border-color: var(--accent-gold) !important; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15) !important;
-        }
-        
-        /* 🔍 Search Container & Perfect Screen Fix */
-        .search-container-box {
-            position: relative;
-            z-index: 999;
-        }
-        .search-results { 
-            position: absolute; 
-            left: 0;
-            right: 0;
-            width: 100%; 
-            z-index: 9999; 
-            max-height: 280px; 
-            overflow-y: auto; 
-            background: var(--bg-card); 
-            border: 2px solid var(--accent-gold); 
-            border-radius: 14px; 
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); 
-            margin-top: 6px; 
-            box-sizing: border-box; 
-        }
-        .search-item { 
-            padding: 12px 16px; 
-            border-bottom: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            word-break: break-word;
-        }
-        .search-item:hover { background-color: rgba(180, 83, 9, 0.02); }
-        
-        /* 📱 Mobile Friendly Counter Buttons inside Suggestion Box */
-        .suggestion-counter-btn {
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-main);
-            font-weight: bold;
-            font-size: 16px;
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .suggestion-counter-btn:active {
-            background: var(--accent-gold);
-            color: #ffffff;
-            transform: scale(0.9);
-        }
-        .suggestion-qty-select {
-            font-size: 14px;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-main);
-            text-align: center;
-            min-width: 55px;
-        }
-        .suggestion-add-btn {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-            color: #fff !important;
-            border: none;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        [data-theme="dark"] .suggestion-add-btn {
-            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-            color: #000 !important;
-        }
-        .suggestion-add-btn:active {
-            transform: scale(0.92);
-        }
-        
-        /* 🛒 Cart & Badges */
-        .cart-item {
-            background: var(--bg-input); border-radius: 14px; padding: 12px;
-            margin-bottom: 8px; border: 1px solid var(--border-color);
-        }
-        .btn-premium-gold {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #fff !important;
-            font-weight: 700; border: none; border-radius: 14px; transition: all 0.2s;
-        }
-        [data-theme="dark"] .btn-premium-gold {
-            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #000 !important;
-        }
-        .btn-premium-gold:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Theme Button Styles */
-        .theme-toggle-btn {
-            background: var(--bg-input); 
-            border: 1px solid var(--border-color);
-            color: var(--text-main); 
-            height: 42px;
-            width: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px; 
-            font-size: 16px; 
-            transition: all 0.2s;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        /* 📜 History Row Table Styles */
-        .history-item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 5px 0;
-            font-size: 13.5px;
-            border-bottom: 1px dashed rgba(15, 23, 42, 0.04);
-        }
-        [data-theme="dark"] .history-item-row {
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.03);
-        }
-        .history-item-name {
-            box-sizing: border-box;
-            flex: 1;
-            min-width: 0;
-            word-break: break-word;
-            padding-right: 10px;
-        }
-        .history-item-qty {
-            width: 95px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 12px;
-        }
-        .history-item-total {
-            width: 95px;
-            text-align: right;
-            font-weight: 600;
-        }
-
-        /* 🔄 Scanner Dynamic Row Order Positioning */
-        .sales-grid-layout {
-            display: flex;
-            flex-direction: column;
-        }
-        .scanner-card-box {
-            order: 2; 
-        }
-        .scanner-card-box.scan-active-mode {
-            order: 1; 
-            margin-top: -4.5rem; 
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            border: 2px solid var(--accent-gold);
-        }
-        .search-card-box {
-            order: 1;
-        }
-        .search-card-box.scan-active-mode {
-            order: 2; 
-        }
-        .cart-card-box {
-            order: 3;
-        }
-
-        /* 🖨️ Print Zone Settings */
-        #print-receipt-zone { display: none; }
-        @media print {
-            body { visibility: hidden; background: white; margin: 0; padding: 0; }
-            #app-main-content { display: none !important; }
-            #print-receipt-zone { visibility: visible; display: block !important; position: absolute; left: 0; top: 0; width: 100% !important; margin: 0; padding: 0; }
-            #print-receipt-zone * { visibility: visible; }
-            @page { margin: 0; }
-        }
-
-        .low-stock-alert-banner {
-            background: rgba(239, 68, 110, 0.1);
-            border: 1px solid var(--accent-danger);
-            color: var(--accent-danger);
-            border-radius: 12px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .btn-delete-item {
-            background: transparent;
-            border: none;
-            color: var(--accent-danger);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s;
-        }
-        .btn-delete-item:active {
-            transform: scale(0.85);
-        }
+        body { font-family:'Plus Jakarta Sans',system-ui,sans-serif; background:var(--bg-main); color:var(--text-main); transition:background 0.3s,color 0.3s; }
+        #app-lock-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-main); z-index:99999; display:flex; align-items:center; justify-content:center; }
+        .lock-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:24px; padding:2.5rem 2rem; width:90%; max-width:380px; box-shadow:0 20px 40px -10px rgba(0,0,0,0.1); }
+        #app-main-content { display:none; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .premium-nav { background:var(--bg-card) !important; border-bottom:1px solid var(--border-color); }
+        .nav-tabs-custom { background:var(--bg-card); border-radius:16px; padding:6px; border:1px solid var(--border-color); display:flex; gap:4px; }
+        .nav-tabs-custom .btn { border:none; border-radius:12px; font-weight:600; font-size:13px; color:var(--text-muted); padding:10px 4px; flex:1; transition:all 0.3s; }
+        .nav-tabs-custom .btn.active { background:linear-gradient(135deg,#d97706,#b45309); color:#fff; box-shadow:0 4px 12px rgba(217,119,6,0.2); }
+        [data-theme="dark"] .nav-tabs-custom .btn.active { background:linear-gradient(135deg,#fbbf24,#d97706); color:#000; }
+        .custom-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; padding:1.5rem; margin-bottom:1.5rem; }
+        .form-control { background:var(--bg-input) !important; border:1px solid var(--border-color) !important; color:var(--text-main) !important; border-radius:12px; padding:12px 16px; }
+        .form-control:focus { border-color:var(--accent-gold) !important; box-shadow:0 0 0 3px rgba(180,83,9,0.15) !important; }
+        .btn-premium-gold { background:linear-gradient(135deg,#d97706,#b45309); color:#fff !important; font-weight:700; border:none; border-radius:14px; transition:all 0.2s; }
+        [data-theme="dark"] .btn-premium-gold { background:linear-gradient(135deg,#fbbf24,#d97706); color:#000 !important; }
+        .btn-premium-gold:hover { opacity:0.9; transform:translateY(-1px); }
+        .toast-container-custom { position:fixed; top:80px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px; max-width:360px; }
+        .toast-custom { background:var(--bg-card); border-left:5px solid var(--accent-gold); border-radius:14px; padding:14px 20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); color:var(--text-main); font-size:14px; font-weight:600; animation:slideIn 0.3s ease; border:1px solid var(--border-color); }
+        .toast-custom.danger { border-left-color:var(--accent-danger); }
+        .toast-custom.success { border-left-color:var(--accent-success); }
+        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+        .cart-tab-container { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+        .cart-tab-btn { background:var(--bg-input); border:2px solid var(--border-color); border-radius:12px; padding:6px 16px; font-weight:700; font-size:13px; color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+        .cart-tab-btn.active { border-color:var(--accent-gold); background:var(--accent-gold); color:#fff; }
+        [data-theme="dark"] .cart-tab-btn.active { color:#000; }
+        .cart-tab-btn .badge-cart { background:var(--accent-danger); color:#fff; border-radius:50%; padding:0 6px; font-size:11px; margin-left:4px; }
+        .stock-badge { font-size:11px; padding:2px 10px; border-radius:20px; font-weight:700; display:inline-block; }
+        .stock-badge.in-stock { background:#dcfce7; color:#16a34a; }
+        .stock-badge.low-stock { background:#fef3c7; color:#d97706; }
+        .stock-badge.out-of-stock { background:#fee2e2; color:#dc2626; }
+        [data-theme="dark"] .stock-badge.in-stock { background:#166534; color:#86efac; }
+        [data-theme="dark"] .stock-badge.low-stock { background:#78350f; color:#fcd34d; }
+        [data-theme="dark"] .stock-badge.out-of-stock { background:#7f1d1d; color:#fca5a5; }
+        .search-item { padding:12px 16px; border-bottom:1px solid var(--border-color); }
+        .search-item:last-child { border-bottom:none; }
+        .search-results { position:absolute; left:0; right:0; width:100%; z-index:9999; max-height:280px; overflow-y:auto; background:var(--bg-card); border:2px solid var(--accent-gold); border-radius:14px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.25); margin-top:6px; display:none; }
+        .cart-item { background:var(--bg-input); border-radius:14px; padding:12px; margin-bottom:8px; border:1px solid var(--border-color); }
+        .btn-delete-item { background:transparent; border:none; color:var(--accent-danger); font-size:18px; cursor:pointer; }
+        .suggestion-qty-select { font-size:14px; font-weight:700; padding:4px 8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); text-align:center; min-width:55px; }
+        .suggestion-counter-btn { border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); font-weight:700; font-size:16px; width:36px; height:36px; border-radius:10px; cursor:pointer; }
+        .suggestion-add-btn { background:linear-gradient(135deg,#d97706,#b45309); color:#fff !important; border:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:10px; cursor:pointer; }
+        [data-theme="dark"] .suggestion-add-btn { background:linear-gradient(135deg,#fbbf24,#d97706); color:#000 !important; }
+        .theme-toggle-btn { background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-main); height:42px; width:42px; border-radius:12px; cursor:pointer; }
+        #print-receipt-zone { display:none; }
+        @media print { body { visibility:hidden; } #app-main-content { display:none !important; } #print-receipt-zone { visibility:visible; display:block !important; } #print-receipt-zone * { visibility:visible; } @page { margin:0; } }
+        .scanner-card-box { order:2; }
+        .scanner-card-box.scan-active-mode { order:1; margin-top:-4.5rem; border:2px solid var(--accent-gold); }
+        .search-card-box { order:1; }
+        .search-card-box.scan-active-mode { order:2; }
+        .cart-card-box { order:3; }
+        .history-item-row { display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px; border-bottom:1px dashed rgba(15,23,42,0.04); }
+        .history-item-name { flex:1; word-break:break-word; padding-right:10px; }
+        .history-item-qty { width:95px; text-align:center; color:var(--text-muted); font-size:12px; }
+        .history-item-total { width:95px; text-align:right; font-weight:600; }
+        .admin-only-feature { display:none; }
     </style>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec'; 
-        const homePassword = 'km';  
-        const adminPassword = 'kmpos'; 
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
+        const homePassword = 'kmm';
+        const adminPassword = 'kmlso';
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log(err));
+                navigator.serviceWorker.register('./service-worker.js').catch(() => {});
             });
         }
-
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 </head>
 <body>
 
-    <!-- 🔒 Universal Lock Screen -->
-    <div id="app-lock-screen">
-        <div class="lock-card text-center">
-            <div class="mb-3"><span style="font-size: 44px;">✨</span></div>
-            <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
-            <p class="small mb-4 fw-bold" style="color: var(--accent-gold); letter-spacing: 1px;">PREMIUM POS SYSTEM</p>
-            <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size: 24px; letter-spacing: 6px;">
-            <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6 shadow-sm" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
-            <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display: none;">❌ Password မှားယွင်းနေပါသည်။</div>
+<div id="toast-container" class="toast-container-custom"></div>
+
+<div id="app-lock-screen">
+    <div class="lock-card text-center">
+        <div class="mb-3"><span style="font-size:44px;">✨</span></div>
+        <h4 class="fw-bold mb-1">ကောင်းမြတ် ကုန်စုံဆိုင်</h4>
+        <p class="small mb-4 fw-bold" style="color:var(--accent-gold);">PREMIUM POS SYSTEM</p>
+        <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size:24px; letter-spacing:6px;">
+        <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
+        <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display:none;">❌ Password မှားယွင်းနေပါသည်။</div>
+    </div>
+</div>
+
+<div id="print-receipt-zone"></div>
+
+<div id="app-main-content">
+    <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
+                <span style="color:var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
+                <span id="role-badge" class="badge font-monospace ms-2" style="font-size:11px; display:none;"></span>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="nav-tabs-custom" role="group">
+            <button id="btn-sales" class="btn active" onclick="switchTab('sales')">🛒 အရောင်း</button>
+            <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
+            <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
+            <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
+            <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
+            <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
     </div>
 
-    <div id="print-receipt-zone"></div>
-
-    <div id="app-main-content">
-        <!-- Premium Top Header -->
-        <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
-            <div class="container-fluid d-flex justify-content-between align-items-center">
-                <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
-                    <span style="color: var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
-                    <span id="role-badge" class="badge font-monospace ms-2" style="font-size: 11px; vertical-align: middle; display: none;"></span>
-                </span>
-            </div>
-        </nav>
-
-        <!-- Navigation Tab Group -->
-        <div class="container mt-4">
-            <div class="nav-tabs-custom d-flex gap-1" role="group">
-                <button id="btn-sales" class="btn flex-fill active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-                <button id="btn-history" class="btn flex-fill" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-                <button id="btn-dashboard" class="btn flex-fill admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
-                <button id="btn-admin" class="btn flex-fill admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
-                <button id="btn-logout-tab" class="btn flex-fill text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
-                <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn" title="Toggle Theme">🌙</button>
-            </div>
-        </div>
-
-        <!-- Main Body Content -->
-        <div class="container mt-4 pb-5">
-            
-            <!-- Low Stock Notification Banner Area -->
-            <div id="low-stock-alert-container"></div>
-
-            <!-- 🛒 Sales Tab -->
-            <div id="sales" class="tab-content active">
-                <div id="sync-button-container" class="d-flex justify-content-end mb-3 transition-all" style="transition: all 0.3s;">
-                    <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync Sheet</button>
-                </div>
-
-                <!-- 📱 Sales Grid Layout -->
-                <div class="sales-grid-layout">
-                    
-                    <!-- 🔍 Product Search Container -->
-                    <div class="custom-card search-container-box search-card-box" id="main-search-card">
-                        <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
-                        <div class="position-relative">
-                            <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                                <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
-                            </form>
-                            <span id="close-search-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 18px; color: var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
-                        </div>
-                        <div id="search-suggestions" class="search-results" style="display: none;"></div>
-                    </div>
-
-                    <!-- 📷 Barcode Scanner Container -->
-                    <div class="custom-card p-2 scanner-card-box" id="main-scanner-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
-                            <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
-                            <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm" style="font-size: 12px; border-radius: 8px;" onclick="toggleScannerManual()">🔴 Paused</button>
-                        </div>
-                        <div id="reader" style="width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color);"></div>
-                    </div>
-
-                    <!-- Shopping Cart Component -->
-                    <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background: var(--bg-card); border: 1px solid var(--border-color) !important;">
-                        <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
-                            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
-                                <span>🛒</span> ဝယ်ယူနေသော ပစ္စည်းစာရင်း
-                            </h6>
-                            <span class="badge rounded-pill bg-light text-dark border font-monospace" id="cart-count-badge" style="font-size: 12px; padding: 6px 12px; border-color: var(--border-color) !important;">0 items</span>
-                        </div>
-                        
-                        <div id="cart-list" class="px-3 py-3" style="max-height: 320px; overflow-y: auto;">
-                            <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
-                        </div>
-                        
-                        <!-- Extra Checkout Adjustments Pane -->
-                        <div class="px-4 py-3 border-top" style="background: var(--bg-card);">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
-                                    <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="ဥပမာ- 500 သို့ 5%" oninput="renderCart()">
-                                </div>
-                                <div class="col-6">
-                                    <label class="text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
-                                    <select id="cart-payment-mode" class="form-control form-control-sm">
-                                        <option value="Cash">Cash (လက်ငင်း)</option>
-                                        <option value="KPay">KPay</option>
-                                        <option value="Wave">Wave Money</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4" style="background: var(--bg-input); border-top: 1px solid var(--border-color);">
-                            <div class="row align-items-center g-3">
-                                <div class="col-6">
-                                    <small class="text-secondary d-block fw-bold mb-1" style="font-size: 11px; letter-spacing: 1px;">TOTAL DUE</small>
-                                    <h3 class="fw-bold mb-0 font-monospace" style="font-size: 26px;"><span id="cart-total" style="color: var(--accent-gold);">0</span> <span style="font-size: 15px;" class="text-muted">Ks</span></h3>
-                                </div>
-                                <div class="col-6 text-end">
-                                    <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2" onclick="checkout()">
-                                        <span>Voucher ထုတ်မည်</span> ➡️
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div> 
+    <div class="container mt-4 pb-5">
+        
+        <div id="sales" class="tab-content active">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync Sheet</button>
             </div>
 
-            <!-- 📜 History Tab -->
-            <div id="history" class="tab-content">
-                <div class="d-flex justify-content-end mb-3">
-                    <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
-                </div>
-                <div class="custom-card d-flex flex-column gap-3">
-                    <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                        <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
-                    </form>
-                    <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius: 12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
-                </div>
-                <div id="history-list">
-                    <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
-                </div>
-            </div>
-
-            <!-- 📊 Dashboard Tab -->
-            <div id="dashboard" class="tab-content">
-                <!-- Date Filters Box -->
-                <div class="custom-card">
-                    <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း (Filter)</h6>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="small text-muted mb-1">စတင်မည့်ရက်</label>
-                            <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
-                        </div>
-                        <div class="col-6">
-                            <label class="small text-muted mb-1">နောက်ဆုံးရက်</label>
-                            <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-6">
-                        <div class="custom-card text-center shadow-sm h-100 m-0" style="background: var(--bg-card); border: 1px solid rgba(217, 119, 6, 0.15);">
-                            <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">TOTAL SALES</small>
-                            <h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color: var(--accent-gold);">0 Ks</h2>
-                            <div class="small text-muted font-monospace" id="payment-split-summary" style="font-size: 11px;"></div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="custom-card text-center shadow-sm h-100 m-0" style="background: var(--bg-card); border: 1px solid rgba(16, 185, 129, 0.15);">
-                            <small class="fw-bold text-secondary" style="font-size: 11px; letter-spacing: 1px;">NET PROFIT (အမြတ်)</small>
-                            <h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2>
-                            <small class="small text-muted" id="today-date-string"></small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="custom-card p-3">
-                    <h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6>
-                    <div style="position: relative; width: 100%; height: 220px;">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Top Selling Products Analytics Chart -->
-                <div class="custom-card p-3">
-                    <h6 class="fw-bold text-secondary mb-4">🏆 အရောင်းရဆုံး ပစ္စည်းပြဇယား (Top Selling Products)</h6>
-                    <div style="position: relative; width: 100%; height: 220px;">
-                        <canvas id="topProductsChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="custom-card">
-                    <h6 class="fw-bold text-secondary mb-3">📅 ရက်စွဲအလိုက် စုစုပေါင်း ရောင်းရငွေစာရင်း</h6>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size: 14px; border-color: var(--border-color); --bs-table-bg: var(--bg-card); --bs-table-color: var(--text-main);">
-                            <thead>
-                                <tr class="table-light" style="color: var(--accent-gold); --bs-table-bg: var(--bg-input);">
-                                    <th>နေ့ရက်စွဲ</th>
-                                    <th>စုစုပေါင်းရောင်းရငွေ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="date-sales-table-body">
-                                <tr>
-                                    <td colspan="2" class="text-muted py-3">ဒေတာများကို တွက်ချက်နေပါသည်...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ⚙️ Admin Tab -->
-            <div id="admin" class="tab-content">
-                <div class="d-flex justify-content-end mb-3">
-                    <button class="btn btn-sm btn-outline-secondary opacity-75 fw-bold px-3 py-1.5" style="border-radius: 10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
-                </div>
-
-                <div class="custom-card" style="border-top: 4px solid var(--accent-success) !important;">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="fw-bold text-success mb-0" id="admin-form-title">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size: 12px; border-radius: 8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
-                        </div>
-                    </div>
-                    <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3">
-                        <input type="hidden" name="jsonData" id="form-json-data">
-                        <div class="col-12">
-                            <label class="text-secondary small fw-bold mb-1">Barcode နံပါတ်</label>
-                            <input type="text" id="new-barcode" class="form-control" placeholder="Barcode">
-                        </div>
-                        <div class="col-12">
-                            <label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label>
-                            <input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label>
-                            <input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0">
-                        </div>
-                        <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label>
-                            <input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး">
-                        </div>
-                        <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">...စတော့</label>
-                            <input type="number" id="new-stock" class="form-control" placeholder="စတော့">
-                        </div>
-                        <div class="col-6">
-                            <label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label>
-                            <input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5">
-                        </div>
-                        <div class="col-12 mt-4">
-                            <button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color: var(--accent-success); border:none; border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button>
-                        </div>
-                    </form>
-                    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
-                </div>
-
-                <div class="custom-card">
-                    <h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6>
-                    <div class="position-relative mb-4">
+            <div class="sales-grid-layout">
+                
+                <div class="custom-card search-container-box search-card-box" id="main-search-card">
+                    <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
+                    <div class="position-relative">
                         <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                            <input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search">
+                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
                         </form>
-                        <div id="admin-search-suggestions" class="search-results" style="display: none;"></div>
+                        <span id="close-search-btn" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; display:none; font-size:18px; color:var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
                     </div>
-                    <div id="admin-product-list" class="d-flex flex-column gap-2"></div>
+                    <div id="search-suggestions" class="search-results"></div>
+                </div>
+
+                <div class="custom-card p-2 scanner-card-box" id="main-scanner-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-2 pt-2">
+                        <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
+                        <button id="scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold" style="font-size:12px; border-radius:8px;" onclick="toggleScannerManual()">🔴 Paused</button>
+                    </div>
+                    <div id="reader" style="width:100%; border-radius:14px; overflow:hidden; border:1px solid var(--border-color);"></div>
+                </div>
+
+                <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card); border:1px solid var(--border-color) !important;">
+                    <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input); border-bottom:1px solid var(--border-color);">
+                        <h6 class="fw-bold mb-0">🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
+                        <span class="badge rounded-pill bg-light text-dark border font-monospace" id="cart-count-badge" style="font-size:12px; padding:6px 12px;">0 items</span>
+                    </div>
+                    
+                    <div class="px-3 pt-3">
+                        <div class="cart-tab-container" id="cart-tab-container">
+                            <button class="cart-tab-btn active" data-cart="0" onclick="switchCartTab(0)">👤 ဝယ်-၁ <span class="badge-cart" id="cart-badge-0">0</span></button>
+                            <button class="cart-tab-btn" data-cart="1" onclick="switchCartTab(1)">👤 ဝယ်-၂ <span class="badge-cart" id="cart-badge-1">0</span></button>
+                            <button class="cart-tab-btn" data-cart="2" onclick="switchCartTab(2)">👤 ဝယ်-၃ <span class="badge-cart" id="cart-badge-2">0</span></button>
+                            <button class="cart-tab-btn" data-cart="3" onclick="switchCartTab(3)">👤 ဝယ်-၄ <span class="badge-cart" id="cart-badge-3">0</span></button>
+                        </div>
+                    </div>
+                    
+                    <div id="cart-list" class="px-3 py-2" style="max-height:280px; overflow-y:auto;">
+                        <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+                    </div>
+                    
+                    <div class="px-4 py-3 border-top" style="background:var(--bg-card);">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
+                                <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="ဥပမာ- 500 သို့ 5%" oninput="renderCart()">
+                            </div>
+                            <div class="col-6">
+                                <label class="text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
+                                <select id="cart-payment-mode" class="form-control form-control-sm">
+                                    <option value="Cash">Cash (လက်ငင်း)</option>
+                                    <option value="KPay">KPay</option>
+                                    <option value="Wave">Wave Money</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4" style="background:var(--bg-input); border-top:1px solid var(--border-color);">
+                        <div class="row align-items-center g-3">
+                            <div class="col-6">
+                                <small class="text-secondary d-block fw-bold mb-1" style="font-size:11px;">TOTAL DUE</small>
+                                <h3 class="fw-bold mb-0 font-monospace" style="font-size:26px;"><span id="cart-total" style="color:var(--accent-gold);">0</span> <span style="font-size:15px;" class="text-muted">Ks</span></h3>
+                            </div>
+                            <div class="col-6 text-end">
+                                <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm" onclick="checkout()">
+                                    <span>Voucher ထုတ်မည်</span> ➡️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="history" class="tab-content">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
+            </div>
+            <div class="custom-card d-flex flex-column gap-3">
+                <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                    <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
+                </form>
+                <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
+            </div>
+            <div id="history-list">
+                <div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="tab-content">
+            <div class="custom-card">
+                <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="small text-muted mb-1">စတင်မည့်ရက်</label>
+                        <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-muted mb-1">နောက်ဆုံးရက်</label>
+                        <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales(); updateSalesChartLogic();">
+                    </div>
                 </div>
             </div>
-
-        </div>
-    </div>
-
-    <script>
-        let canScan = false; 
-        let html5QrcodeScanner = null;
-        let cart = []; let productsDB = []; let salesHistory = [];
-        let audioCtx = null; let mySalesChart = null; let myTopProductsChart = null;
-
-        function initAudio() {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            } catch(e){}
-        }
-        window.addEventListener('click', initAudio, { once: true });
-        window.addEventListener('touchstart', initAudio, { once: true });
-
-        function playBeep() { 
-            try {
-                initAudio();
-                if (!audioCtx) return;
-                let oscillator = audioCtx.createOscillator();
-                let gainNode = audioCtx.createGain();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.08);
-            } catch(e) {}
-        }
-
-        function dismissKeyboard() {
-            if(document.activeElement) {
-                document.activeElement.blur();
-            }
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeButtonUi(newTheme);
-            if (document.getElementById('dashboard').classList.contains('active')) {
-                updateSalesChartLogic();
-            }
-            let searchInp = document.getElementById('name-search-input');
-            if (searchInp && searchInp.value.trim() !== '') {
-                filterProductNames();
-            }
-        }
-
-        function updateThemeButtonUi(theme) {
-            const btn = document.getElementById('theme-btn');
-            if(!btn) return;
-            if(theme === 'dark') {
-                btn.innerHTML = '☀️';
-                document.getElementById('nav-theme-color').setAttribute('content', '#0f172a');
-            } else {
-                btn.innerHTML = '🌙';
-                document.getElementById('nav-theme-color').setAttribute('content', '#f8fafc');
-            }
-        }
-
-        function checkUniversalLogin() {
-            try {
-                let inputElement = document.getElementById('home-pass-input');
-                let input = inputElement ? inputElement.value.trim() : "";
-                
-                if (input === adminPassword || input === homePassword) {
-                    sessionStorage.setItem('isAppUnlocked', 'true');
-                    localStorage.setItem('currentUserRole', input === adminPassword ? 'admin' : 'user');
-                    setupRolePrivilegesUi();
-                    document.getElementById('app-lock-screen').style.display = 'none';
-                    document.getElementById('app-main-content').style.display = 'block';
-                    if(inputElement) inputElement.value = '';
-                    document.getElementById('lock-error').style.display = 'none';
-                    initAudio();
-                } else {
-                    document.getElementById('lock-error').style.display = 'block';
-                }
-            } catch(err) {
-                sessionStorage.setItem('isAppUnlocked', 'true');
-                document.getElementById('app-lock-screen').style.display = 'none';
-                document.getElementById('app-main-content').style.display = 'block';
-            }
-        }
-
-        function setupRolePrivilegesUi() {
-            const role = localStorage.getItem('currentUserRole') || 'user';
-            const badge = document.getElementById('role-badge');
-            
-            if(role === 'admin') {
-                if(badge) { 
-                    badge.innerText = "Admin"; 
-                    badge.className = "badge bg-danger-subtle text-danger font-monospace ms-2"; 
-                    badge.style.display = "inline-block";
-                }
-                document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'block', 'important'));
-            } else {
-                if(badge) { 
-                    badge.innerText = ""; 
-                    badge.style.display = "none";
-                }
-                document.querySelectorAll('.admin-only-feature').forEach(el => el.style.setProperty('display', 'none', 'important'));
-                switchTab('sales');
-            }
-            displayHistory(salesHistory);
-        }
-
-        function lockAppImmediate() {
-            sessionStorage.removeItem('isAppUnlocked');
-            localStorage.removeItem('currentUserRole');
-            window.location.reload();
-        }
-
-        try {
-            const localData = localStorage.getItem('salesHistory');
-            if(localData) salesHistory = JSON.parse(localData);
-        } catch(e) {}
-
-        window.onload = function() {
-            document.getElementById('hidden-form').action = scriptURL;
-            
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            updateThemeButtonUi(currentTheme);
-
-            if (sessionStorage.getItem('isAppUnlocked') === 'true') {
-                setupRolePrivilegesUi();
-                document.getElementById('app-lock-screen').style.display = 'none';
-                document.getElementById('app-main-content').style.display = 'block';
-            }
-            loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
-            
-            let pwInput = document.getElementById('home-pass-input');
-            if(pwInput) {
-                pwInput.addEventListener("keypress", function(event) {
-                    if (event.key === "Enter") {
-                        event.preventDefault();
-                        checkUniversalLogin();
-                    }
-                });
-            }
-            
-            let searchInp = document.getElementById('name-search-input');
-            if(searchInp) {
-                searchInp.addEventListener('input', filterProductNames);
-                searchInp.addEventListener('focus', function() {
-                    setTimeout(() => {
-                        document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 300);
-                });
-            }
-        };
-
-        function switchTab(tabId) {
-            const currentRole = localStorage.getItem('currentUserRole') || 'user';
-            if ((tabId === 'admin' || tabId === 'dashboard') && currentRole !== 'admin') {
-                alert("🔒 ဤအခန်းသို့ ဝင်ရောက်ရန် သင့်တွင် လုပ်ပိုင်ခွင့်မရှိပါဗျာ။");
-                return;
-            }
-            
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tabs-custom .btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
-            if(tabId === 'admin') renderAdminProducts(productsDB);
-            if(tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
-        }
-
-        function checkLowStockAlerts() {
-            const container = document.getElementById('low-stock-alert-container');
-            if(!container) return;
-            container.innerHTML = '';
-            
-            let lowItems = [];
-            productsDB.forEach(p => {
-                let minLimit = Number(p.minStock) || 5;
-                if(Number(p.stock) <= minLimit) {
-                    lowItems.push(`${p.name} (လက်ကျန်: ${p.stock} ခု)`);
-                }
-            });
-            
-            if(lowItems.length > 0) {
-                container.innerHTML = `
-                    <div class="low-stock-alert-banner">
-                        ⚠️ <b>စတော့နည်းပါးမှု သတိပေးချက်:</b> ${lowItems.slice(0, 3).join(', ')} ${lowItems.length > 3 ? ' စသည်ဖြင့်...' : ''} သည် သတ်မှတ်လက်ကျန်အောက် လျော့နည်းနေပါသည်။
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(217,119,6,0.15);">
+                        <small class="fw-bold text-secondary" style="font-size:11px;">TOTAL SALES</small>
+                        <h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color:var(--accent-gold);">0 Ks</h2>
+                        <div class="small text-muted font-monospace" id="payment-split-summary" style="font-size:11px;"></div>
                     </div>
-                `;
-            }
-        }
+                </div>
+                <div class="col-6">
+                    <div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(16,185,129,0.15);">
+                        <small class="fw-bold text-secondary" style="font-size:11px;">NET PROFIT</small>
+                        <h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2>
+                        <small class="small text-muted" id="today-date-string"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-card p-3">
+                <h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6>
+                <div style="position:relative; width:100%; height:220px;"><canvas id="salesChart"></canvas></div>
+            </div>
+            <div class="custom-card p-3">
+                <h6 class="fw-bold text-secondary mb-4">🏆 အရောင်းရဆုံး ပစ္စည်းပြဇယား</h6>
+                <div style="position:relative; width:100%; height:220px;"><canvas id="topProductsChart"></canvas></div>
+            </div>
+            <div class="custom-card">
+                <h6 class="fw-bold text-secondary mb-3">📅 ရက်စွဲအလိုက် စုစုပေါင်း ရောင်းရငွေစာရင်း</h6>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px; border-color:var(--border-color);">
+                        <thead><tr class="table-light" style="color:var(--accent-gold);"><th>နေ့ရက်စွဲ</th><th>စုစုပေါင်းရောင်းရငွေ</th></tr></thead>
+                        <tbody id="date-sales-table-body"><tr><td colspan="2" class="text-muted py-3">ဒေတာများကို တွက်ချက်နေပါသည်...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-        function reloadOnlineSalesTab(btn) {
-            btn.disabled = true; btn.innerText = "⏳ Loading...";
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
-                productsDB = data; btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
-                checkLowStockAlerts();
-                alert("🛒 ပစ္စည်းစာရင်းကို အောင်မြင်စွာ Update လုပ်ပြီးပါပြီ။");
-            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
-        }
+        <div id="admin" class="tab-content">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
+            </div>
+            <div class="custom-card" style="border-top:4px solid var(--accent-success) !important;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
+                    <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px; border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
+                </div>
+                <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3">
+                    <input type="hidden" name="jsonData" id="form-json-data">
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div>
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div>
+                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div>
+                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div>
+                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div>
+                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div>
+                    <div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success); border:none; border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button></div>
+                </form>
+                <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+            </div>
+            <div class="custom-card">
+                <h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6>
+                <div class="position-relative mb-4">
+                    <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
+                        <input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search">
+                    </form>
+                    <div id="admin-search-suggestions" class="search-results"></div>
+                </div>
+                <div id="admin-product-list" class="d-flex flex-column gap-2"></div>
+            </div>
+        </div>
 
-        function reloadOnlineAdminTab(btn) {
-            btn.disabled = true; btn.innerText = "⏳ Loading...";
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
-                productsDB = data; btn.disabled = false; btn.innerText = "🔄 Sync Sheet";
-                checkLowStockAlerts();
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  CONFIGURATION
+    // ============================================================
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
+    const homePassword = 'km';
+    const adminPassword = 'kmpos';
+
+    let canScan = false;
+    let html5QrcodeScanner = null;
+    let productsDB = [];
+    let salesHistory = [];
+    let audioCtx = null;
+    let mySalesChart = null;
+    let myTopProductsChart = null;
+
+    let carts = [[], [], [], []];
+    let activeCartIndex = 0;
+
+    // ============================================================
+    //  AUDIO
+    // ============================================================
+    function initAudio() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        } catch(e) {}
+    }
+    window.addEventListener('click', initAudio, { once: true });
+    window.addEventListener('touchstart', initAudio, { once: true });
+
+    function playBeep() {
+        try {
+            initAudio();
+            if (!audioCtx) return;
+            let oscillator = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.08);
+        } catch(e) {}
+    }
+
+    // ============================================================
+    //  TOAST NOTIFICATION
+    // ============================================================
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast-custom ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ============================================================
+    //  THEME
+    // ============================================================
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.getElementById('theme-btn').innerHTML = next === 'dark' ? '☀️' : '🌙';
+        if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic();
+    }
+
+    // ============================================================
+    //  LOCK SCREEN
+    // ============================================================
+    function checkUniversalLogin() {
+        const input = document.getElementById('home-pass-input').value.trim();
+        if (input === adminPassword || input === homePassword) {
+            sessionStorage.setItem('isAppUnlocked', 'true');
+            localStorage.setItem('currentUserRole', input === adminPassword ? 'admin' : 'user');
+            document.getElementById('app-lock-screen').style.display = 'none';
+            document.getElementById('app-main-content').style.display = 'block';
+            document.getElementById('lock-error').style.display = 'none';
+            setupRolePrivilegesUi();
+            initAudio();
+        } else {
+            document.getElementById('lock-error').style.display = 'block';
+        }
+    }
+
+    function setupRolePrivilegesUi() {
+        const role = localStorage.getItem('currentUserRole') || 'user';
+        const badge = document.getElementById('role-badge');
+        if (role === 'admin') {
+            if (badge) { badge.innerText = "Admin"; badge.style.display = "inline-block"; }
+            document.querySelectorAll('.admin-only-feature').forEach(el => el.style.display = 'block');
+        } else {
+            if (badge) { badge.innerText = ""; badge.style.display = "none"; }
+            document.querySelectorAll('.admin-only-feature').forEach(el => el.style.display = 'none');
+            switchTab('sales');
+        }
+    }
+
+    function lockAppImmediate() {
+        sessionStorage.removeItem('isAppUnlocked');
+        localStorage.removeItem('currentUserRole');
+        window.location.reload();
+    }
+
+    // ============================================================
+    //  SWITCH TAB
+    // ============================================================
+    function switchTab(tabId) {
+        const role = localStorage.getItem('currentUserRole') || 'user';
+        if ((tabId === 'admin' || tabId === 'dashboard') && role !== 'admin') {
+            showToast('🔒 ဤအခန်းသို့ ဝင်ရောက်ရန် လုပ်ပိုင်ခွင့်မရှိပါ', 'danger');
+            return;
+        }
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-tabs-custom .btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+        if (tabId === 'admin') renderAdminProducts(productsDB);
+        if (tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
+    }
+
+    // ============================================================
+    //  LOAD DATA
+    // ============================================================
+    function loadProductsFromSheet() {
+        fetch(scriptURL + '?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => { productsDB = data; })
+            .catch(() => {});
+    }
+
+    function loadSalesHistoryFromSheet() {
+        fetch(scriptURL + '?getSales=true&t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    salesHistory = data;
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                    displayHistory(salesHistory);
+                }
+            })
+            .catch(() => {});
+    }
+
+    function reloadOnlineSalesTab(btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Loading...";
+        fetch(scriptURL + '?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                productsDB = data;
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Sheet";
+                showToast('🛒 ပစ္စည်းစာရင်း Update ပြီးပါပြီ', 'success');
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Sheet";
+                showToast('❌ Sync မအောင်မြင်ပါ', 'danger');
+            });
+    }
+
+    function reloadOnlineAdminTab(btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Loading...";
+        fetch(scriptURL + '?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                productsDB = data;
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Sheet";
                 renderAdminProducts(productsDB);
-                alert("⚙️ စီမံခန်းရှိ ပစ္စည်းစာရင်းကို အောင်မြင်စွာ Update လုပ်ပြီးပါပြီ။");
-            }).catch(() => { btn.disabled = false; btn.innerText = "🔄 Sync Sheet"; });
-        }
-
-        function loadProductsFromSheet() {
-            fetch(scriptURL + '?t=' + new Date().getTime()).then(res => res.json()).then(data => { 
-                productsDB = data; 
-                checkLowStockAlerts();
-                if(document.getElementById('admin').classList.contains('active')) renderAdminProducts(productsDB); 
+                showToast('⚙️ စီမံခန်း Update ပြီးပါပြီ', 'success');
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Sheet";
+                showToast('❌ Sync မအောင်မြင်ပါ', 'danger');
             });
-        }
+    }
 
-        function loadSalesHistoryFromSheet() {
-            fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(res => res.json()).then(data => {
-                if(data && data.length > 0) { 
-                    salesHistory = data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
+    function reloadOnlineHistoryTab(btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Loading...";
+        fetch(scriptURL + '?getSales=true&t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    salesHistory = data;
+                    localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                    displayHistory(salesHistory);
                 }
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Online";
+                showToast('📜 မှတ်တမ်း Update ပြီးပါပြီ', 'success');
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerText = "🔄 Sync Online";
+                showToast('❌ Sync မအောင်မြင်ပါ', 'danger');
             });
+    }
+
+    // ============================================================
+    //  SEARCH with STOCK STATUS
+    // ============================================================
+    function filterProductNames() {
+        const input = document.getElementById('name-search-input').value.toLowerCase().trim();
+        const suggestionsBox = document.getElementById('search-suggestions');
+        const closeBtn = document.getElementById('close-search-btn');
+
+        if (input === '') {
+            suggestionsBox.style.display = 'none';
+            if (closeBtn) closeBtn.style.display = 'none';
+            return;
         }
+        if (closeBtn) closeBtn.style.display = 'block';
 
-        function calculateTodaySales() {
-            let filterStart = document.getElementById('filter-start-date').value;
-            let filterEnd = document.getElementById('filter-end-date').value;
-            
-            let startTimestamp = filterStart ? new Date(filterStart).setHours(0,0,0,0) : null;
-            let endTimestamp = filterEnd ? new Date(filterEnd).setHours(23,59,59,999) : null;
+        const filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
+        suggestionsBox.innerHTML = '';
 
-            let now = new Date();
-            let d = String(now.getDate()).padStart(2, '0');
-            let m = String(now.getMonth() + 1).padStart(2, '0');
-            let y = now.getFullYear();
-            let todayFormat1 = `${d}/${m}/${y}`; let todayFormat2 = `${m}/${d}/${y}`;
-            
-            let todayDateStringEl = document.getElementById('today-date-string');
-            if(todayDateStringEl) todayDateStringEl.innerText = "ဇယားကာလ: " + (filterStart ? filterStart : "ယနေ့ထိ");
-            
-            let totalSum = 0;
-            let totalProfit = 0;
-            let cashSum = 0, kpaySum = 0, waveSum = 0;
-
-            salesHistory.forEach(sale => {
-                let saleDateObj = new Date(sale.date);
-                let isInsideFilter = true;
-                
-                if(startTimestamp && saleDateObj.getTime() < startTimestamp) isInsideFilter = false;
-                if(endTimestamp && saleDateObj.getTime() > endTimestamp) isInsideFilter = false;
-                
-                if(!filterStart && !filterEnd) {
-                    if(sale.date) {
-                        let saleDateOnly = sale.date.split(',')[0].trim(); 
-                        if(!(saleDateOnly.includes(todayFormat1) || saleDateOnly.includes(todayFormat2) || saleDateObj.toLocaleDateString() === now.toLocaleDateString())) {
-                            isInsideFilter = false;
-                        }
-                    } else {
-                        isInsideFilter = false;
-                    }
-                }
-
-                if(isInsideFilter) {
-                    let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
-                    totalSum += cleanTotal;
-
-                    let pMode = sale.paymentMode || "Cash";
-                    if(pMode === "Cash") cashSum += cleanTotal;
-                    else if(pMode === "KPay") kpaySum += cleanTotal;
-                    else if(pMode === "Wave") waveSum += cleanTotal;
-
-                    let saleCost = 0;
-                    if(sale.items && Array.isArray(sale.items)) {
-                        sale.items.forEach(i => {
-                            let matchDB = productsDB.find(p => p.barcode.toString() === i.barcode.toString());
-                            let costPerItem = matchDB ? (Number(matchDB.cost || matchDB.costPrice) || 0) : 0;
-                            saleCost += (costPerItem * Number(i.qty));
-                        });
-                    }
-                    
-                    let discountVal = sale.discount || "0";
-                    let computedDiscount = 0;
-                    let calculatedGross = 0;
-                    if(sale.items && Array.isArray(sale.items)) {
-                        sale.items.forEach(i => { calculatedGross += (Number(i.price) * Number(i.qty)); });
-                    }
-                    if(discountVal.toString().includes('%')) {
-                        let pct = parseFloat(discountVal.replace('%', '')) || 0;
-                        computedDiscount = calculatedGross * (pct / 100);
-                    } else {
-                        computedDiscount = Number(discountVal) || 0;
-                    }
-
-                    let revenueReal = cleanTotal; 
-                    totalProfit += (revenueReal - saleCost);
-                }
-            });
-
-            let todaySumEl = document.getElementById('today-sales-summary');
-            if(todaySumEl) todaySumEl.innerText = totalSum.toLocaleString() + " Ks";
-
-            let paymentSplitEl = document.getElementById('payment-split-summary');
-            if(paymentSplitEl) {
-                paymentSplitEl.innerHTML = `💵 Cash: ${cashSum.toLocaleString()} | 📱 KPay: ${kpaySum.toLocaleString()} | 🌊 Wave: ${waveSum.toLocaleString()}`;
-            }
-
-            let profitEl = document.getElementById('today-profit-summary');
-            if(profitEl) profitEl.innerText = totalProfit.toLocaleString() + " Ks";
-        }
-
-        function updateSalesChartLogic() {
-            try {
-                let salesMap = {};
-                for (let i = 6; i >= 0; i--) {
-                    let d = new Date(); d.setDate(d.getDate() - i);
-                    let dateStr = d.toLocaleDateString('en-GB'); 
-                    salesMap[dateStr] = 0;
-                }
-                let allDatesMap = {};
-                let productCountsMap = {};
-
-                salesHistory.forEach(sale => {
-                    if (sale.date) {
-                        let rawDate = sale.date.split(',')[0].trim();
-                        let formattedDate = "";
-                        if (rawDate.includes('/')) {
-                            let parts = rawDate.split('/');
-                            if(parts[0].length < 2) parts[0] = '0' + parts[0];
-                            if(parts[1].length < 2) parts[1] = '0' + parts[1];
-                            formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-                        } else {
-                            formattedDate = new Date(sale.date).toLocaleDateString('en-GB');
-                        }
-                        let cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
-                        if (salesMap[formattedDate] !== undefined) salesMap[formattedDate] += cleanTotal;
-                        if (allDatesMap[formattedDate] === undefined) allDatesMap[formattedDate] = 0;
-                        allDatesMap[formattedDate] += cleanTotal;
-                    }
-
-                    if(sale.items && Array.isArray(sale.items)) {
-                        sale.items.forEach(i => {
-                            if(!productCountsMap[i.name]) productCountsMap[i.name] = 0;
-                            productCountsMap[i.name] += Number(i.qty);
-                        });
-                    }
-                });
-
-                const tableBody = document.getElementById('date-sales-table-body');
-                if (tableBody) {
-                    let sortedDates = Object.keys(allDatesMap).sort((a, b) => {
-                        let p1 = a.split('/'), p2 = b.split('/');
-                        return new Date(p2[2], p2[1]-1, p2[0]) - new Date(p1[2], p1[1]-1, p1[0]);
-                    });
-                    if(sortedDates.length === 0) {
-                        tableBody.innerHTML = `<tr><td colspan="2" class="text-muted py-3">အရောင်းမှတ်တမ်းမရှိသေးပါ။</td></tr>`;
-                    } else {
-                        tableBody.innerHTML = '';
-                        sortedDates.forEach(dt => {
-                            tableBody.innerHTML += `<tr>
-                                <td class="fw-bold">${dt}</td>
-                                <td class="font-monospace text-danger fw-bold">${allDatesMap[dt].toLocaleString()} Ks</td>
-                            </tr>`;
-                        });
-                    }
-                }
-
-                let labels = Object.keys(salesMap);
-                let chartData = Object.values(salesMap);
-                const ctx = document.getElementById('salesChart');
-                if (ctx && typeof Chart !== 'undefined') {
-                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                    const goldColor = isDark ? '#fbbf24' : '#b45309';
-                    const fillColor = isDark ? 'rgba(251, 191, 36, 0.08)' : 'rgba(180, 83, 9, 0.05)';
-                    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
-                    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-
-                    if (mySalesChart) mySalesChart.destroy();
-                    
-                    mySalesChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Daily Sales (Ks)',
-                                data: chartData,
-                                borderColor: goldColor,
-                                backgroundColor: fillColor,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.3,
-                                pointBackgroundColor: goldColor,
-                                pointRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
-                                x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }
-                            }
-                        }
-                    });
-                }
-
-                const topCtx = document.getElementById('topProductsChart');
-                if(topCtx && typeof Chart !== 'undefined') {
-                    let sortedProducts = Object.keys(productCountsMap).sort((a,b) => productCountsMap[b] - productCountsMap[a]);
-                    let topLabels = sortedProducts.slice(0, 5);
-                    let topData = topLabels.map(l => productCountsMap[l]);
-
-                    if (myTopProductsChart) myTopProductsChart.destroy();
-
-                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                    const barColor = isDark ? '#fbbf24' : '#b45309';
-                    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-
-                    myTopProductsChart = new Chart(topCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: topLabels,
-                            datasets: [{
-                                data: topData,
-                                backgroundColor: barColor,
-                                borderRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { color: textColor, font: { size: 10 } } },
-                                x: { ticks: { color: textColor, font: { size: 10 } } }
-                            }
-                        }
-                    });
-                }
-
-            } catch(e) { console.log("Dashboard rendering skipped: " + e); }
-        }
-
-        function filterProductNames() {
-            let inputElement = document.getElementById('name-search-input');
-            let input = inputElement.value.toLowerCase().trim();
-            let suggestionsBox = document.getElementById('search-suggestions');
-            let closeBtn = document.getElementById('close-search-btn');
-            
-            if (input === '') { 
-                suggestionsBox.style.display = 'none'; 
-                if (closeBtn) closeBtn.style.display = 'none';
-                return; 
-            }
-            
-            if (closeBtn) closeBtn.style.display = 'block';
-            let filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
-            suggestionsBox.innerHTML = '';
-            
-            if (filtered.length === 0) {
-                suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">👑 ရှာဖွေမှုမတွေ့ရှိပါ</div>';
-                suggestionsBox.style.display = 'block';
-                return;
-            }
-
-            filtered.forEach(prod => {
-                let barcodeStr = prod.barcode.toString();
-                let cartItem = cart.find(i => i.barcode.toString() === barcodeStr);
-                let currentSelectedQty = cartItem ? cartItem.qty : 0;
-
-                let div = document.createElement('div'); 
-                div.className = 'search-item d-flex justify-content-between align-items-center';
-                
-                let infoDiv = document.createElement('div');
-                infoDiv.style.flex = "1";
-                infoDiv.style.minWidth = "0";
-                infoDiv.style.marginRight = "8px";
-                infoDiv.innerHTML = `<div class="fw-bold text-truncate" style="font-size:14px; color: var(--text-main);">${prod.name}</div> 
-                                     <div style="color: var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>`;
-                
-                let actionDiv = document.createElement('div');
-                actionDiv.className = "d-flex align-items-center gap-1";
-                
-                if (currentSelectedQty > 0) {
-                    let selectOptions = '';
-                    for(let k=1; k<=100; k++) {
-                        selectOptions += `<option value="${k}" ${k === currentSelectedQty ? 'selected' : ''}>${k}</option>`;
-                    }
-                    
-                    actionDiv.innerHTML = `
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
-                        <select class="suggestion-qty-select" onchange="changeQtySelectFromSuggestion('${barcodeStr}', this.value)">
-                            ${selectOptions}
-                        </select>
-                        <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
-                    `;
-                } else {
-                    let addBtn = document.createElement('button');
-                    addBtn.className = "suggestion-add-btn";
-                    addBtn.innerText = "+ ထည့်မည်";
-                    
-                    addBtn.onmousedown = function(e) {
-                        e.preventDefault(); 
-                        playBeep();
-                        addByBarcodeDirectly(barcodeStr);
-                        filterProductNames(); 
-                        setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
-                    };
-                    actionDiv.appendChild(addBtn);
-                }
-
-                div.appendChild(infoDiv);
-                div.appendChild(actionDiv);
-                suggestionsBox.appendChild(div);
-            });
+        if (filtered.length === 0) {
+            suggestionsBox.innerHTML = '<div class="text-center text-muted py-3 small">👑 ရှာဖွေမှုမတွေ့ရှိပါ</div>';
             suggestionsBox.style.display = 'block';
+            return;
         }
 
-        function addByBarcodeDirectly(barcode) {
-            let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
-            if (product) {
-                let item = cart.find(i => i.barcode.toString() === barcode.toString());
-                if (item) {
-                    item.qty++;
-                } else {
-                    cart.push({ ...product, qty: 1 });
+        filtered.forEach(prod => {
+            const barcodeStr = prod.barcode.toString();
+            const cartItem = carts[activeCartIndex].find(i => i.barcode.toString() === barcodeStr);
+            const currentQty = cartItem ? cartItem.qty : 0;
+            const stock = Number(prod.stock) || 0;
+            const minStock = Number(prod.minStock) || 5;
+
+            let stockStatus = '';
+            let stockBadgeClass = '';
+            if (stock <= 0) {
+                stockStatus = '🔴 ကုန်သွားပြီ';
+                stockBadgeClass = 'out-of-stock';
+            } else if (stock <= minStock) {
+                stockStatus = '🟡 စတော့နည်းနေသည် (' + stock + ' ခု)';
+                stockBadgeClass = 'low-stock';
+            } else {
+                stockStatus = '🟢 လက်ကျန် ' + stock + ' ခု';
+                stockBadgeClass = 'in-stock';
+            }
+
+            const div = document.createElement('div');
+            div.className = 'search-item d-flex justify-content-between align-items-center';
+
+            const infoDiv = document.createElement('div');
+            infoDiv.style.flex = "1";
+            infoDiv.style.minWidth = "0";
+            infoDiv.style.marginRight = "8px";
+            infoDiv.innerHTML = `
+                <div class="fw-bold text-truncate" style="font-size:14px;">${prod.name}</div>
+                <div style="color:var(--accent-gold); font-size:13px;" class="fw-bold">${Number(prod.price).toLocaleString()} Ks</div>
+                <div class="stock-badge ${stockBadgeClass}" style="font-size:10px; margin-top:2px;">${stockStatus}</div>
+            `;
+
+            const actionDiv = document.createElement('div');
+            actionDiv.className = "d-flex align-items-center gap-1";
+
+            if (currentQty > 0) {
+                let opts = '';
+                for (let k = 1; k <= 100; k++) {
+                    opts += `<option value="${k}" ${k === currentQty ? 'selected' : ''}>${k}</option>`;
                 }
-                renderCart();
+                actionDiv.innerHTML = `
+                    <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', -1)">-</button>
+                    <select class="suggestion-qty-select" onchange="changeQtySelectFromSuggestion('${barcodeStr}', this.value)">${opts}</select>
+                    <button class="suggestion-counter-btn" onmousedown="event.preventDefault(); changeQtyFromSuggestion('${barcodeStr}', 1)">+</button>
+                `;
+            } else {
+                const addBtn = document.createElement('button');
+                addBtn.className = "suggestion-add-btn";
+                addBtn.innerText = "+ ထည့်မည်";
+                addBtn.onmousedown = function(e) {
+                    e.preventDefault();
+                    if (stock <= 0) {
+                        showToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', 'danger');
+                        return;
+                    }
+                    playBeep();
+                    addByBarcodeDirectly(barcodeStr);
+                    filterProductNames();
+                    setTimeout(() => document.getElementById('name-search-input').focus(), 10);
+                };
+                actionDiv.appendChild(addBtn);
             }
-        }
 
-        function changeQtyFromSuggestion(barcode, change) {
-            playBeep();
-            let bStr = barcode.toString();
-            let itemIndex = cart.findIndex(i => i.barcode.toString() === bStr);
-            
-            if (itemIndex !== -1) {
-                cart[itemIndex].qty += change;
-                if (cart[itemIndex].qty <= 0) {
-                    cart.splice(itemIndex, 1);
-                }
-            } else if (change > 0) {
-                let product = productsDB.find(p => p.barcode.toString() === bStr);
-                if (product) cart.push({ ...product, qty: 1 });
-            }
-            
-            renderCart();
-            filterProductNames(); 
-            setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
-        }
+            div.appendChild(infoDiv);
+            div.appendChild(actionDiv);
+            suggestionsBox.appendChild(div);
+        });
+        suggestionsBox.style.display = 'block';
+    }
 
-        function changeQtySelectFromSuggestion(barcode, newQty) {
-            playBeep();
-            let bStr = barcode.toString();
-            let itemIndex = cart.findIndex(i => i.barcode.toString() === bStr);
-            let targetQty = parseInt(newQty) || 1;
-            
-            if (itemIndex !== -1) {
-                cart[itemIndex].qty = targetQty;
-            }
-            renderCart();
-            filterProductNames();
-            setTimeout(() => { document.getElementById('name-search-input').focus(); }, 10);
-        }
+    function clearSearchInputAndBox() {
+        document.getElementById('name-search-input').value = '';
+        document.getElementById('search-suggestions').style.display = 'none';
+        document.getElementById('close-search-btn').style.display = 'none';
+    }
 
-        function clearSearchInputAndBox() {
-            document.getElementById('name-search-input').value = '';
-            document.getElementById('search-suggestions').style.display = 'none';
-            document.getElementById('close-search-btn').style.display = 'none';
-        }
+    // ============================================================
+    //  SCANNER
+    // ============================================================
+    function toggleScannerManual() {
+        playBeep();
+        const scannerCard = document.getElementById('main-scanner-card');
+        const searchCard = document.getElementById('main-search-card');
+        const syncBtn = document.querySelector('#sales .d-flex.justify-content-end');
 
-        function filterAdminProductNames() {
-            let input = document.getElementById('admin-search-input').value.toLowerCase().trim();
-            let suggestionsBox = document.getElementById('admin-search-suggestions');
-            if (input === '') { suggestionsBox.style.display = 'none'; renderAdminProducts(productsDB); return; }
-            let filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
-            suggestionsBox.innerHTML = '';
-            filtered.slice(0, 15).forEach(prod => {
-                let div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
-                div.innerHTML = `<div><strong>${prod.name}</strong></div>`;
-                div.onclick = function() { suggestionsBox.style.display = 'none'; renderAdminProducts([prod]); };
-                suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = 'block';
-        }
-
-        function onScanSuccess(decodedText) { if (canScan) { playBeep(); addToCart(decodedText); } }
-
-        function toggleScannerManual() {
-            playBeep();
-            let scannerCard = document.getElementById('main-scanner-card');
-            let searchCard = document.getElementById('main-search-card');
-            let syncBtnContainer = document.getElementById('sync-button-container');
-
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-                html5QrcodeScanner.render(onScanSuccess);
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render(onScanSuccess);
+            canScan = true;
+            updateScannerStatusUi(true);
+            if (scannerCard) scannerCard.classList.add('scan-active-mode');
+            if (searchCard) searchCard.classList.add('scan-active-mode');
+            if (syncBtn) syncBtn.style.display = 'none';
+        } else {
+            if (canScan) {
+                canScan = false;
+                updateScannerStatusUi(false);
+                if (scannerCard) scannerCard.classList.remove('scan-active-mode');
+                if (searchCard) searchCard.classList.remove('scan-active-mode');
+                if (syncBtn) syncBtn.style.display = 'flex';
+            } else {
                 canScan = true;
                 updateScannerStatusUi(true);
-                if(scannerCard) scannerCard.classList.add('scan-active-mode');
-                if(searchCard) searchCard.classList.add('scan-active-mode');
-                if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
-            } else {
-                if (canScan) {
-                    canScan = false;
-                    updateScannerStatusUi(false);
-                    if(scannerCard) scannerCard.classList.remove('scan-active-mode');
-                    if(searchCard) searchCard.classList.remove('scan-active-mode');
-                    if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
-                } else {
-                    canScan = true;
-                    updateScannerStatusUi(true);
-                    if(scannerCard) scannerCard.classList.add('scan-active-mode');
-                    if(searchCard) searchCard.classList.add('scan-active-mode');
-                    if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
-                }
+                if (scannerCard) scannerCard.classList.add('scan-active-mode');
+                if (searchCard) searchCard.classList.add('scan-active-mode');
+                if (syncBtn) syncBtn.style.display = 'none';
             }
         }
+    }
 
-        function addToCart(barcode) {
-            let product = productsDB.find(p => p.barcode.toString() === barcode.toString());
-            let scannerCard = document.getElementById('main-scanner-card');
-            let searchCard = document.getElementById('main-search-card');
-            let syncBtnContainer = document.getElementById('sync-button-container');
+    function updateScannerStatusUi(isScanning) {
+        const btn = document.getElementById('scanner-status-btn');
+        if (!btn) return;
+        btn.className = isScanning
+            ? "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"
+            : "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+        btn.innerText = isScanning ? "🟢 Scanning" : "🔴 Paused";
+    }
+
+    function onScanSuccess(decodedText) {
+        if (canScan) {
+            playBeep();
+            const product = productsDB.find(p => p.barcode.toString() === decodedText.toString());
+            const scannerCard = document.getElementById('main-scanner-card');
+            const searchCard = document.getElementById('main-search-card');
+            const syncBtn = document.querySelector('#sales .d-flex.justify-content-end');
 
             if (!product) {
-                canScan = false; updateScannerStatusUi(false);
-                if(scannerCard) scannerCard.classList.remove('scan-active-mode');
-                if(searchCard) searchCard.classList.remove('scan-active-mode');
-                if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
+                canScan = false;
+                updateScannerStatusUi(false);
+                if (scannerCard) scannerCard.classList.remove('scan-active-mode');
+                if (searchCard) searchCard.classList.remove('scan-active-mode');
+                if (syncBtn) syncBtn.style.display = 'flex';
 
-                alert(`📢 Barcode: ${barcode} မရှိသေးပါ။`);
-                const currentRole = localStorage.getItem('currentUserRole') || 'user';
-                if(currentRole !== 'admin') {
-                    alert("🔒 ပစ္စည်းအသစ်ထည့်သွင်းရန် Admin ကို အကြောင်းကြားပေးပါရန်။");
-                    canScan = true; updateScannerStatusUi(true);
-                    if(scannerCard) scannerCard.classList.add('scan-active-mode');
-                    if(searchCard) searchCard.classList.add('scan-active-mode');
-                    if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
+                showToast('📢 Barcode: ' + decodedText + ' မရှိသေးပါ', 'danger');
+                const role = localStorage.getItem('currentUserRole') || 'user';
+                if (role === 'admin') {
+                    switchTab('admin');
+                    document.getElementById('new-barcode').value = decodedText;
+                    document.getElementById('new-name').focus();
+                } else {
+                    showToast('🔒 ပစ္စည်းအသစ်ထည့်ရန် Admin ကို အကြောင်းကြားပါ', 'danger');
+                    setTimeout(() => {
+                        canScan = true;
+                        updateScannerStatusUi(true);
+                        if (scannerCard) scannerCard.classList.add('scan-active-mode');
+                        if (searchCard) searchCard.classList.add('scan-active-mode');
+                        if (syncBtn) syncBtn.style.display = 'none';
+                    }, 3000);
+                }
+                return;
+            }
+
+            const stock = Number(product.stock) || 0;
+            if (stock <= 0) {
+                showToast('🔴 "' + product.name + '" မှာ ကုန်သွားပါပြီ', 'danger');
+                return;
+            }
+
+            canScan = false;
+            updateScannerStatusUi(false);
+            if (scannerCard) scannerCard.classList.remove('scan-active-mode');
+            if (searchCard) searchCard.classList.remove('scan-active-mode');
+            if (syncBtn) syncBtn.style.display = 'flex';
+
+            const item = carts[activeCartIndex].find(i => i.barcode.toString() === decodedText.toString());
+            if (item) {
+                if (item.qty >= stock) {
+                    showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+                } else {
+                    item.qty++;
+                    showToast('✅ ' + product.name + ' +1 (လက်ကျန် ' + (stock - item.qty) + ' ခု)', 'success');
+                }
+            } else {
+                carts[activeCartIndex].push({ ...product, qty: 1 });
+                showToast('✅ ' + product.name + ' ထည့်ပြီးပါပြီ', 'success');
+            }
+
+            renderCart();
+
+            setTimeout(() => {
+                if (html5QrcodeScanner) {
+                    canScan = true;
+                    updateScannerStatusUi(true);
+                    if (scannerCard) scannerCard.classList.add('scan-active-mode');
+                    if (searchCard) searchCard.classList.add('scan-active-mode');
+                    if (syncBtn) syncBtn.style.display = 'none';
+                }
+            }, 2000);
+        }
+    }
+
+    function addByBarcodeDirectly(barcode) {
+        const product = productsDB.find(p => p.barcode.toString() === barcode.toString());
+        if (!product) return;
+
+        const stock = Number(product.stock) || 0;
+        const item = carts[activeCartIndex].find(i => i.barcode.toString() === barcode.toString());
+
+        if (item) {
+            if (item.qty >= stock) {
+                showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+                return;
+            }
+            item.qty++;
+        } else {
+            if (stock <= 0) {
+                showToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', 'danger');
+                return;
+            }
+            carts[activeCartIndex].push({ ...product, qty: 1 });
+        }
+        renderCart();
+    }
+
+    // ============================================================
+    //  MULTI-CART SYSTEM
+    // ============================================================
+    function switchCartTab(index) {
+        activeCartIndex = index;
+        document.querySelectorAll('.cart-tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === index);
+        });
+        renderCart();
+        document.getElementById('name-search-input').focus();
+    }
+
+    function updateCartBadges() {
+        for (let i = 0; i < carts.length; i++) {
+            const badge = document.getElementById('cart-badge-' + i);
+            if (badge) {
+                const total = carts[i].reduce((sum, item) => sum + item.qty, 0);
+                badge.textContent = total;
+            }
+        }
+    }
+
+    // ============================================================
+    //  CART RENDER
+    // ============================================================
+    function renderCart() {
+        const cart = carts[activeCartIndex] || [];
+        const list = document.getElementById('cart-list');
+        const countBadge = document.getElementById('cart-count-badge');
+        let total = 0;
+        let totalItems = 0;
+
+        if (cart.length === 0) {
+            list.innerHTML = '<div class="text-center text-muted py-4 small">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>';
+            document.getElementById('cart-total').innerText = '0';
+            if (countBadge) countBadge.innerText = "0 items";
+            updateCartBadges();
+            return;
+        }
+
+        list.innerHTML = '';
+        cart.forEach((item, index) => {
+            total += (item.price * item.qty);
+            totalItems += item.qty;
+
+            let opts = '';
+            for (let k = 1; k <= 100; k++) {
+                opts += `<option value="${k}" ${k === item.qty ? 'selected' : ''}>${k}</option>`;
+            }
+
+            list.innerHTML += `
+                <div class="cart-item d-flex justify-content-between align-items-center">
+                    <div style="flex:1; min-width:0;" class="pe-2">
+                        <h6 class="fw-bold mb-1 text-truncate" style="font-size:14px;">${item.name}</h6>
+                        <small class="font-monospace small fw-bold" style="color:var(--accent-gold);">${Number(item.price).toLocaleString()} Ks</small>
+                        <div><small class="text-muted" style="font-size:10px;">Stock: ${item.stock || 0}</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border:1px solid var(--border-color);">
+                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px; color:var(--text-main);" onclick="changeQty(${index}, -1)">-</button>
+                            <select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(${index}, this.value)">${opts}</select>
+                            <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px; color:var(--text-main);" onclick="changeQty(${index}, 1)">+</button>
+                        </div>
+                        <button class="btn-delete-item" onclick="removeCartItemCompletely(${index})">❌</button>
+                    </div>
+                </div>`;
+        });
+
+        const discountInput = document.getElementById('cart-discount-input').value.trim();
+        let discountAmount = 0;
+        if (discountInput.includes('%')) {
+            const pct = parseFloat(discountInput.replace('%', '')) || 0;
+            discountAmount = total * (pct / 100);
+        } else {
+            discountAmount = Number(discountInput) || 0;
+        }
+        const grandTotal = Math.max(0, total - discountAmount);
+
+        document.getElementById('cart-total').innerText = grandTotal.toLocaleString();
+        if (countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
+        updateCartBadges();
+    }
+
+    function changeQty(index, change) {
+        playBeep();
+        const cart = carts[activeCartIndex];
+        if (!cart[index]) return;
+        const stock = Number(cart[index].stock) || 0;
+        const newQty = cart[index].qty + change;
+
+        if (newQty <= 0) {
+            cart.splice(index, 1);
+        } else if (newQty > stock) {
+            showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+            return;
+        } else {
+            cart[index].qty = newQty;
+        }
+        renderCart();
+        filterProductNames();
+    }
+
+    function changeQtySelectFromCart(index, newQty) {
+        playBeep();
+        const cart = carts[activeCartIndex];
+        if (!cart[index]) return;
+        const stock = Number(cart[index].stock) || 0;
+        const targetQty = parseInt(newQty) || 1;
+
+        if (targetQty > stock) {
+            showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+            return;
+        }
+        cart[index].qty = targetQty;
+        renderCart();
+        filterProductNames();
+    }
+
+    function removeCartItemCompletely(index) {
+        playBeep();
+        const cart = carts[activeCartIndex];
+        if (cart[index]) {
+            cart.splice(index, 1);
+        }
+        renderCart();
+        filterProductNames();
+    }
+
+    function changeQtyFromSuggestion(barcode, change) {
+        playBeep();
+        const bStr = barcode.toString();
+        const cart = carts[activeCartIndex];
+        const idx = cart.findIndex(i => i.barcode.toString() === bStr);
+        if (idx === -1 && change > 0) {
+            const product = productsDB.find(p => p.barcode.toString() === bStr);
+            if (product) {
+                const stock = Number(product.stock) || 0;
+                if (stock <= 0) {
+                    showToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', 'danger');
                     return;
                 }
-                switchTab('admin');
-                document.getElementById('new-barcode').value = barcode;
-                document.getElementById('new-name').focus();
+                cart.push({ ...product, qty: 1 });
+            }
+        } else if (idx !== -1) {
+            const stock = Number(cart[idx].stock) || 0;
+            const newQty = cart[idx].qty + change;
+            if (newQty <= 0) {
+                cart.splice(idx, 1);
+            } else if (newQty > stock) {
+                showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+                return;
             } else {
-                canScan = false; updateScannerStatusUi(false);
-                if(scannerCard) scannerCard.classList.remove('scan-active-mode');
-                if(searchCard) searchCard.classList.remove('scan-active-mode');
-                if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'flex', 'important');
-
-                setTimeout(() => { 
-                    if (html5QrcodeScanner) {
-                        canScan = true; 
-                        updateScannerStatusUi(true); 
-                        if(scannerCard) scannerCard.classList.add('scan-active-mode');
-                        if(searchCard) searchCard.classList.add('scan-active-mode');
-                        if(syncBtnContainer) syncBtnContainer.style.setProperty('display', 'none', 'important');
-                    }
-                }, 3000);
-                
-                let item = cart.find(i => i.barcode.toString() === barcode.toString());
-                if (item) item.qty++; else cart.push({ ...product, qty: 1 });
-                renderCart();
+                cart[idx].qty = newQty;
             }
         }
+        renderCart();
+        filterProductNames();
+        setTimeout(() => document.getElementById('name-search-input').focus(), 10);
+    }
 
-        function updateScannerStatusUi(isScanning) {
-            let btn = document.getElementById('scanner-status-btn'); if(!btn) return;
-            btn.className = isScanning ? "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm" : "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
-            btn.innerText = isScanning ? "🟢 Scanning" : "🔴 Paused";
+    function changeQtySelectFromSuggestion(barcode, newQty) {
+        playBeep();
+        const bStr = barcode.toString();
+        const cart = carts[activeCartIndex];
+        const idx = cart.findIndex(i => i.barcode.toString() === bStr);
+        if (idx === -1) return;
+        const stock = Number(cart[idx].stock) || 0;
+        const targetQty = parseInt(newQty) || 1;
+        if (targetQty > stock) {
+            showToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'danger');
+            return;
         }
-        
-        function changeQty(index, change) { 
-            playBeep(); 
-            cart[index].qty += change; 
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1); 
-            }
-            renderCart(); 
-        }
+        cart[idx].qty = targetQty;
+        renderCart();
+        filterProductNames();
+        setTimeout(() => document.getElementById('name-search-input').focus(), 10);
+    }
 
-        function changeQtySelectFromCart(index, newQty) {
-            playBeep();
-            let targetQty = parseInt(newQty) || 1;
-            if(cart[index]) {
-                cart[index].qty = targetQty;
-            }
-            renderCart();
-        }
-
-        function removeCartItemCompletely(index) {
-            playBeep();
-            if(cart[index]) {
-                cart.splice(index, 1);
-            }
-            renderCart();
-            filterProductNames();
-        }
-        
-        function renderCart() {
-            const list = document.getElementById('cart-list'); const countBadge = document.getElementById('cart-count-badge');
-            let total = 0; let totalItems = 0;
-            if(cart.length === 0) { 
-                list.innerHTML = '<div class="text-center text-muted py-4 small">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>'; 
-                document.getElementById('cart-total').innerText = 0; 
-                if(countBadge) countBadge.innerText = "0 items";
-                return; 
-            }
-            list.innerHTML = '';
-            cart.forEach((item, index) => {
-                total += (item.price * item.qty); totalItems += item.qty;
-                
-                let cartSelectOptions = '';
-                for(let k=1; k<=100; k++) {
-                    cartSelectOptions += `<option value="${k}" ${k === item.qty ? 'selected' : ''}>${k}</option>`;
-                }
-
-                list.innerHTML += `
-                    <div class="cart-item d-flex justify-content-between align-items-center">
-                        <div style="flex: 1; min-width: 0;" class="pe-2">
-                            <h6 class="fw-bold mb-1 text-truncate" style="font-size: 14px; color: var(--text-main);">${item.name}</h6>
-                            <small class="font-monospace small fw-bold" style="color: var(--accent-gold);">${Number(item.price).toLocaleString()} Ks</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border: 1px solid var(--border-color);">
-                                <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, -1); filterProductNames();">-</button>
-                                <select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(${index}, this.value); filterProductNames();">
-                                    ${cartSelectOptions}
-                                </select>
-                                <button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size: 16px; color: var(--text-main);" onclick="changeQty(${index}, 1); filterProductNames();">+</button>
-                            </div>
-                            <button class="btn-delete-item" onclick="removeCartItemCompletely(${index})" title="ဖျက်ရန်">❌</button>
-                        </div>
-                    </div>`;
-            });
-
-            let discountInput = document.getElementById('cart-discount-input').value.trim();
-            let discountAmount = 0;
-            if(discountInput.includes('%')) {
-                let pct = parseFloat(discountInput.replace('%', '')) || 0;
-                discountAmount = total * (pct / 100);
-            } else {
-                discountAmount = Number(discountInput) || 0;
-            }
-            
-            let grandTotal = total - discountAmount;
-            if(grandTotal < 0) grandTotal = 0;
-
-            document.getElementById('cart-total').innerText = grandTotal.toLocaleString();
-            if(countBadge) countBadge.innerText = totalItems + (totalItems > 1 ? " items" : " item");
+    // ============================================================
+    //  CHECKOUT
+    // ============================================================
+    function checkout() {
+        const cart = carts[activeCartIndex];
+        if (cart.length === 0) {
+            showToast('ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ', 'danger');
+            return;
         }
 
-        function checkout() {
-            if(cart.length === 0) return alert("ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ။");
-            let customerName = prompt("ဝယ်ယူသူအမည် -", "") || "အထွေထွေ";
-            let voucherId = "WM-" + Date.now().toString().slice(-6);
-            let total = document.getElementById('cart-total').innerText;
-            let discountVal = document.getElementById('cart-discount-input').value.trim() || "0";
-            let paymentMode = document.getElementById('cart-payment-mode').value;
-            
-            let saleData = { 
-                action: "addSale", 
-                voucherId: voucherId, 
-                customerName: customerName, 
-                items: cart, 
-                total: total, 
-                discount: discountVal,
-                paymentMode: paymentMode,
-                date: new Date().toLocaleString() 
-            };
-            
-            salesHistory.unshift(saleData); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
-            printVoucher(saleData);
-            let formData = new FormData(); formData.append('jsonData', JSON.stringify(saleData));
-            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
-            cart = []; 
-            document.getElementById('cart-discount-input').value = '';
-            renderCart(); 
-            clearSearchInputAndBox();
+        const customerName = prompt("ဝယ်ယူသူအမည် -", "အထွေထွေ") || "အထွေထွေ";
+        const voucherId = "WM-" + Date.now().toString().slice(-6);
+        const total = document.getElementById('cart-total').innerText;
+        const discountVal = document.getElementById('cart-discount-input').value.trim() || "0";
+        const paymentMode = document.getElementById('cart-payment-mode').value;
+
+        const saleData = {
+            action: "addSale",
+            voucherId: voucherId,
+            customerName: customerName,
+            items: cart,
+            total: total,
+            discount: discountVal,
+            paymentMode: paymentMode,
+            date: new Date().toLocaleString()
+        };
+
+        salesHistory.unshift(saleData);
+        localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+        displayHistory(salesHistory);
+        printVoucher(saleData);
+
+        const formData = new FormData();
+        formData.append('jsonData', JSON.stringify(saleData));
+        fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
+            .then(() => showToast('✅ Voucher ' + voucherId + ' ထုတ်ပြီးပါပြီ', 'success'))
+            .catch(() => showToast('⚠️ Sheet သိမ်းရာတွင် အဆင်မပြေပါ', 'danger'));
+
+        carts[activeCartIndex] = [];
+        document.getElementById('cart-discount-input').value = '';
+        renderCart();
+        clearSearchInputAndBox();
+        showToast('🧹 ခြင်းတောင်းကို ရှင်းလင်းပြီးပါပြီ', 'success');
+    }
+
+    // ============================================================
+    //  PRINT VOUCHER
+    // ============================================================
+    function printVoucher(sale) {
+        const printZone = document.getElementById('print-receipt-zone');
+        let itemsHTML = '';
+        let subtotal = 0;
+        sale.items.forEach(i => {
+            subtotal += (Number(i.price) * Number(i.qty));
+            itemsHTML += `<tr style="font-size:16px; font-weight:bold; border-bottom:1px dashed #bbb;">
+                <td style="text-align:left; padding:10px 0; word-break:break-word;">${i.name}</td>
+                <td style="text-align:right; padding:10px 0;">${Number(i.price).toLocaleString()}</td>
+                <td style="text-align:center; padding:10px 0;">${i.qty}</td>
+                <td style="text-align:right; padding:10px 0;">${(i.price * i.qty).toLocaleString()}</td>
+            </tr>`;
+        });
+
+        printZone.innerHTML = `
+            <div style="width:100%; box-sizing:border-box; padding:15px; font-family:Arial,sans-serif; color:#000; background:white;">
+                <div style="text-align:center; font-size:26px; font-weight:bold; margin-bottom:5px;">ကောင်းမြတ် ကုန်စုံဆိုင်</div>
+                <div style="border-top:2px dashed #000; margin:10px 0;"></div>
+                <table style="width:100%; font-size:15px; border-collapse:collapse; margin-bottom:10px; line-height:1.6;">
+                    <tr><td style="font-weight:bold; width:30%;">Voucher:</td><td style="text-align:right; font-weight:bold; font-size:16px;">${sale.voucherId}</td></tr>
+                    <tr><td style="font-weight:bold;">ဝယ်သူ:</td><td style="text-align:right; font-weight:bold;">${sale.customerName}</td></tr>
+                    <tr><td style="font-weight:bold;">နေ့ရက်:</td><td style="text-align:right;">${sale.date || new Date().toLocaleString()}</td></tr>
+                    <tr><td style="font-weight:bold;">ပေးချေမှု:</td><td style="text-align:right; font-weight:bold;">${sale.paymentMode || 'Cash'}</td></tr>
+                </table>
+                <table style="width:100%; border-collapse:collapse; margin-top:5px;">
+                    <thead>
+                        <tr style="font-size:15px; font-weight:bold; border-top:2px dashed #000; border-bottom:2px dashed #000; background:#f9f9f9;">
+                            <th style="text-align:left; padding:8px 0;">ပစ္စည်း</th>
+                            <th style="text-align:right; padding:8px 0;">ဈေး</th>
+                            <th style="text-align:center; padding:8px 0;">ခု</th>
+                            <th style="text-align:right; padding:8px 0;">သင့်ငွေ</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHTML}</tbody>
+                </table>
+                <div style="border-top:2px dashed #000; margin:10px 0;"></div>
+                <table style="width:100%; font-size:16px; border-collapse:collapse;">
+                    <tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">${subtotal.toLocaleString()} Ks</td></tr>
+                    <tr><td>Discount:</td><td style="text-align:right;">-${sale.discount || 0}</td></tr>
+                    <tr style="font-size:22px; font-weight:bold;"><td>စုစုပေါင်း:</td><td style="text-align:right; color:#000;">${sale.total} Ks</td></tr>
+                </table>
+                <div style="border-top:2px dashed #000; margin:10px 0;"></div>
+                <div style="text-align:center; font-size:14px; font-weight:bold; margin-top:15px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
+            </div>`;
+        setTimeout(() => window.print(), 300);
+    }
+
+    // ============================================================
+    //  HISTORY
+    // ============================================================
+    function displayHistory(data) {
+        const list = document.getElementById('history-list');
+        const role = localStorage.getItem('currentUserRole') || 'user';
+
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>';
+            return;
         }
 
-        function printVoucher(sale) {
-            const printZone = document.getElementById('print-receipt-zone'); let itemsHTML = '';
-            let subtotal = 0;
-            sale.items.forEach(i => { 
-                subtotal += (Number(i.price) * Number(i.qty));
-                itemsHTML += `<tr style="font-size: 16px; font-weight: bold; border-bottom: 1px dashed #bbb;"><td style="text-align: left; padding: 10px 0; word-break: break-word; max-width: 120px;">${i.name}</td><td style="text-align: right; padding: 10px 0;">${Number(i.price).toLocaleString()}</td><td style="text-align: center; padding: 10px 0;">${i.qty}</td><td style="text-align: right; padding: 10px 0;">${(i.price * i.qty).toLocaleString()}</td></tr>`; 
-            });
-            printZone.innerHTML = `
-                <div style="width: 100%; box-sizing: border-box; padding: 15px; font-family: Arial, sans-serif; color: #000; background: white;">
-                    <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 5px;">ကောင်းမြတ် ကုန်စုံဆိုင်</div>
-                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
-                    <table style="width: 100%; font-size: 15px; border-collapse: collapse; margin-bottom: 10px; line-height: 1.6;">
-                        <tr><td style="font-weight: bold; width: 30%;">Voucher:</td><td style="text-align: right; font-weight: bold; font-size: 16px;">${sale.voucherId}</td></tr>
-                        <tr><td style="font-weight: bold;">ဝယ်သူ:</td><td style="text-align: right; font-weight: bold;">${sale.customerName}</td></tr>
-                        <tr><td style="font-weight: bold;">နေ့ရက်:</td><td style="text-align: right;">${sale.date || new Date().toLocaleString()}</td></tr>
-                        <tr><td style="font-weight: bold;">ပေးချေမှု:</td><td style="text-align: right; font-weight: bold;">${sale.paymentMode || 'Cash'}</td></tr>
-                    </table>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
-                        <thead>
-                            <tr style="font-size: 15px; font-weight: bold; border-top: 2px dashed #000; border-bottom: 2px dashed #000; background: #f9f9f9;">
-                                <th style="text-align: left; padding: 8px 0;">ပစ္စည်း</th>
-                                <th style="text-align: right; padding: 8px 0;">ဈေး</th>
-                                <th style="text-align: center; padding: 8px 0;">ခု</th>
-                                <th style="text-align: right; padding: 8px 0;">သင့်ငွေ</th>
-                            </tr>
-                        </thead>
-                        <tbody>${itemsHTML}</tbody>
-                    </table>
-                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
-                    <table style="width: 100%; font-size: 16px; border-collapse: collapse;">
-                        <tr><td>ကျသင့်ငွေ:</td><td style="text-align: right;">${subtotal.toLocaleString()} Ks</td></tr>
-                        <tr><td>Discount:</td><td style="text-align: right;">-${sale.discount || 0}</td></tr>
-                        <tr style="font-size: 22px; font-weight: bold;"><td>စုစုပေါင်း:</td><td style="text-align: right; color: #000;">${sale.total} Ks</td></tr>
-                    </table>
-                    <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
-                    <div style="text-align: center; font-size: 14px; font-weight: bold; margin-top: 15px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
-                </div>`;
-            setTimeout(() => { window.print(); }, 300);
-        }
+        list.innerHTML = '';
+        data.forEach(sale => {
+            let itemsList = sale.items.map(i => `
+                <div class="history-item-row">
+                    <span class="history-item-name">${i.name}</span>
+                    <span class="history-item-qty">(${Number(i.price).toLocaleString()}) x${i.qty}</span>
+                    <span class="history-item-total font-monospace">${(i.price * i.qty).toLocaleString()} Ks</span>
+                </div>
+            `).join('');
 
-        function displayHistory(data) {
-            const list = document.getElementById('history-list'); 
-            const currentRole = localStorage.getItem('currentUserRole') || 'user';
-            
-            if(!data || data.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; }
-            list.innerHTML = '';
-            data.forEach(sale => {
-                let itemsList = sale.items.map(i => `
-                    <div class="history-item-row">
-                        <span class="history-item-name">${i.name}</span>
-                        <span class="history-item-qty">(${Number(i.price).toLocaleString()}) x${i.qty}</span>
-                        <span class="history-item-total font-monospace">${(i.price * i.qty).toLocaleString()} Ks</span>
+            const saleJson = JSON.stringify(sale).replace(/'/g, "\\'");
+            const deleteBtn = (role === 'admin')
+                ? `<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button>`
+                : '';
+
+            list.innerHTML += `
+                <div class="custom-card">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold" style="color:var(--accent-gold);">ID: ${sale.voucherId}</span>
+                        <small class="text-muted font-monospace">${sale.date || ''}</small>
                     </div>
-                `).join('');
-                
-                let saleJsonString = JSON.stringify(sale).replace(/'/g, "\\'");
-                let deleteButton = (currentRole === 'admin') ? 
-                    `<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick='deleteSaleFromSheet("${sale.voucherId}")'>🗑️ ဖျက်</button>` : '';
+                    <div class="small mb-1">ဝယ်သူ: <b>${sale.customerName}</b> | 💳 ${sale.paymentMode || 'Cash'}</div>
+                    <div class="small mb-2 text-danger">Discount: <b>${sale.discount || '0'}</b></div>
+                    <hr class="my-2" style="border-color:var(--border-color); border-style:dashed;">
+                    <div class="py-1">${itemsList}</div>
+                    <hr class="my-2" style="border-color:var(--border-color); border-style:dashed;">
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <h5 class="fw-bold text-success mb-0 font-monospace">${sale.total} Ks</h5>
+                        <div>
+                            <button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick='printVoucher(${saleJson})'>🖨️ ပြန်ထုတ်</button>
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
 
-                list.innerHTML += `
-                    <div class="custom-card">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="fw-bold" style="color: var(--accent-gold);">ID: ${sale.voucherId}</span>
-                            <small class="text-muted font-monospace">${sale.date || ''}</small>
-                        </div>
-                        <div class="small mb-1">ဝယ်သူ: <b>${sale.customerName}</b> | 💳 စနစ်: <b>${sale.paymentMode || 'Cash'}</b></div>
-                        <div class="small mb-2 text-danger">Discount လျှော့ပေးမှု: <b>${sale.discount || '0'}</b></div>
-                        <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
-                        <div class="py-1">${itemsList}</div>
-                        <hr class="my-2" style="border-color: var(--border-color); border-style: dashed;">
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <h5 class="fw-bold text-success mb-0 font-monospace">${sale.total} Ks</h5>
-                            <div>
-                                <button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick='printVoucher(${saleJsonString})'>🖨️ ပြန်ထုတ်</button>
-                                ${deleteButton}
-                            </div>
-                        </div>
-                    </div>`;
+    function searchHistory() {
+        const text = document.getElementById('search-input').value.toLowerCase();
+        const filtered = salesHistory.filter(s =>
+            s.voucherId.toLowerCase().includes(text) ||
+            s.customerName.toLowerCase().includes(text)
+        );
+        displayHistory(filtered);
+    }
+
+    function deleteSaleFromSheet(voucherId) {
+        if (!confirm("⚠️ ဤမှတ်တမ်းကို ဖျက်ပစ်မည်မှာ သေချက်ပါသလား?")) return;
+        salesHistory = salesHistory.filter(s => s.voucherId.toString() !== voucherId.toString());
+        localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+        displayHistory(salesHistory);
+        const fd = new FormData();
+        fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: voucherId }));
+        fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' })
+            .then(() => showToast('🗑️ ဖျက်ပြီးပါပြီ', 'success'))
+            .catch(() => showToast('⚠️ ဖျက်ရာတွင် အဆင်မပြေပါ', 'danger'));
+    }
+
+    function clearAllSalesHistoryOnline(btn) {
+        if (!confirm("🚨 Google Sheet ပေါ်က မှတ်တမ်းအားလုံး ပျက်သွားမှာဖြစ်လို့ သေချာပါသလား?")) return;
+        btn.disabled = true;
+        btn.innerText = "⏳ ဖျက်နေပါသည်...";
+        const fd = new FormData();
+        fd.append('jsonData', JSON.stringify({ action: "clearAllSales" }));
+        fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' })
+            .then(() => {
+                setTimeout(() => {
+                    localStorage.removeItem('salesHistory');
+                    salesHistory = [];
+                    displayHistory(salesHistory);
+                    btn.disabled = false;
+                    btn.innerText = "⚠️ အားလုံးဖျက်မည်";
+                    showToast('✅ အားလုံးကို ရှင်းလင်းပြီးပါပြီ', 'success');
+                }, 2000);
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerText = "⚠️ အားလုံးဖျက်မည်";
+                showToast('❌ ဖျက်ရာတွင် အဆင်မပြေပါ', 'danger');
             });
-        }
+    }
 
-        function deleteSaleFromSheet(voucherId) {
-            if (confirm("⚠️ ဤမှတ်တမ်းကို ဖျက်ပစ်မည်မှာ သေချက်ပါသလား?")) {
-                salesHistory = salesHistory.filter(s => s.voucherId.toString() !== voucherId.toString());
-                localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); 
-                let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: voucherId }));
-                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
+    // ============================================================
+    //  DASHBOARD
+    // ============================================================
+    function calculateTodaySales() {
+        const filterStart = document.getElementById('filter-start-date').value;
+        const filterEnd = document.getElementById('filter-end-date').value;
+        const startTs = filterStart ? new Date(filterStart).setHours(0,0,0,0) : null;
+        const endTs = filterEnd ? new Date(filterEnd).setHours(23,59,59,999) : null;
+
+        const now = new Date();
+        const d = String(now.getDate()).padStart(2,'0');
+        const m = String(now.getMonth()+1).padStart(2,'0');
+        const y = now.getFullYear();
+        const todayF1 = `${d}/${m}/${y}`;
+        const todayF2 = `${m}/${d}/${y}`;
+
+        document.getElementById('today-date-string').innerText = "ကာလ: " + (filterStart ? filterStart : "ယနေ့ထိ");
+
+        let totalSum = 0, totalProfit = 0, cashSum = 0, kpaySum = 0, waveSum = 0;
+
+        salesHistory.forEach(sale => {
+            const saleDate = new Date(sale.date);
+            let inside = true;
+            if (startTs && saleDate.getTime() < startTs) inside = false;
+            if (endTs && saleDate.getTime() > endTs) inside = false;
+            if (!filterStart && !filterEnd) {
+                const saleOnly = sale.date ? sale.date.split(',')[0].trim() : '';
+                if (!(saleOnly.includes(todayF1) || saleOnly.includes(todayF2) || saleDate.toLocaleDateString() === now.toLocaleDateString())) {
+                    inside = false;
+                }
             }
-        }
+            if (!inside) return;
 
-        function clearAllSalesHistoryOnline(btn) {
-            if (confirm("🚨 Google Sheet (Cloud) ပေါ်က မှတ်တမ်းအားလုံးပါ လုံးဝပျက်သွားမှာဖြစ်လို့ သေချာပါသလားဗျာ?")) {
-                btn.disabled = true; btn.innerText = "⏳ Cloud မှတ်တမ်းများကို ဖျက်နေပါသည်...";
-                let payload = { action: "clearAllSales" };
-                let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
-                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
-                    setTimeout(() => {
-                        localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory);
-                        btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
-                        alert("✅ အားလုံးကို အောင်မြင်စွာ ရှင်းလင်းပြီးပါပြီဗျာ။");
-                    }, 2000);
-                }).catch(() => {
-                    btn.disabled = false; btn.innerText = "⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်";
+            const cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
+            totalSum += cleanTotal;
+
+            const pMode = sale.paymentMode || "Cash";
+            if (pMode === "Cash") cashSum += cleanTotal;
+            else if (pMode === "KPay") kpaySum += cleanTotal;
+            else if (pMode === "Wave") waveSum += cleanTotal;
+
+            let saleCost = 0;
+            if (sale.items && Array.isArray(sale.items)) {
+                sale.items.forEach(i => {
+                    const match = productsDB.find(p => p.barcode.toString() === i.barcode.toString());
+                    const costPer = match ? (Number(match.cost || 0)) : 0;
+                    saleCost += (costPer * Number(i.qty));
                 });
             }
-        }
 
-        function searchHistory() {
-            let text = document.getElementById('search-input').value.toLowerCase();
-            displayHistory(salesHistory.filter(s => s.voucherId.toLowerCase().includes(text) || s.customerName.toLowerCase().includes(text)));
-        }
+            let gross = 0;
+            if (sale.items) sale.items.forEach(i => { gross += (Number(i.price) * Number(i.qty)); });
+            let disc = sale.discount || "0";
+            let discAmt = 0;
+            if (disc.toString().includes('%')) {
+                discAmt = gross * (parseFloat(disc.replace('%','')) / 100);
+            } else {
+                discAmt = Number(disc) || 0;
+            }
+            totalProfit += ((gross - discAmt) - saleCost);
+        });
 
-        function renderAdminProducts(arr) {
-            const list = document.getElementById('admin-product-list'); list.innerHTML = '';
-            arr.forEach((prod, mainIndex) => {
-                let limit = Number(prod.minStock) || 5;
-                let currentCost = prod.cost !== undefined ? prod.cost : (prod.costPrice !== undefined ? prod.costPrice : 0);
-                let stockBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">စတော့: ${prod.stock}</span>`;
-                if(prod.stock <= 0) stockBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">ကုန်သွားပြီ</span>`;
-                else if(prod.stock <= limit) stockBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ${prod.stock}</span>`;
+        document.getElementById('today-sales-summary').innerText = totalSum.toLocaleString() + " Ks";
+        document.getElementById('payment-split-summary').innerHTML =
+            `💵 Cash: ${cashSum.toLocaleString()} | 📱 KPay: ${kpaySum.toLocaleString()} | 🌊 Wave: ${waveSum.toLocaleString()}`;
+        document.getElementById('today-profit-summary').innerText = totalProfit.toLocaleString() + " Ks";
+    }
 
-                list.innerHTML += `<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2" style="border-color: var(--border-color) !important;">
-                    <div class="d-flex justify-content-between align-items-start"><div class="fw-bold fs-6">${prod.name}</div><div>${stockBadge}</div></div>
+    function updateSalesChartLogic() {
+        try {
+            const salesMap = {};
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                salesMap[d.toLocaleDateString('en-GB')] = 0;
+            }
+            const allDatesMap = {};
+            const productCountsMap = {};
+
+            salesHistory.forEach(sale => {
+                if (sale.date) {
+                    let raw = sale.date.split(',')[0].trim();
+                    let formatted = raw;
+                    if (raw.includes('/')) {
+                        const parts = raw.split('/');
+                        if (parts[0].length < 2) parts[0] = '0' + parts[0];
+                        if (parts[1].length < 2) parts[1] = '0' + parts[1];
+                        formatted = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                    } else {
+                        formatted = new Date(sale.date).toLocaleDateString('en-GB');
+                    }
+                    const total = Number(sale.total.toString().replace(/,/g, '')) || 0;
+                    if (salesMap[formatted] !== undefined) salesMap[formatted] += total;
+                    if (allDatesMap[formatted] === undefined) allDatesMap[formatted] = 0;
+                    allDatesMap[formatted] += total;
+                }
+                if (sale.items) {
+                    sale.items.forEach(i => {
+                        if (!productCountsMap[i.name]) productCountsMap[i.name] = 0;
+                        productCountsMap[i.name] += Number(i.qty);
+                    });
+                }
+            });
+
+            const tbody = document.getElementById('date-sales-table-body');
+            if (tbody) {
+                const sorted = Object.keys(allDatesMap).sort((a,b) => {
+                    const p1 = a.split('/'), p2 = b.split('/');
+                    return new Date(p2[2], p2[1]-1, p2[0]) - new Date(p1[2], p1[1]-1, p1[0]);
+                });
+                if (sorted.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="2" class="text-muted py-3">မှတ်တမ်းမရှိသေးပါ</td></tr>`;
+                } else {
+                    tbody.innerHTML = sorted.map(dt =>
+                        `<tr><td class="fw-bold">${dt}</td><td class="font-monospace text-danger fw-bold">${allDatesMap[dt].toLocaleString()} Ks</td></tr>`
+                    ).join('');
+                }
+            }
+
+            const ctx = document.getElementById('salesChart');
+            if (ctx && typeof Chart !== 'undefined') {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const gold = isDark ? '#fbbf24' : '#b45309';
+                const fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)';
+                const grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
+                const text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+
+                if (mySalesChart) mySalesChart.destroy();
+                mySalesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(salesMap),
+                        datasets: [{
+                            label: 'Daily Sales (Ks)',
+                            data: Object.values(salesMap),
+                            borderColor: gold,
+                            backgroundColor: fill,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: gold,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { size: 10 } } },
+                            x: { grid: { display: false }, ticks: { color: text, font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+
+            const topCtx = document.getElementById('topProductsChart');
+            if (topCtx && typeof Chart !== 'undefined') {
+                const sorted = Object.keys(productCountsMap).sort((a,b) => productCountsMap[b] - productCountsMap[a]);
+                const topLabels = sorted.slice(0, 5);
+                const topData = topLabels.map(l => productCountsMap[l]);
+
+                if (myTopProductsChart) myTopProductsChart.destroy();
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const color = isDark ? '#fbbf24' : '#b45309';
+                const text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+
+                myTopProductsChart = new Chart(topCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topLabels,
+                        datasets: [{ data: topData, backgroundColor: color, borderRadius: 6 }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: text, font: { size: 10 } } },
+                            x: { ticks: { color: text, font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+        } catch(e) { /* ignore */ }
+    }
+
+    // ============================================================
+    //  ADMIN
+    // ============================================================
+    function filterAdminProductNames() {
+        const input = document.getElementById('admin-search-input').value.toLowerCase().trim();
+        const box = document.getElementById('admin-search-suggestions');
+        if (input === '') { box.style.display = 'none'; renderAdminProducts(productsDB); return; }
+        const filtered = productsDB.filter(p => p.name.toLowerCase().includes(input));
+        box.innerHTML = '';
+        filtered.slice(0, 15).forEach(prod => {
+            const div = document.createElement('div');
+            div.className = 'search-item d-flex justify-content-between align-items-center';
+            div.innerHTML = `<div><strong>${prod.name}</strong></div>`;
+            div.onclick = function() { box.style.display = 'none'; renderAdminProducts([prod]); };
+            box.appendChild(div);
+        });
+        box.style.display = 'block';
+    }
+
+    function renderAdminProducts(arr) {
+        const list = document.getElementById('admin-product-list');
+        list.innerHTML = '';
+        arr.forEach((prod, idx) => {
+            const limit = Number(prod.minStock) || 5;
+            const cost = prod.cost || prod.costPrice || 0;
+            let stockBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">စတော့: ${prod.stock}</span>`;
+            if (prod.stock <= 0) stockBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">ကုန်သွားပြီ</span>`;
+            else if (prod.stock <= limit) stockBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ${prod.stock}</span>`;
+
+            list.innerHTML += `
+                <div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2" style="border-color:var(--border-color) !important;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="fw-bold fs-6">${prod.name}</div>
+                        <div>${stockBadge}</div>
+                    </div>
                     <div class="text-muted small font-monospace">Barcode: ${prod.barcode}</div>
                     <div class="row g-2 mt-1">
-                        <div class="col-4"><small class="text-secondary small mb-1 d-block">အရင်းဈေး</small><input type="number" id="p-cost-${mainIndex}" class="form-control form-control-sm fw-bold text-secondary" value="${currentCost}"></div>
-                        <div class="col-4"><small class="text-secondary small mb-1 d-block">ရောင်းဈေး</small><input type="number" id="p-price-${mainIndex}" class="form-control form-control-sm fw-bold text-danger" value="${prod.price}"></div>
-                        <div class="col-4"><small class="text-secondary small mb-1 d-block">စတော့</small><input type="number" id="p-stock-${mainIndex}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">အရင်းဈေး</small><input type="number" id="p-cost-${idx}" class="form-control form-control-sm fw-bold text-secondary" value="${cost}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">ရောင်းဈေး</small><input type="number" id="p-price-${idx}" class="form-control form-control-sm fw-bold text-danger" value="${prod.price}"></div>
+                        <div class="col-4"><small class="text-secondary small mb-1 d-block">စတော့</small><input type="number" id="p-stock-${idx}" class="form-control form-control-sm fw-bold text-success" value="${prod.stock}"></div>
                     </div>
                     <div class="row g-2 mt-2">
-                        <div class="col-8"><button class="btn btn-sm btn-primary w-100 fw-bold py-2 btn-premium-gold" style="border:none; border-radius:10px;" id="edit-btn-${mainIndex}" onclick="uploadProductToSheet(${mainIndex})">💾 ပြင်မည်</button></div>
-                        <div class="col-4"><button class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" style="border-radius:10px;" onclick="deleteProductFromSheet(${mainIndex})">🗑️ ဖျက်</button></div>
+                        <div class="col-8"><button class="btn btn-sm btn-primary w-100 fw-bold py-2 btn-premium-gold" style="border:none; border-radius:10px;" id="edit-btn-${idx}" onclick="uploadProductToSheet(${idx})">💾 ပြင်မည်</button></div>
+                        <div class="col-4"><button class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" style="border-radius:10px;" onclick="deleteProductFromSheet(${idx})">🗑️ ဖျက်</button></div>
                     </div>
                 </div>`;
-            });
-        }
+        });
+    }
 
-        function uploadProductToSheet(index) {
-            let costVal = document.getElementById(`p-cost-${index}`).value;
-            let priceVal = document.getElementById(`p-price-${index}`).value;
-            let stockVal = document.getElementById(`p-stock-${index}`).value;
-            
-            productsDB[index].cost = Number(costVal);
-            productsDB[index].costPrice = Number(costVal);
-            productsDB[index].price = Number(priceVal); 
-            productsDB[index].stock = Number(stockVal);
-            
-            let prod = productsDB[index];
-            let editBtn = document.getElementById(`edit-btn-${index}`);
-            editBtn.disabled = true; editBtn.innerText = "⏳...";
-            
-            let payload = { 
-                action: "updateProduct", 
-                barcode: prod.barcode.toString(), 
-                name: prod.name, 
-                price: prod.price, 
-                stock: prod.stock,
-                cost: Number(costVal),
-                costPrice: Number(costVal),
-                minStock: prod.minStock || 5
-            };
-            
-            let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
-            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
-                setTimeout(() => { 
-                    editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်";
-                    checkLowStockAlerts();
-                    alert(`📝 "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ။`); loadProductsFromSheet(); 
-                }, 2000);
-            }).catch(() => { editBtn.disabled = false; editBtn.innerText = "💾 ပြင်မည်"; });
-        }
+    function uploadProductToSheet(index) {
+        const cost = document.getElementById(`p-cost-${index}`).value;
+        const price = document.getElementById(`p-price-${index}`).value;
+        const stock = document.getElementById(`p-stock-${index}`).value;
+        const prod = productsDB[index];
+        prod.cost = Number(cost);
+        prod.costPrice = Number(cost);
+        prod.price = Number(price);
+        prod.stock = Number(stock);
 
-        function deleteProductFromSheet(index) {
-            let prod = productsDB[index];
-            if (confirm(`⚠️ "${prod.name}" ကို ဖျက်မလား။`)) {
-                let formData = new FormData(); formData.append('jsonData', JSON.stringify({ action: "deleteProduct", barcode: prod.barcode.toString() }));
-                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
-                productsDB.splice(index, 1); renderAdminProducts(productsDB);
-                setTimeout(() => { loadProductsFromSheet(); }, 2000);
-            }
-        }
+        const btn = document.getElementById(`edit-btn-${index}`);
+        btn.disabled = true;
+        btn.innerText = "⏳...";
 
-        function addNewProduct() {
-            let barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
-            let name = document.getElementById('new-name').value.trim();
-            let price = document.getElementById('new-price').value.trim();
-            let cost = document.getElementById('new-cost').value.trim() || 0;
-            let stock = document.getElementById('new-stock').value.trim() || 0;
-            let minStock = document.getElementById('new-min-stock').value.trim() || 5;
-            
-            if(!name || !price) return alert("အချက်အလက်ဖြည့်ပါ");
-            let btn = document.getElementById('add-prod-btn'); btn.disabled = true;
-            
-            let payload = { 
-                action: "updateProduct", 
-                barcode: barcode.toString(), 
-                name: name, 
-                price: Number(price), 
-                stock: Number(stock),
-                cost: Number(cost),
-                costPrice: Number(cost),
-                minStock: Number(minStock)
-            };
-            
-            let formData = new FormData(); formData.append('jsonData', JSON.stringify(payload));
-            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' }).then(() => {
+        const payload = {
+            action: "updateProduct",
+            barcode: prod.barcode.toString(),
+            name: prod.name,
+            price: prod.price,
+            stock: prod.stock,
+            cost: Number(cost),
+            costPrice: Number(cost),
+            minStock: prod.minStock || 5
+        };
+        const fd = new FormData();
+        fd.append('jsonData', JSON.stringify(payload));
+        fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' })
+            .then(() => {
                 setTimeout(() => {
-                    alert("သိမ်းဆည်းပြီးပါပြီ။"); btn.disabled = false;
-                    document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = '';
-                    document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = '';
-                    document.getElementById('new-cost').value = '0'; document.getElementById('new-min-stock').value = '5';
-                    loadProductsFromSheet(); switchTab('sales');
+                    btn.disabled = false;
+                    btn.innerText = "💾 ပြင်မည်";
+                    showToast(`✅ "${prod.name}" ကို ပြင်ဆင်ပြီးပါပြီ`, 'success');
+                    loadProductsFromSheet();
+                }, 2000);
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerText = "💾 ပြင်မည်";
+                showToast('❌ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ', 'danger');
+            });
+    }
+
+    function deleteProductFromSheet(index) {
+        const prod = productsDB[index];
+        if (!confirm(`⚠️ "${prod.name}" ကို ဖျက်မလား?`)) return;
+        const fd = new FormData();
+        fd.append('jsonData', JSON.stringify({ action: "deleteProduct", barcode: prod.barcode.toString() }));
+        fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' });
+        productsDB.splice(index, 1);
+        renderAdminProducts(productsDB);
+        showToast(`🗑️ "${prod.name}" ဖျက်ပြီးပါပြီ`, 'success');
+        setTimeout(() => loadProductsFromSheet(), 2000);
+    }
+
+    function addNewProduct() {
+        const barcode = document.getElementById('new-barcode').value.trim() || "NB-" + Date.now().toString().slice(-6);
+        const name = document.getElementById('new-name').value.trim();
+        const price = document.getElementById('new-price').value.trim();
+        const cost = document.getElementById('new-cost').value.trim() || 0;
+        const stock = document.getElementById('new-stock').value.trim() || 0;
+        const minStock = document.getElementById('new-min-stock').value.trim() || 5;
+
+        if (!name || !price) {
+            showToast('အချက်အလက်ဖြည့်ပါ', 'danger');
+            return;
+        }
+
+        const btn = document.getElementById('add-prod-btn');
+        btn.disabled = true;
+
+        const payload = {
+            action: "updateProduct",
+            barcode: barcode.toString(),
+            name: name,
+            price: Number(price),
+            stock: Number(stock),
+            cost: Number(cost),
+            costPrice: Number(cost),
+            minStock: Number(minStock)
+        };
+        const fd = new FormData();
+        fd.append('jsonData', JSON.stringify(payload));
+        fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' })
+            .then(() => {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    showToast('✅ သိမ်းဆည်းပြီးပါပြီ', 'success');
+                    document.getElementById('new-barcode').value = '';
+                    document.getElementById('new-name').value = '';
+                    document.getElementById('new-price').value = '';
+                    document.getElementById('new-stock').value = '';
+                    document.getElementById('new-cost').value = '0';
+                    document.getElementById('new-min-stock').value = '5';
+                    loadProductsFromSheet();
+                    switchTab('sales');
                 }, 1500);
+            })
+            .catch(() => {
+                btn.disabled = false;
+                showToast('❌ သိမ်းဆည်းရာတွင် အဆင်မပြေပါ', 'danger');
+            });
+    }
+
+    // ============================================================
+    //  WINDOW LOAD
+    // ============================================================
+    window.onload = function() {
+        document.getElementById('hidden-form').action = scriptURL;
+
+        const theme = document.documentElement.getAttribute('data-theme') || 'light';
+        document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
+
+        if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+            setupRolePrivilegesUi();
+            document.getElementById('app-lock-screen').style.display = 'none';
+            document.getElementById('app-main-content').style.display = 'block';
+        }
+
+        loadProductsFromSheet();
+        loadSalesHistoryFromSheet();
+        displayHistory(salesHistory);
+
+        const pwInput = document.getElementById('home-pass-input');
+        if (pwInput) {
+            pwInput.addEventListener("keypress", function(e) {
+                if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); }
             });
         }
-    </script>
+
+        const searchInp = document.getElementById('name-search-input');
+        if (searchInp) {
+            searchInp.addEventListener('input', filterProductNames);
+            searchInp.addEventListener('focus', function() {
+                setTimeout(() => {
+                    document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            });
+        }
+
+        updateCartBadges();
+        renderCart();
+
+        if (document.getElementById('dashboard').classList.contains('active')) {
+            calculateTodaySales();
+            updateSalesChartLogic();
+        }
+    };
+
+    function dismissKeyboard() {
+        if (document.activeElement) document.activeElement.blur();
+    }
+</script>
 </body>
 </html>
