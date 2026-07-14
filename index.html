@@ -31,7 +31,7 @@
         [data-theme=dark] .btn-premium-gold{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .btn-premium-gold:hover{opacity:.9;transform:translateY(-1px)}
         
-        /* 🆕 Big Toast Notification (Top) */
+        /* Big Toast Notification */
         .toast-big {
             position: fixed;
             top: 80px;
@@ -41,7 +41,7 @@
             background: var(--bg-card);
             border-left: 6px solid var(--accent-gold);
             border-radius: 16px;
-            padding: 16px 28px;
+            padding: 16px 24px;
             box-shadow: 0 12px 40px rgba(0,0,0,0.2);
             color: var(--text-main);
             font-size: 18px;
@@ -53,20 +53,31 @@
             min-width: 280px;
             animation: slideDown 0.4s ease;
         }
-        .toast-big.show {
-            display: block;
+        .toast-big.show { display: block; }
+        .toast-big.success { border-left-color: var(--accent-success); }
+        .toast-big.danger { border-left-color: var(--accent-danger); }
+        .toast-big .toast-sub { font-size: 13px; font-weight: 400; color: var(--text-muted); margin-top: 4px; }
+        .toast-big .toast-actions { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .toast-big .toast-actions button {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: all 0.2s;
         }
-        .toast-big.success {
-            border-left-color: var(--accent-success);
-        }
-        .toast-big.danger {
-            border-left-color: var(--accent-danger);
-        }
-        .toast-big .toast-sub {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--text-muted);
-            margin-top: 4px;
+        .toast-big .toast-actions button:active { transform: scale(0.9); }
+        .toast-big .toast-actions .btn-qty { background: var(--accent-gold); color: #fff; border: none; }
+        [data-theme=dark] .toast-big .toast-actions .btn-qty { background: #fbbf24; color: #000; }
+        .toast-big .toast-actions .qty-display {
+            font-weight: 700;
+            font-size: 18px;
+            padding: 0 12px;
+            min-width: 40px;
+            text-align: center;
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
@@ -98,7 +109,6 @@
         #print-receipt-zone{display:none}
         @media print{body{visibility:hidden}#app-main-content{display:none!important}#print-receipt-zone{visibility:visible;display:block!important}#print-receipt-zone *{visibility:visible}@page{margin:0}}
         
-        /* Scanner Popup Styles */
         .scanner-popup-toggle {
             position: fixed;
             bottom: 100px;
@@ -122,9 +132,7 @@
             background: linear-gradient(135deg, #fbbf24, #d97706);
             color: #000;
         }
-        .scanner-popup-toggle:active {
-            transform: scale(0.85);
-        }
+        .scanner-popup-toggle:active { transform: scale(0.85); }
         .scanner-popup-toggle .badge-scan {
             position: absolute;
             top: -4px;
@@ -140,7 +148,6 @@
             justify-content: center;
         }
         
-        /* Scanner Full Mode - BIG, TOP */
         .scanner-full-mode {
             position: fixed;
             top: 0;
@@ -158,9 +165,7 @@
             animation: fadeIn 0.3s ease;
             overflow-y: auto;
         }
-        .scanner-full-mode.active {
-            display: flex;
-        }
+        .scanner-full-mode.active { display: flex; }
         .scanner-full-mode .scanner-box {
             width: 98%;
             max-width: 800px;
@@ -198,9 +203,7 @@
             transition: all 0.2s;
             z-index: 10;
         }
-        .scanner-full-mode .scanner-close-btn:active {
-            transform: scale(0.85);
-        }
+        .scanner-full-mode .scanner-close-btn:active { transform: scale(0.85); }
         .scanner-full-mode .scanner-controls {
             display: flex;
             gap: 12px;
@@ -216,7 +219,6 @@
             text-align: center;
         }
         
-        /* Scanned Items Preview (bottom bar) */
         .scanned-preview {
             position: fixed;
             bottom: 0;
@@ -231,9 +233,7 @@
             display: none;
             box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
         }
-        .scanned-preview.active {
-            display: block;
-        }
+        .scanned-preview.active { display: block; }
         .scanned-preview .preview-item {
             display: flex;
             justify-content: space-between;
@@ -242,94 +242,53 @@
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
         }
-        .scanned-preview .preview-item:last-child {
-            border-bottom: none;
-        }
-        .scanned-preview .preview-name {
-            font-weight: 600;
-            flex: 1;
-        }
-        .scanned-preview .preview-price {
-            color: var(--accent-gold);
-            font-weight: 700;
-            margin: 0 12px;
-        }
-        .scanned-preview .preview-qty {
-            background: var(--bg-input);
-            padding: 0 10px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
+        .scanned-preview .preview-item:last-child { border-bottom: none; }
+        .scanned-preview .preview-name { font-weight: 600; flex: 1; }
+        .scanned-preview .preview-price { color: var(--accent-gold); font-weight: 700; margin: 0 12px; }
+        .scanned-preview .preview-qty { background: var(--bg-input); padding: 0 10px; border-radius: 8px; font-weight: 600; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
         
-        #main-scanner-card {
-            display: none !important;
-        }
-        
+        #main-scanner-card { display: none !important; }
         .history-item-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;border-bottom:1px dashed rgba(15,23,42,0.04)}
         .history-item-name{flex:1;word-break:break-word;padding-right:10px}
         .history-item-qty{width:95px;text-align:center;color:var(--text-muted);font-size:12px}
         .history-item-total{width:95px;text-align:right;font-weight:600}
         .admin-only-feature{display:none}
         
-        @media (max-width: 600px) {
-            .scanner-popup-toggle {
-                width: 54px;
-                height: 54px;
-                font-size: 24px;
-                bottom: 80px;
-                right: 12px;
-            }
-            .scanner-full-mode .scanner-close-btn {
-                top: 8px;
-                right: 8px;
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-            .scanner-full-mode .scanner-box {
-                padding: 10px;
-                max-width: 100%;
-                margin-top: 40px;
-            }
-            .scanner-full-mode .scanner-box #full-reader {
-                min-height: 280px;
-            }
-            .scanned-preview {
-                max-height: 120px;
-                padding: 8px 12px;
-            }
-            .scanned-preview .preview-item {
-                font-size: 12px;
-            }
-            .toast-big {
-                font-size: 15px;
-                padding: 12px 20px;
-                top: 70px;
-                min-width: 200px;
-            }
+        @media (max-width:600px){
+            .scanner-popup-toggle{width:54px;height:54px;font-size:24px;bottom:80px;right:12px}
+            .scanner-full-mode .scanner-close-btn{top:8px;right:8px;width:40px;height:40px;font-size:18px}
+            .scanner-full-mode .scanner-box{padding:10px;max-width:100%;margin-top:40px}
+            .scanner-full-mode .scanner-box #full-reader{min-height:280px}
+            .scanned-preview{max-height:120px;padding:8px 12px}
+            .scanned-preview .preview-item{font-size:12px}
+            .toast-big{font-size:15px;padding:12px 16px;top:70px;min-width:200px}
+            .toast-big .toast-actions button{font-size:12px;padding:4px 12px}
         }
     </style>
 </head>
 <body>
 
-<!-- 🆕 Big Toast Notification (Top Center) -->
 <div id="toastBig" class="toast-big">
     <div id="toastBigMsg">✅ ပစ္စည်းထည့်ပြီးပါပြီ</div>
     <div id="toastBigSub" class="toast-sub">လက်ကျန် ၅၀ ခု ကျန်ပါသည်</div>
+    <div id="toastBigActions" class="toast-actions" style="display:none;">
+        <button onclick="toastQtyChange(-1)">−</button>
+        <span class="qty-display" id="toastQtyDisplay">1</span>
+        <button onclick="toastQtyChange(1)">+</button>
+        <button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>
+    </div>
 </div>
 
-<!-- Scanner Toggle Button -->
 <button class="scanner-popup-toggle" id="scannerToggleBtn" onclick="toggleFullScanner()">
     📷
     <span class="badge-scan" id="scanBadge">●</span>
 </button>
 
-<!-- Scanner Full Mode - BIG, TOP -->
 <div class="scanner-full-mode" id="scannerFullMode">
     <button class="scanner-close-btn" onclick="closeFullScanner()">✕</button>
     <div class="scanner-box">
@@ -344,7 +303,6 @@
     </div>
 </div>
 
-<!-- Scanned Items Preview (bottom bar) -->
 <div class="scanned-preview" id="scannedPreview">
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">📦 စကန်ဖတ်မိသော ပစ္စည်းများ</div>
     <div id="scannedPreviewList"></div>
@@ -520,8 +478,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'su';
-var adminPassword = 'per';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -536,6 +494,10 @@ var isScanPaused = false;
 
 var carts = [[], [], [], []];
 var activeCartIndex = 0;
+
+// Toast state
+var toastProduct = null;
+var toastQty = 1;
 
 // ============================================================
 // Helper: Get Stock as Number
@@ -578,23 +540,89 @@ function playBeep() {
 }
 
 // ============================================================
-// BIG TOAST NOTIFICATION (Top Center)
+// BIG TOAST NOTIFICATION
 // ============================================================
-function showBigToast(message, subMessage, type) {
+function showBigToast(message, subMessage, type, showActions, product) {
     type = type || 'success';
     var el = document.getElementById('toastBig');
     var msg = document.getElementById('toastBigMsg');
     var sub = document.getElementById('toastBigSub');
+    var actions = document.getElementById('toastBigActions');
     
     msg.textContent = message;
     sub.textContent = subMessage || '';
     el.className = 'toast-big show ' + type;
     
-    // Auto hide after 3 seconds
+    if (showActions && product) {
+        toastProduct = product;
+        toastQty = 1;
+        document.getElementById('toastQtyDisplay').textContent = '1';
+        actions.style.display = 'flex';
+    } else {
+        actions.style.display = 'none';
+        toastProduct = null;
+    }
+    
     clearTimeout(el._hideTimer);
-    el._hideTimer = setTimeout(function() {
-        el.classList.remove('show');
-    }, 3500);
+    if (!showActions) {
+        el._hideTimer = setTimeout(function() {
+            el.classList.remove('show');
+        }, 3500);
+    }
+}
+
+function toastQtyChange(change) {
+    var newQty = toastQty + change;
+    if (newQty < 1) newQty = 1;
+    var stock = getStockNumber(toastProduct);
+    if (newQty > stock) {
+        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        return;
+    }
+    toastQty = newQty;
+    document.getElementById('toastQtyDisplay').textContent = toastQty;
+}
+
+function toastQtyConfirm() {
+    if (!toastProduct) return;
+    var barcode = toastProduct.barcode.toString();
+    var stock = getStockNumber(toastProduct);
+    
+    if (toastQty > stock) {
+        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        return;
+    }
+    
+    // Add to cart with selected qty
+    var cart = carts[activeCartIndex];
+    var item = null;
+    for (var i = 0; i < cart.length; i++) {
+        if (cart[i].barcode.toString() === barcode) {
+            item = cart[i];
+            break;
+        }
+    }
+    
+    if (item) {
+        if (item.qty + toastQty > stock) {
+            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+            return;
+        }
+        item.qty += toastQty;
+    } else {
+        var newItem = { 
+            barcode: toastProduct.barcode, 
+            name: toastProduct.name, 
+            price: toastProduct.price, 
+            stock: toastProduct.stock,
+            qty: toastQty 
+        };
+        cart.push(newItem);
+    }
+    
+    renderCart();
+    updateScannedPreview();
+    showBigToast('✅ ' + toastProduct.name + ' ×' + toastQty + ' ထည့်ပြီးပါပြီ', 'လက်ကျန် ' + (stock - toastQty) + ' ခု', 'success', false);
 }
 
 // ============================================================
@@ -635,16 +663,10 @@ function setupRolePrivilegesUi() {
     var badge = document.getElementById('role-badge');
     if (role === 'admin') {
         if (badge) { badge.innerText = "Admin"; badge.style.display = "inline-block"; }
-        var features = document.querySelectorAll('.admin-only-feature');
-        for (var i = 0; i < features.length; i++) {
-            features[i].style.display = 'block';
-        }
+        document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; });
     } else {
         if (badge) { badge.innerText = ""; badge.style.display = "none"; }
-        var features = document.querySelectorAll('.admin-only-feature');
-        for (var i = 0; i < features.length; i++) {
-            features[i].style.display = 'none';
-        }
+        document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; });
         switchTab('sales');
     }
 }
@@ -661,17 +683,11 @@ function lockAppImmediate() {
 function switchTab(tabId) {
     var role = localStorage.getItem('currentUserRole') || 'user';
     if ((tabId === 'admin' || tabId === 'dashboard') && role !== 'admin') {
-        showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', 'Admin အကောင့်ဖြင့် ဝင်ရောက်ပါ', 'danger');
+        showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', 'Admin အကောင့်ဖြင့် ဝင်ရောက်ပါ', 'danger', false);
         return;
     }
-    var tabs = document.querySelectorAll('.tab-content');
-    for (var i = 0; i < tabs.length; i++) {
-        tabs[i].classList.remove('active');
-    }
-    var btns = document.querySelectorAll('.nav-tabs-custom .btn');
-    for (var i = 0; i < btns.length; i++) {
-        btns[i].classList.remove('active');
-    }
+    document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+    document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); });
     document.getElementById(tabId).classList.add('active');
     document.getElementById('btn-' + tabId).classList.add('active');
     if (tabId === 'admin') renderAdminProducts(productsDB);
@@ -710,12 +726,12 @@ function reloadOnlineSalesTab(btn) {
             productsDB = data;
             btn.disabled = false;
             btn.innerText = "🔄 Sync Sheet";
-            showBigToast('🛒 ပစ္စည်းစာရင်း Update ပြီးပါပြီ', '', 'success');
+            showBigToast('🛒 ပစ္စည်းစာရင်း Update ပြီးပါပြီ', '', 'success', false);
         })
         .catch(function() {
             btn.disabled = false;
             btn.innerText = "🔄 Sync Sheet";
-            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger');
+            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger', false);
         });
 }
 
@@ -729,12 +745,12 @@ function reloadOnlineAdminTab(btn) {
             btn.disabled = false;
             btn.innerText = "🔄 Sync Sheet";
             renderAdminProducts(productsDB);
-            showBigToast('⚙️ စီမံခန်း Update ပြီးပါပြီ', '', 'success');
+            showBigToast('⚙️ စီမံခန်း Update ပြီးပါပြီ', '', 'success', false);
         })
         .catch(function() {
             btn.disabled = false;
             btn.innerText = "🔄 Sync Sheet";
-            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger');
+            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger', false);
         });
 }
 
@@ -751,17 +767,17 @@ function reloadOnlineHistoryTab(btn) {
             }
             btn.disabled = false;
             btn.innerText = "🔄 Sync Online";
-            showBigToast('📜 မှတ်တမ်း Update ပြီးပါပြီ', '', 'success');
+            showBigToast('📜 မှတ်တမ်း Update ပြီးပါပြီ', '', 'success', false);
         })
         .catch(function() {
             btn.disabled = false;
             btn.innerText = "🔄 Sync Online";
-            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger');
+            showBigToast('❌ Sync မအောင်မြင်ပါ', '', 'danger', false);
         });
 }
 
 // ============================================================
-// SCANNER - ONE CLICK OPEN, 5 SEC PAUSE
+// SCANNER FUNCTIONS
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -782,7 +798,7 @@ function openFullScanner() {
     setTimeout(function() {
         if (!html5QrcodeScannerFull) {
             html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-                fps: 15, 
+                fps: 10, 
                 qrbox: { width: 400, height: 300 },
                 formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
             });
@@ -794,25 +810,42 @@ function openFullScanner() {
             updateFullScannerStatus(true);
             try {
                 html5QrcodeScannerFull.render(onScanSuccessFull);
-            } catch(e) {}
+            } catch(e) {
+                // Recreate if error
+                html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+                    fps: 10, 
+                    qrbox: { width: 400, height: 300 },
+                    formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+                });
+                html5QrcodeScannerFull.render(onScanSuccessFull);
+                canScan = true;
+                updateFullScannerStatus(true);
+            }
         }
     }, 300);
 }
 
 function closeFullScanner() {
-    document.getElementById('scannerFullMode').classList.remove('active');
-    document.getElementById('scannedPreview').classList.remove('active');
-    isFullScannerActive = false;
+    // Stop scanner completely
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
             html5QrcodeScannerFull.clear();
         } catch(e) {}
+        html5QrcodeScannerFull = null;
     }
+    document.getElementById('scannerFullMode').classList.remove('active');
+    document.getElementById('scannedPreview').classList.remove('active');
+    isFullScannerActive = false;
     canScan = false;
     isScanPaused = false;
     clearTimeout(scanPauseTimer);
     document.getElementById('scanBadge').style.display = 'block';
+    // Reset scanner status
+    document.getElementById('full-scanner-status-btn').className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+    document.getElementById('full-scanner-status-btn').innerText = "🔴 Paused";
+    document.getElementById('full-scanner-status-text').textContent = "⏸️ ရပ်ထားပါသည်";
+    document.getElementById('full-scanner-status-text').style.color = 'var(--accent-danger)';
 }
 
 function toggleFullScannerScan() {
@@ -829,11 +862,16 @@ function toggleFullScannerScan() {
         canScan = true;
         isScanPaused = false;
         updateFullScannerStatus(true);
-        if (html5QrcodeScannerFull) {
-            try {
-                html5QrcodeScannerFull.render(onScanSuccessFull);
-            } catch(e) {}
+        if (!html5QrcodeScannerFull) {
+            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+                fps: 10, 
+                qrbox: { width: 400, height: 300 },
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+            });
         }
+        try {
+            html5QrcodeScannerFull.render(onScanSuccessFull);
+        } catch(e) {}
     }
 }
 
@@ -854,14 +892,13 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// SCAN SUCCESS - 5 SECONDS PAUSE THEN CONTINUE
+// SCAN SUCCESS - 5 SECONDS PAUSE
 // ============================================================
 function onScanSuccessFull(decodedText) {
     if (canScan && !isScanPaused) {
         playBeep();
         handleScannedBarcode(decodedText);
         
-        // Pause scanning for 5 seconds
         isScanPaused = true;
         canScan = false;
         updateFullScannerStatus(false);
@@ -873,18 +910,26 @@ function onScanSuccessFull(decodedText) {
             isScanPaused = false;
             canScan = true;
             updateFullScannerStatus(true);
-            // Re-render scanner to continue
+            // Recreate scanner to avoid notreadableError
             if (html5QrcodeScannerFull) {
                 try {
-                    html5QrcodeScannerFull.render(onScanSuccessFull);
+                    html5QrcodeScannerFull.stop();
+                    html5QrcodeScannerFull.clear();
                 } catch(e) {}
+                html5QrcodeScannerFull = null;
             }
+            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+                fps: 10, 
+                qrbox: { width: 400, height: 300 },
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+            });
+            html5QrcodeScannerFull.render(onScanSuccessFull);
         }, 5000);
     }
 }
 
 // ============================================================
-// Shared Barcode Handler with Preview
+// BARCODE HANDLER
 // ============================================================
 function handleScannedBarcode(decodedText) {
     var product = null;
@@ -896,57 +941,26 @@ function handleScannedBarcode(decodedText) {
     }
 
     if (!product) {
-        showBigToast('📢 Barcode မရှိသေးပါ', 'Barcode: ' + decodedText, 'danger');
-        var role = localStorage.getItem('currentUserRole') || 'user';
-        if (role === 'admin') {
-            switchTab('admin');
-            document.getElementById('new-barcode').value = decodedText;
-            document.getElementById('new-name').focus();
-        }
+        // Auto send to Admin
+        showBigToast('📢 Barcode မရှိသေးပါ', 'စီမံခန်းသို့ အလိုအလျောက်ပို့ထားပါသည်', 'danger', false);
+        switchTab('admin');
+        document.getElementById('new-barcode').value = decodedText;
+        document.getElementById('new-name').focus();
         return;
     }
 
     var stock = getStockNumber(product);
     if (stock <= 0) {
-        showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger');
+        showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger', false);
         return;
     }
 
-    var item = null;
-    var cart = carts[activeCartIndex];
-    for (var i = 0; i < cart.length; i++) {
-        if (cart[i].barcode.toString() === decodedText.toString()) {
-            item = cart[i];
-            break;
-        }
-    }
-    
-    if (item) {
-        if (item.qty >= stock) {
-            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', 'ထပ်မထည့်နိုင်ပါ', 'danger');
-            return;
-        }
-        item.qty++;
-        var remaining = stock - item.qty;
-        showBigToast('✅ ' + product.name + ' +1', 'လက်ကျန် ' + remaining + ' ခု', 'success');
-    } else {
-        var newItem = { 
-            barcode: product.barcode, 
-            name: product.name, 
-            price: product.price, 
-            stock: product.stock,
-            qty: 1 
-        };
-        carts[activeCartIndex].push(newItem);
-        showBigToast('✅ ' + product.name + ' ထည့်ပြီးပါပြီ', 'လက်ကျန် ' + (stock - 1) + ' ခု', 'success');
-    }
-
-    renderCart();
-    updateScannedPreview();
+    // Show toast with +/- buttons for qty selection
+    showBigToast('📦 ' + product.name, 'လက်ကျန် ' + stock + ' ခု | အရေအတွက်ရွေးပါ', 'success', true, product);
 }
 
 // ============================================================
-// UPDATE SCANNED PREVIEW (bottom bar)
+// UPDATE SCANNED PREVIEW
 // ============================================================
 function updateScannedPreview() {
     var container = document.getElementById('scannedPreviewList');
@@ -1060,7 +1074,7 @@ function filterProductNames() {
                     e.preventDefault();
                     var stockCheck = getStockNumber(p);
                     if (stockCheck <= 0) {
-                        showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger');
+                        showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger', false);
                         return;
                     }
                     playBeep();
@@ -1106,15 +1120,15 @@ function addByBarcodeDirectly(barcode) {
     }
 
     if (item) {
-        if (item.qty >= stock) {
-            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        if (item.qty + 1 > stock) {
+            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
             return;
         }
         item.qty++;
-        showBigToast('✅ ' + product.name + ' +1', 'လက်ကျန် ' + (stock - item.qty) + ' ခု', 'success');
+        showBigToast('✅ ' + product.name + ' +1', 'လက်ကျန် ' + (stock - item.qty) + ' ခု', 'success', false);
     } else {
         if (stock <= 0) {
-            showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger');
+            showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger', false);
             return;
         }
         var newItem = { 
@@ -1125,7 +1139,7 @@ function addByBarcodeDirectly(barcode) {
             qty: 1 
         };
         carts[activeCartIndex].push(newItem);
-        showBigToast('✅ ' + product.name + ' ထည့်ပြီးပါပြီ', 'လက်ကျန် ' + (stock - 1) + ' ခု', 'success');
+        showBigToast('✅ ' + product.name + ' ထည့်ပြီးပါပြီ', 'လက်ကျန် ' + (stock - 1) + ' ခု', 'success', false);
     }
     renderCart();
     updateScannedPreview();
@@ -1234,7 +1248,7 @@ function changeQty(index, change) {
     if (newQty <= 0) {
         cart.splice(index, 1);
     } else if (newQty > stock) {
-        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
         return;
     } else {
         cart[index].qty = newQty;
@@ -1252,7 +1266,7 @@ function changeQtySelectFromCart(index, newQty) {
     var targetQty = parseInt(newQty) || 1;
 
     if (targetQty > stock) {
-        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
         return;
     }
     cart[index].qty = targetQty;
@@ -1294,7 +1308,7 @@ function changeQtyFromSuggestion(barcode, change) {
         if (product) {
             var stock = getStockNumber(product);
             if (stock <= 0) {
-                showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger');
+                showBigToast('🔴 ဤပစ္စည်းမှာ ကုန်သွားပါပြီ', '', 'danger', false);
                 return;
             }
             var newItem = { 
@@ -1312,7 +1326,7 @@ function changeQtyFromSuggestion(barcode, change) {
         if (newQty <= 0) {
             cart.splice(idx, 1);
         } else if (newQty > stock) {
-            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
             return;
         } else {
             cart[idx].qty = newQty;
@@ -1339,7 +1353,7 @@ function changeQtySelectFromSuggestion(barcode, newQty) {
     var stock = getStockNumber(cart[idx]);
     var targetQty = parseInt(newQty) || 1;
     if (targetQty > stock) {
-        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger');
+        showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
         return;
     }
     cart[idx].qty = targetQty;
@@ -1355,7 +1369,7 @@ function changeQtySelectFromSuggestion(barcode, newQty) {
 function checkout() {
     var cart = carts[activeCartIndex];
     if (cart.length === 0) {
-        showBigToast('ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ', '', 'danger');
+        showBigToast('ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ', '', 'danger', false);
         return;
     }
 
@@ -1384,15 +1398,15 @@ function checkout() {
     var formData = new FormData();
     formData.append('jsonData', JSON.stringify(saleData));
     fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
-        .then(function() { showBigToast('✅ Voucher ' + voucherId + ' ထုတ်ပြီးပါပြီ', '', 'success'); })
-        .catch(function() { showBigToast('⚠️ Sheet သိမ်းရာတွင် အဆင်မပြေပါ', '', 'danger'); });
+        .then(function() { showBigToast('✅ Voucher ' + voucherId + ' ထုတ်ပြီးပါပြီ', '', 'success', false); })
+        .catch(function() { showBigToast('⚠️ Sheet သိမ်းရာတွင် အဆင်မပြေပါ', '', 'danger', false); });
 
     carts[activeCartIndex] = [];
     document.getElementById('cart-discount-input').value = '';
     renderCart();
     updateScannedPreview();
     clearSearchInputAndBox();
-    showBigToast('🧹 ခြင်းတောင်းကို ရှင်းလင်းပြီးပါပြီ', '', 'success');
+    showBigToast('🧹 ခြင်းတောင်းကို ရှင်းလင်းပြီးပါပြီ', '', 'success', false);
 }
 
 // ============================================================
@@ -1520,8 +1534,8 @@ function deleteSaleFromSheet(voucherId) {
     var fd = new FormData();
     fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: voucherId }));
     fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' })
-        .then(function() { showBigToast('🗑️ ဖျက်ပြီးပါပြီ', '', 'success'); })
-        .catch(function() { showBigToast('⚠️ ဖျက်ရာတွင် အဆင်မပြေပါ', '', 'danger'); });
+        .then(function() { showBigToast('🗑️ ဖျက်ပြီးပါပြီ', '', 'success', false); })
+        .catch(function() { showBigToast('⚠️ ဖျက်ရာတွင် အဆင်မပြေပါ', '', 'danger', false); });
 }
 
 function clearAllSalesHistoryOnline(btn) {
@@ -1538,13 +1552,13 @@ function clearAllSalesHistoryOnline(btn) {
                 displayHistory(salesHistory);
                 btn.disabled = false;
                 btn.innerText = "⚠️ အားလုံးဖျက်မည်";
-                showBigToast('✅ အားလုံးကို ရှင်းလင်းပြီးပါပြီ', '', 'success');
+                showBigToast('✅ အားလုံးကို ရှင်းလင်းပြီးပါပြီ', '', 'success', false);
             }, 2000);
         })
         .catch(function() {
             btn.disabled = false;
             btn.innerText = "⚠️ အားလုံးဖျက်မည်";
-            showBigToast('❌ ဖျက်ရာတွင် အဆင်မပြေပါ', '', 'danger');
+            showBigToast('❌ ဖျက်ရာတွင် အဆင်မပြေပါ', '', 'danger', false);
         });
 }
 
@@ -1849,14 +1863,14 @@ function uploadProductToSheet(index) {
             setTimeout(function() {
                 btn.disabled = false;
                 btn.innerText = "💾 ပြင်မည်";
-                showBigToast('✅ "' + prod.name + '" ကို ပြင်ဆင်ပြီးပါပြီ', '', 'success');
+                showBigToast('✅ "' + prod.name + '" ကို ပြင်ဆင်ပြီးပါပြီ', '', 'success', false);
                 loadProductsFromSheet();
             }, 2000);
         })
         .catch(function() {
             btn.disabled = false;
             btn.innerText = "💾 ပြင်မည်";
-            showBigToast('❌ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ', '', 'danger');
+            showBigToast('❌ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ', '', 'danger', false);
         });
 }
 
@@ -1868,7 +1882,7 @@ function deleteProductFromSheet(index) {
     fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' });
     productsDB.splice(index, 1);
     renderAdminProducts(productsDB);
-    showBigToast('🗑️ "' + prod.name + '" ဖျက်ပြီးပါပြီ', '', 'success');
+    showBigToast('🗑️ "' + prod.name + '" ဖျက်ပြီးပါပြီ', '', 'success', false);
     setTimeout(function() { loadProductsFromSheet(); }, 2000);
 }
 
@@ -1881,7 +1895,7 @@ function addNewProduct() {
     var minStock = document.getElementById('new-min-stock').value.trim() || 5;
 
     if (!name || !price) {
-        showBigToast('အချက်အလက်ဖြည့်ပါ', '', 'danger');
+        showBigToast('အချက်အလက်ဖြည့်ပါ', '', 'danger', false);
         return;
     }
 
@@ -1904,7 +1918,7 @@ function addNewProduct() {
         .then(function() {
             setTimeout(function() {
                 btn.disabled = false;
-                showBigToast('✅ သိမ်းဆည်းပြီးပါပြီ', '', 'success');
+                showBigToast('✅ သိမ်းဆည်းပြီးပါပြီ', '', 'success', false);
                 document.getElementById('new-barcode').value = '';
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-price').value = '';
@@ -1917,7 +1931,7 @@ function addNewProduct() {
         })
         .catch(function() {
             btn.disabled = false;
-            showBigToast('❌ သိမ်းဆည်းရာတွင် အဆင်မပြေပါ', '', 'danger');
+            showBigToast('❌ သိမ်းဆည်းရာတွင် အဆင်မပြေပါ', '', 'danger', false);
         });
 }
 
