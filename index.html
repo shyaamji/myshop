@@ -493,8 +493,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'ss';
-var adminPassword = 'ssl';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -801,7 +801,7 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - CAMERA FULLY CLOSED ON X
+// SCANNER FUNCTIONS - FULLY STOP LIKE "Stop Scan"
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -881,19 +881,10 @@ function toggleFullScannerScan() {
                 html5QrcodeScannerFull.stop();
             } catch(e) {}
         }
+        // Close fully to free camera
+        closeFullScanner();
     } else {
-        canScan = true;
-        isScanPaused = false;
-        updateFullScannerStatus(true);
-        if (html5QrcodeScannerFull) {
-            try {
-                html5QrcodeScannerFull.render(onScanSuccessFull);
-            } catch(e) {
-                startScanner();
-            }
-        } else {
-            startScanner();
-        }
+        openFullScanner();
     }
 }
 
@@ -993,7 +984,8 @@ function updateScannedPreview() {
 }
 
 // ============================================================
-// SEARCH with STOCK STATUS
+// SEARCH, CART, CHECKOUT, HISTORY, DASHBOARD, ADMIN
+// (full working code - kept same as before)
 // ============================================================
 function filterProductNames() {
     var input = document.getElementById('name-search-input').value.toLowerCase().trim();
@@ -1182,9 +1174,6 @@ function updateCartBadges() {
     }
 }
 
-// ============================================================
-// CART RENDER
-// ============================================================
 function renderCart() {
     var cart = carts[activeCartIndex] || [];
     var list = document.getElementById('cart-list');
@@ -1415,9 +1404,6 @@ function checkout() {
     showBigToast('🧹 ခြင်းတောင်းကို ရှင်းလင်းပြီးပါပြီ', '', 'success', false);
 }
 
-// ============================================================
-// PRINT VOUCHER
-// ============================================================
 function printVoucher(sale) {
     var printZone = document.getElementById('print-receipt-zone');
     var itemsHTML = '';
@@ -1464,7 +1450,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY, DASHBOARD, ADMIN (full working code)
+// HISTORY, DASHBOARD, ADMIN (shortened for space - full working)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
@@ -1564,9 +1550,6 @@ function clearAllSalesHistoryOnline(btn) {
         });
 }
 
-// ============================================================
-// DASHBOARD
-// ============================================================
 function calculateTodaySales() {
     var filterStart = document.getElementById('filter-start-date').value;
     var filterEnd = document.getElementById('filter-end-date').value;
@@ -1757,9 +1740,6 @@ function updateSalesChartLogic() {
     } catch(e) { /* ignore */ }
 }
 
-// ============================================================
-// ADMIN
-// ============================================================
 function filterAdminProductNames() {
     var input = document.getElementById('admin-search-input').value.toLowerCase().trim();
     var box = document.getElementById('admin-search-suggestions');
