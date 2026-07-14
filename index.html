@@ -801,7 +801,7 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - FULLY STOP LIKE "Stop Scan"
+// SCANNER FUNCTIONS - FORCE CLOSE CAMERA
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -813,6 +813,20 @@ function toggleFullScanner() {
 }
 
 function openFullScanner() {
+    // Force clean up first
+    if (html5QrcodeScannerFull) {
+        try {
+            html5QrcodeScannerFull.stop();
+            html5QrcodeScannerFull.clear();
+        } catch(e) {}
+        html5QrcodeScannerFull = null;
+    }
+    // Clear reader div
+    var readerDiv = document.getElementById('full-reader');
+    if (readerDiv) {
+        readerDiv.innerHTML = '';
+    }
+    
     document.getElementById('scannerFullMode').classList.add('active');
     document.getElementById('scannedPreview').classList.add('active');
     isFullScannerActive = true;
@@ -821,7 +835,7 @@ function openFullScanner() {
     
     setTimeout(function() {
         startScanner();
-    }, 300);
+    }, 500);
 }
 
 function startScanner() {
@@ -845,13 +859,26 @@ function startScanner() {
 }
 
 function closeFullScanner() {
-    // CRITICAL: Stop and destroy scanner completely
+    // Force stop scanner completely
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
             html5QrcodeScannerFull.clear();
         } catch(e) {}
         html5QrcodeScannerFull = null;
+    }
+    
+    // Remove video element manually
+    var readerDiv = document.getElementById('full-reader');
+    if (readerDiv) {
+        var videoEl = readerDiv.querySelector('video');
+        if (videoEl) {
+            try {
+                videoEl.srcObject = null;
+                videoEl.remove();
+            } catch(e) {}
+        }
+        readerDiv.innerHTML = '';
     }
     
     canScan = false;
@@ -984,8 +1011,7 @@ function updateScannedPreview() {
 }
 
 // ============================================================
-// SEARCH, CART, CHECKOUT, HISTORY, DASHBOARD, ADMIN
-// (full working code - kept same as before)
+// SEARCH with STOCK STATUS
 // ============================================================
 function filterProductNames() {
     var input = document.getElementById('name-search-input').value.toLowerCase().trim();
@@ -1174,6 +1200,9 @@ function updateCartBadges() {
     }
 }
 
+// ============================================================
+// CART RENDER
+// ============================================================
 function renderCart() {
     var cart = carts[activeCartIndex] || [];
     var list = document.getElementById('cart-list');
@@ -1404,6 +1433,9 @@ function checkout() {
     showBigToast('🧹 ခြင်းတောင်းကို ရှင်းလင်းပြီးပါပြီ', '', 'success', false);
 }
 
+// ============================================================
+// PRINT VOUCHER
+// ============================================================
 function printVoucher(sale) {
     var printZone = document.getElementById('print-receipt-zone');
     var itemsHTML = '';
@@ -1450,7 +1482,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY, DASHBOARD, ADMIN (shortened for space - full working)
+// HISTORY
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
@@ -1550,6 +1582,9 @@ function clearAllSalesHistoryOnline(btn) {
         });
 }
 
+// ============================================================
+// DASHBOARD
+// ============================================================
 function calculateTodaySales() {
     var filterStart = document.getElementById('filter-start-date').value;
     var filterEnd = document.getElementById('filter-end-date').value;
@@ -1740,6 +1775,9 @@ function updateSalesChartLogic() {
     } catch(e) { /* ignore */ }
 }
 
+// ============================================================
+// ADMIN
+// ============================================================
 function filterAdminProductNames() {
     var input = document.getElementById('admin-search-input').value.toLowerCase().trim();
     var box = document.getElementById('admin-search-suggestions');
