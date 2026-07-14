@@ -60,7 +60,7 @@
         #print-receipt-zone{display:none}
         @media print{body{visibility:hidden}#app-main-content{display:none!important}#print-receipt-zone{visibility:visible;display:block!important}#print-receipt-zone *{visibility:visible}@page{margin:0}}
         
-        /* 🆕 Scanner Popup Styles */
+        /* Scanner Popup Styles */
         .scanner-popup-toggle {
             position: fixed;
             bottom: 100px;
@@ -127,7 +127,7 @@
             pointer-events: auto;
         }
         
-        /* 🆕 Scanner Full Mode - TOP position, BIGGER */
+        /* Scanner Full Mode - TOP Position, BIGGER */
         .scanner-full-mode {
             position: fixed;
             top: 0;
@@ -141,15 +141,16 @@
             align-items: center;
             justify-content: flex-start;
             padding: 20px;
-            padding-top: 30px;
+            padding-top: 20px;
             animation: fadeIn 0.3s ease;
+            overflow-y: auto;
         }
         .scanner-full-mode.active {
             display: flex;
         }
         .scanner-full-mode .scanner-box {
-            width: 100%;
-            max-width: 700px;
+            width: 95%;
+            max-width: 750px;
             background: var(--bg-card);
             border-radius: 24px;
             padding: 24px;
@@ -159,7 +160,7 @@
         }
         .scanner-full-mode .scanner-box #full-reader {
             width: 100%;
-            min-height: 350px;
+            min-height: 380px;
             border-radius: 14px;
             overflow: hidden;
             border: 1px solid var(--border-color);
@@ -167,8 +168,8 @@
         }
         .scanner-full-mode .scanner-close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 16px;
+            right: 16px;
             background: var(--bg-card);
             border: 2px solid var(--border-color);
             border-radius: 50%;
@@ -191,7 +192,8 @@
             margin-top: 12px;
             font-weight: 600;
             color: var(--accent-gold);
-            font-size: 15px;
+            font-size: 16px;
+            text-align: center;
         }
         .scanner-full-mode .scanner-controls {
             display: flex;
@@ -207,7 +209,6 @@
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Hide original scanner card */
         #main-scanner-card {
             display: none !important;
         }
@@ -218,7 +219,6 @@
         .history-item-total{width:95px;text-align:right;font-weight:600}
         .admin-only-feature{display:none}
         
-        /* Responsive */
         @media (max-width: 600px) {
             .scanner-popup-panel {
                 width: 290px;
@@ -246,7 +246,7 @@
                 margin-top: 50px;
             }
             .scanner-full-mode .scanner-box #full-reader {
-                min-height: 250px;
+                min-height: 280px;
             }
         }
     </style>
@@ -341,8 +341,6 @@
                     </div>
                     <div id="search-suggestions" class="search-results"></div>
                 </div>
-
-                <!-- Scanner Card removed - now using popup -->
 
                 <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
@@ -775,7 +773,7 @@ function startFullScanner() {
         if (!html5QrcodeScannerFull) {
             html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
                 fps: 10, 
-                qrbox: { width: 350, height: 250 },
+                qrbox: { width: 400, height: 300 },
                 formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
             });
             html5QrcodeScannerFull.render(onScanSuccessFull);
@@ -842,7 +840,6 @@ function onScanSuccessFull(decodedText) {
     if (canScan) {
         playBeep();
         handleScannedBarcode(decodedText);
-        // Keep scanning - don't pause
     }
 }
 
