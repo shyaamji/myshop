@@ -31,7 +31,6 @@
         [data-theme=dark] .btn-premium-gold{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .btn-premium-gold:hover{opacity:.9;transform:translateY(-1px)}
         
-        /* 🆕 Toast with Select Dropdown */
         .toast-big {
             position: fixed;
             top: 80px;
@@ -294,9 +293,7 @@
     <div id="toastBigSub" class="toast-sub">လက်ကျန် ၅၀ ခု ကျန်ပါသည်</div>
     <div id="toastBigActions" class="toast-actions" style="display:none;">
         <button onclick="toastQtyChange(-1)">−</button>
-        <select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">
-            <!-- Options will be filled dynamically -->
-        </select>
+        <select id="toastQtySelect" onchange="toastQtySelectChange(this.value)"></select>
         <button onclick="toastQtyChange(1)">+</button>
         <button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>
     </div>
@@ -512,13 +509,9 @@ var isScanPaused = false;
 
 var carts = [[], [], [], []];
 var activeCartIndex = 0;
-
 var toastProduct = null;
 var toastQty = 1;
 
-// ============================================================
-// Helper: Get Stock as Number
-// ============================================================
 function getStockNumber(product) {
     if (!product) return 0;
     var val = product.stock;
@@ -557,7 +550,7 @@ function playBeep() {
 }
 
 // ============================================================
-// BIG TOAST WITH SELECT DROPDOWN
+// TOAST FUNCTIONS
 // ============================================================
 function showBigToast(message, subMessage, type, showActions, product) {
     type = type || 'success';
@@ -808,7 +801,7 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS
+// SCANNER FUNCTIONS - FIXED CAMERA CLOSE
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -832,6 +825,7 @@ function openFullScanner() {
 }
 
 function startScanner() {
+    // Clean up old scanner first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -851,6 +845,7 @@ function startScanner() {
 }
 
 function closeFullScanner() {
+    // 🔥 CRITICAL: Stop and destroy scanner completely
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -867,27 +862,32 @@ function closeFullScanner() {
     isFullScannerActive = false;
     document.getElementById('scanBadge').style.display = 'block';
     
-    document.getElementById('full-scanner-status-btn').className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
-    document.getElementById('full-scanner-status-btn').innerText = "🔴 Paused";
-    document.getElementById('full-scanner-status-text').textContent = "⏸️ ရပ်ထားပါသည်";
-    document.getElementById('full-scanner-status-text').style.color = 'var(--accent-danger)';
+    // Reset status UI
+    var statusBtn = document.getElementById('full-scanner-status-btn');
+    var statusText = document.getElementById('full-scanner-status-text');
+    statusBtn.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+    statusBtn.innerText = "🔴 Paused";
+    statusText.textContent = "⏸️ ရပ်ထားပါသည်";
+    statusText.style.color = 'var(--accent-danger)';
 }
 
 function toggleFullScannerScan() {
     if (canScan) {
+        // Stop scanning but keep UI visible - then close fully
         canScan = false;
         isScanPaused = false;
-        updateFullScannerStatus(false);
         if (html5QrcodeScannerFull) {
             try {
                 html5QrcodeScannerFull.stop();
+                html5QrcodeScannerFull.clear();
             } catch(e) {}
+            html5QrcodeScannerFull = null;
         }
+        // Close the scanner fully
+        closeFullScanner();
     } else {
-        canScan = true;
-        isScanPaused = false;
-        updateFullScannerStatus(true);
-        startScanner();
+        // Re-open
+        openFullScanner();
     }
 }
 
@@ -926,7 +926,20 @@ function onScanSuccessFull(decodedText) {
             isScanPaused = false;
             canScan = true;
             updateFullScannerStatus(true);
-            startScanner(); // Rebuild fresh
+            // Rebuild scanner to avoid errors
+            if (html5QrcodeScannerFull) {
+                try {
+                    html5QrcodeScannerFull.stop();
+                    html5QrcodeScannerFull.clear();
+                } catch(e) {}
+                html5QrcodeScannerFull = null;
+            }
+            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+                fps: 10, 
+                qrbox: { width: 400, height: 300 },
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+            });
+            html5QrcodeScannerFull.render(onScanSuccessFull);
         }, 5000);
     }
 }
@@ -988,7 +1001,7 @@ function updateScannedPreview() {
 }
 
 // ============================================================
-// SEARCH with STOCK STATUS (full version - keep existing)
+// SEARCH with STOCK STATUS
 // ============================================================
 function filterProductNames() {
     var input = document.getElementById('name-search-input').value.toLowerCase().trim();
@@ -1459,17 +1472,15 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY
+// HISTORY (shortened for space - keep existing code)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
     var role = localStorage.getItem('currentUserRole') || 'user';
-
     if (!data || data.length === 0) {
         list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>';
         return;
     }
-
     list.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
         var sale = data[i];
@@ -1482,12 +1493,10 @@ function displayHistory(data) {
                 '<span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span>' +
                 '</div>';
         }
-
         var saleJson = JSON.stringify(sale).replace(/'/g, "\\'");
         var deleteBtn = (role === 'admin')
             ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick=\'deleteSaleFromSheet("' + sale.voucherId + '")\'>🗑️ ဖျက်</button>'
             : '';
-
         list.innerHTML += '<div class="custom-card">' +
             '<div class="d-flex justify-content-between mb-2">' +
             '<span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span>' +
@@ -1571,18 +1580,14 @@ function calculateTodaySales() {
     var filterEnd = document.getElementById('filter-end-date').value;
     var startTs = filterStart ? new Date(filterStart).setHours(0,0,0,0) : null;
     var endTs = filterEnd ? new Date(filterEnd).setHours(23,59,59,999) : null;
-
     var now = new Date();
     var d = String(now.getDate()).padStart(2,'0');
     var m = String(now.getMonth()+1).padStart(2,'0');
     var y = now.getFullYear();
     var todayF1 = d + '/' + m + '/' + y;
     var todayF2 = m + '/' + d + '/' + y;
-
     document.getElementById('today-date-string').innerText = "ကာလ: " + (filterStart ? filterStart : "ယနေ့ထိ");
-
     var totalSum = 0, totalProfit = 0, cashSum = 0, kpaySum = 0, waveSum = 0;
-
     for (var i = 0; i < salesHistory.length; i++) {
         var sale = salesHistory[i];
         var saleDate = new Date(sale.date);
@@ -1596,15 +1601,12 @@ function calculateTodaySales() {
             }
         }
         if (!inside) continue;
-
         var cleanTotal = Number(sale.total.toString().replace(/,/g, '')) || 0;
         totalSum += cleanTotal;
-
         var pMode = sale.paymentMode || "Cash";
         if (pMode === "Cash") cashSum += cleanTotal;
         else if (pMode === "KPay") kpaySum += cleanTotal;
         else if (pMode === "Wave") waveSum += cleanTotal;
-
         var saleCost = 0;
         if (sale.items && Array.isArray(sale.items)) {
             for (var j = 0; j < sale.items.length; j++) {
@@ -1620,7 +1622,6 @@ function calculateTodaySales() {
                 saleCost += (costPer * Number(item.qty));
             }
         }
-
         var gross = 0;
         if (sale.items) {
             for (var j = 0; j < sale.items.length; j++) {
@@ -1637,7 +1638,6 @@ function calculateTodaySales() {
         }
         totalProfit += ((gross - discAmt) - saleCost);
     }
-
     document.getElementById('today-sales-summary').innerText = totalSum.toLocaleString() + " Ks";
     document.getElementById('payment-split-summary').innerHTML =
         '💵 Cash: ' + cashSum.toLocaleString() + ' | 📱 KPay: ' + kpaySum.toLocaleString() + ' | 🌊 Wave: ' + waveSum.toLocaleString();
@@ -1654,7 +1654,6 @@ function updateSalesChartLogic() {
         }
         var allDatesMap = {};
         var productCountsMap = {};
-
         for (var i = 0; i < salesHistory.length; i++) {
             var sale = salesHistory[i];
             if (sale.date) {
@@ -1681,7 +1680,6 @@ function updateSalesChartLogic() {
                 }
             }
         }
-
         var tbody = document.getElementById('date-sales-table-body');
         if (tbody) {
             var keys = Object.keys(allDatesMap);
@@ -1700,7 +1698,6 @@ function updateSalesChartLogic() {
                 tbody.innerHTML = html;
             }
         }
-
         var ctx = document.getElementById('salesChart');
         if (ctx && typeof Chart !== 'undefined') {
             var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1708,7 +1705,6 @@ function updateSalesChartLogic() {
             var fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)';
             var grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim();
             var text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-
             if (mySalesChart) mySalesChart.destroy();
             mySalesChart = new Chart(ctx, {
                 type: 'line',
@@ -1737,7 +1733,6 @@ function updateSalesChartLogic() {
                 }
             });
         }
-
         var topCtx = document.getElementById('topProductsChart');
         if (topCtx && typeof Chart !== 'undefined') {
             var sorted = Object.keys(productCountsMap).sort(function(a, b) { return productCountsMap[b] - productCountsMap[a]; });
@@ -1746,12 +1741,10 @@ function updateSalesChartLogic() {
             for (var i = 0; i < topLabels.length; i++) {
                 topData.push(productCountsMap[topLabels[i]]);
             }
-
             if (myTopProductsChart) myTopProductsChart.destroy();
             var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             var color = isDark ? '#fbbf24' : '#b45309';
             var text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-
             myTopProductsChart = new Chart(topCtx, {
                 type: 'bar',
                 data: {
@@ -1773,7 +1766,7 @@ function updateSalesChartLogic() {
 }
 
 // ============================================================
-// ADMIN
+// ADMIN (shortened)
 // ============================================================
 function filterAdminProductNames() {
     var input = document.getElementById('admin-search-input').value.toLowerCase().trim();
@@ -1813,7 +1806,6 @@ function renderAdminProducts(arr) {
         var stockBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">စတော့: ' + stockDisplay + '</span>';
         if (stockDisplay <= 0) stockBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">ကုန်သွားပြီ</span>';
         else if (stockDisplay <= limit) stockBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">စတော့နည်းနေသည်: ' + stockDisplay + '</span>';
-
         list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2" style="border-color:var(--border-color) !important;">' +
             '<div class="d-flex justify-content-between align-items-start">' +
             '<div class="fw-bold fs-6">' + prod.name + '</div>' +
@@ -1842,11 +1834,9 @@ function uploadProductToSheet(index) {
     prod.costPrice = Number(cost);
     prod.price = Number(price);
     prod.stock = Number(stock);
-
     var btn = document.getElementById('edit-btn-' + index);
     btn.disabled = true;
     btn.innerText = "⏳...";
-
     var payload = {
         action: "updateProduct",
         barcode: prod.barcode.toString(),
@@ -1894,15 +1884,12 @@ function addNewProduct() {
     var cost = document.getElementById('new-cost').value.trim() || 0;
     var stock = document.getElementById('new-stock').value.trim() || 0;
     var minStock = document.getElementById('new-min-stock').value.trim() || 5;
-
     if (!name || !price) {
         showBigToast('အချက်အလက်ဖြည့်ပါ', '', 'danger', false);
         return;
     }
-
     var btn = document.getElementById('add-prod-btn');
     btn.disabled = true;
-
     var payload = {
         action: "updateProduct",
         barcode: barcode.toString(),
@@ -1941,28 +1928,23 @@ function addNewProduct() {
 // ============================================================
 window.onload = function() {
     document.getElementById('hidden-form').action = scriptURL;
-
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     var themeBtn = document.getElementById('theme-btn');
     if (themeBtn) themeBtn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
-
     if (sessionStorage.getItem('isAppUnlocked') === 'true') {
         setupRolePrivilegesUi();
         document.getElementById('app-lock-screen').style.display = 'none';
         document.getElementById('app-main-content').style.display = 'block';
     }
-
     loadProductsFromSheet();
     loadSalesHistoryFromSheet();
     displayHistory(salesHistory);
-
     var pwInput = document.getElementById('home-pass-input');
     if (pwInput) {
         pwInput.addEventListener("keypress", function(e) {
             if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); }
         });
     }
-
     var searchInp = document.getElementById('name-search-input');
     if (searchInp) {
         searchInp.addEventListener('input', filterProductNames);
@@ -1972,11 +1954,9 @@ window.onload = function() {
             }, 300);
         });
     }
-
     updateCartBadges();
     renderCart();
     updateScannedPreview();
-
     if (document.getElementById('dashboard').classList.contains('active')) {
         calculateTodaySales();
         updateSalesChartLogic();
