@@ -127,7 +127,7 @@
             pointer-events: auto;
         }
         
-        /* Scanner Full Mode (when scanning) */
+        /* 🆕 Scanner Full Mode - TOP position, BIGGER */
         .scanner-full-mode {
             position: fixed;
             top: 0;
@@ -139,8 +139,9 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 20px;
+            padding-top: 30px;
             animation: fadeIn 0.3s ease;
         }
         .scanner-full-mode.active {
@@ -148,29 +149,32 @@
         }
         .scanner-full-mode .scanner-box {
             width: 100%;
-            max-width: 500px;
+            max-width: 700px;
             background: var(--bg-card);
             border-radius: 24px;
-            padding: 20px;
+            padding: 24px;
             border: 2px solid var(--accent-gold);
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-top: 10px;
         }
-        .scanner-full-mode .scanner-box #reader {
+        .scanner-full-mode .scanner-box #full-reader {
             width: 100%;
+            min-height: 350px;
             border-radius: 14px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            background: var(--bg-input);
         }
         .scanner-full-mode .scanner-close-btn {
             position: absolute;
-            top: 30px;
-            right: 30px;
+            top: 20px;
+            right: 20px;
             background: var(--bg-card);
             border: 2px solid var(--border-color);
             border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            font-size: 28px;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
             cursor: pointer;
             color: var(--text-main);
             display: flex;
@@ -184,10 +188,18 @@
             transform: scale(0.85);
         }
         .scanner-full-mode .scanner-status-text {
-            margin-top: 16px;
+            margin-top: 12px;
             font-weight: 600;
             color: var(--accent-gold);
-            font-size: 16px;
+            font-size: 15px;
+        }
+        .scanner-full-mode .scanner-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         
         @keyframes fadeIn {
@@ -222,14 +234,19 @@
                 right: 12px;
             }
             .scanner-full-mode .scanner-close-btn {
-                top: 16px;
-                right: 16px;
-                width: 48px;
-                height: 48px;
-                font-size: 22px;
+                top: 12px;
+                right: 12px;
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
             }
             .scanner-full-mode .scanner-box {
-                padding: 12px;
+                padding: 16px;
+                max-width: 100%;
+                margin-top: 50px;
+            }
+            .scanner-full-mode .scanner-box #full-reader {
+                min-height: 250px;
             }
         }
     </style>
@@ -259,7 +276,7 @@
     </div>
 </div>
 
-<!-- Scanner Full Mode (overlay) -->
+<!-- Scanner Full Mode - TOP Position, BIGGER -->
 <div class="scanner-full-mode" id="scannerFullMode">
     <button class="scanner-close-btn" onclick="closeFullScanner()">✕</button>
     <div class="scanner-box">
@@ -267,9 +284,9 @@
             <h6 class="fw-bold mb-0 text-secondary">📷 Barcode Scanner</h6>
             <button id="full-scanner-status-btn" class="btn btn-sm btn-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="toggleFullScannerScan()">🔴 Paused</button>
         </div>
-        <div id="full-reader" style="width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--border-color);"></div>
-        <div class="text-center mt-3">
-            <small class="text-muted" id="full-scanner-status-text">Barcode ကို ကင်မရာနဲ့ ဖတ်ပါ</small>
+        <div id="full-reader"></div>
+        <div class="scanner-controls">
+            <span class="scanner-status-text" id="full-scanner-status-text">Barcode ကို ကင်မရာနဲ့ ဖတ်ပါ</span>
         </div>
     </div>
 </div>
@@ -446,8 +463,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'ppc';
-var adminPassword = 'ppcf';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -685,14 +702,13 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER POPUP SYSTEM 🆕
+// SCANNER POPUP SYSTEM
 // ============================================================
 function toggleScannerPopup() {
     var panel = document.getElementById('scannerPopupPanel');
     var btn = document.getElementById('scannerToggleBtn');
     if (panel.classList.contains('open')) {
         panel.classList.remove('open');
-        // Stop scanner if running
         if (html5QrcodeScannerPopup) {
             try {
                 html5QrcodeScannerPopup.stop();
@@ -706,7 +722,6 @@ function toggleScannerPopup() {
     } else {
         panel.classList.add('open');
         document.getElementById('scanBadge').style.display = 'none';
-        // Start scanner in popup
         setTimeout(function() {
             if (!html5QrcodeScannerPopup) {
                 html5QrcodeScannerPopup = new Html5QrcodeScanner("popup-reader", { 
@@ -726,7 +741,6 @@ function onScanSuccessPopup(decodedText) {
     if (canScan) {
         playBeep();
         handleScannedBarcode(decodedText);
-        // Re-enable scanning after short delay
         canScan = false;
         document.getElementById('popup-scanner-status').textContent = '⏳ Processing...';
         setTimeout(function() {
@@ -737,7 +751,7 @@ function onScanSuccessPopup(decodedText) {
 }
 
 // ============================================================
-// FULL SCREEN SCANNER 🆕
+// FULL SCREEN SCANNER - TOP Position, BIGGER
 // ============================================================
 function startFullScanner() {
     // Close popup first
@@ -761,7 +775,7 @@ function startFullScanner() {
         if (!html5QrcodeScannerFull) {
             html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
                 fps: 10, 
-                qrbox: { width: 300, height: 200 },
+                qrbox: { width: 350, height: 250 },
                 formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
             });
             html5QrcodeScannerFull.render(onScanSuccessFull);
@@ -814,11 +828,13 @@ function updateFullScannerStatus(isScanning) {
     if (isScanning) {
         btn.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm";
         btn.innerText = "🟢 Scanning";
-        text.textContent = "Barcode ကို ကင်မရာနဲ့ ဖတ်နေပါသည်...";
+        text.textContent = "🔍 စကန်ဖတ်နေပါသည်...";
+        text.style.color = 'var(--accent-success)';
     } else {
         btn.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
         btn.innerText = "🔴 Paused";
-        text.textContent = "Paused - ပြန်စရန် Scan ကိုနှိပ်ပါ";
+        text.textContent = "⏸️ ရပ်ထားပါသည် - ပြန်စရန် Scan ကိုနှိပ်ပါ";
+        text.style.color = 'var(--accent-danger)';
     }
 }
 
@@ -826,7 +842,7 @@ function onScanSuccessFull(decodedText) {
     if (canScan) {
         playBeep();
         handleScannedBarcode(decodedText);
-        // Keep scanning, don't pause
+        // Keep scanning - don't pause
     }
 }
 
@@ -890,8 +906,6 @@ function handleScannedBarcode(decodedText) {
     }
 
     renderCart();
-    // Close full scanner if open (optional - can keep scanning)
-    // closeFullScanner(); // uncomment to auto-close after scan
 }
 
 // ============================================================
