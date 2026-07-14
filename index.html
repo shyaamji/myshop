@@ -493,8 +493,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'km';
-var adminPassword = 'kmpos';
+var homePassword = 'ok';
+var adminPassword = 'okok';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -506,6 +506,7 @@ var mySalesChart = null;
 var myTopProductsChart = null;
 var scanPauseTimer = null;
 var isScanPaused = false;
+var isScannerClosed = false;
 
 var carts = [[], [], [], []];
 var activeCartIndex = 0;
@@ -801,18 +802,25 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - FORCE CLOSE CAMERA
+// SCANNER FUNCTIONS - FORCE CLOSE CAMERA WITH VIDEO REMOVAL
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
     if (mode.classList.contains('active')) {
         closeFullScanner();
     } else {
+        // If scanner was previously closed, reset state
+        if (isScannerClosed) {
+            isScannerClosed = false;
+        }
         openFullScanner();
     }
 }
 
 function openFullScanner() {
+    // Reset closed flag
+    isScannerClosed = false;
+    
     // Force clean up first
     if (html5QrcodeScannerFull) {
         try {
@@ -821,9 +829,17 @@ function openFullScanner() {
         } catch(e) {}
         html5QrcodeScannerFull = null;
     }
-    // Clear reader div
+    // Clear reader div completely
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
+        // Remove any video elements
+        var videos = readerDiv.querySelectorAll('video');
+        videos.forEach(function(v) {
+            try {
+                v.srcObject = null;
+                v.remove();
+            } catch(e) {}
+        });
         readerDiv.innerHTML = '';
     }
     
@@ -855,6 +871,7 @@ function startScanner() {
     });
     html5QrcodeScannerFull.render(onScanSuccessFull);
     canScan = true;
+    isScannerClosed = false;
     updateFullScannerStatus(true);
 }
 
@@ -868,21 +885,43 @@ function closeFullScanner() {
         html5QrcodeScannerFull = null;
     }
     
-    // Remove video element manually
+    // Remove ALL video elements from reader div
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
-        var videoEl = readerDiv.querySelector('video');
-        if (videoEl) {
+        var videos = readerDiv.querySelectorAll('video');
+        videos.forEach(function(v) {
             try {
-                videoEl.srcObject = null;
-                videoEl.remove();
+                // Stop all tracks
+                if (v.srcObject) {
+                    var tracks = v.srcObject.getTracks();
+                    tracks.forEach(function(track) {
+                        track.stop();
+                    });
+                    v.srcObject = null;
+                }
+                v.remove();
             } catch(e) {}
-        }
+        });
         readerDiv.innerHTML = '';
     }
     
+    // Also try to find any video elements in the whole page
+    var allVideos = document.querySelectorAll('video');
+    allVideos.forEach(function(v) {
+        try {
+            if (v.srcObject) {
+                var tracks = v.srcObject.getTracks();
+                tracks.forEach(function(track) {
+                    track.stop();
+                });
+                v.srcObject = null;
+            }
+        } catch(e) {}
+    });
+    
     canScan = false;
     isScanPaused = false;
+    isScannerClosed = true;
     clearTimeout(scanPauseTimer);
     
     document.getElementById('scannerFullMode').classList.remove('active');
@@ -911,7 +950,13 @@ function toggleFullScannerScan() {
         // Close fully to free camera
         closeFullScanner();
     } else {
-        openFullScanner();
+        // If closed, open fresh
+        if (isScannerClosed) {
+            isScannerClosed = false;
+            openFullScanner();
+        } else {
+            openFullScanner();
+        }
     }
 }
 
@@ -1482,7 +1527,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY
+// HISTORY, DASHBOARD, ADMIN (shortened for space)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
