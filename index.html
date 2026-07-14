@@ -493,8 +493,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'km';
-var adminPassword = 'kmpos';
+var homePassword = 'ss';
+var adminPassword = 'ssl';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -801,7 +801,7 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - USING canScan flag only (No Error)
+// SCANNER FUNCTIONS - CAMERA FULLY CLOSED ON X
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -820,24 +820,12 @@ function openFullScanner() {
     isScanPaused = false;
     
     setTimeout(function() {
-        if (!html5QrcodeScannerFull) {
-            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-                fps: 10, 
-                qrbox: { width: 400, height: 300 },
-                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
-            });
-            html5QrcodeScannerFull.render(onScanSuccessFull);
-            canScan = true;
-            updateFullScannerStatus(true);
-        } else {
-            canScan = true;
-            updateFullScannerStatus(true);
-        }
+        startScanner();
     }, 300);
 }
 
-function closeFullScanner() {
-    // 🔥 KEY: Stop scanner completely when closing
+function startScanner() {
+    // Clean up old scanner first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -845,6 +833,27 @@ function closeFullScanner() {
         } catch(e) {}
         html5QrcodeScannerFull = null;
     }
+    
+    html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+        fps: 10, 
+        qrbox: { width: 400, height: 300 },
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+    });
+    html5QrcodeScannerFull.render(onScanSuccessFull);
+    canScan = true;
+    updateFullScannerStatus(true);
+}
+
+function closeFullScanner() {
+    // CRITICAL: Stop and destroy scanner completely
+    if (html5QrcodeScannerFull) {
+        try {
+            html5QrcodeScannerFull.stop();
+            html5QrcodeScannerFull.clear();
+        } catch(e) {}
+        html5QrcodeScannerFull = null;
+    }
+    
     canScan = false;
     isScanPaused = false;
     clearTimeout(scanPauseTimer);
@@ -854,10 +863,12 @@ function closeFullScanner() {
     isFullScannerActive = false;
     document.getElementById('scanBadge').style.display = 'block';
     
-    document.getElementById('full-scanner-status-btn').className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
-    document.getElementById('full-scanner-status-btn').innerText = "🔴 Paused";
-    document.getElementById('full-scanner-status-text').textContent = "⏸️ ရပ်ထားပါသည်";
-    document.getElementById('full-scanner-status-text').style.color = 'var(--accent-danger)';
+    var statusBtn = document.getElementById('full-scanner-status-btn');
+    var statusText = document.getElementById('full-scanner-status-text');
+    statusBtn.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+    statusBtn.innerText = "🔴 Paused";
+    statusText.textContent = "⏸️ ရပ်ထားပါသည်";
+    statusText.style.color = 'var(--accent-danger)';
 }
 
 function toggleFullScannerScan() {
@@ -865,10 +876,24 @@ function toggleFullScannerScan() {
         canScan = false;
         isScanPaused = false;
         updateFullScannerStatus(false);
+        if (html5QrcodeScannerFull) {
+            try {
+                html5QrcodeScannerFull.stop();
+            } catch(e) {}
+        }
     } else {
         canScan = true;
         isScanPaused = false;
         updateFullScannerStatus(true);
+        if (html5QrcodeScannerFull) {
+            try {
+                html5QrcodeScannerFull.render(onScanSuccessFull);
+            } catch(e) {
+                startScanner();
+            }
+        } else {
+            startScanner();
+        }
     }
 }
 
@@ -889,14 +914,13 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// 🔥 KEY: SCAN SUCCESS - 5 SECONDS PAUSE (No Error)
+// SCAN SUCCESS - 5 SECONDS PAUSE (No Error)
 // ============================================================
 function onScanSuccessFull(decodedText) {
     if (canScan && !isScanPaused) {
         playBeep();
         handleScannedBarcode(decodedText);
         
-        // 🔥 Pause scanning for 5 seconds using canScan flag only
         isScanPaused = true;
         canScan = false;
         updateFullScannerStatus(false);
@@ -1440,7 +1464,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY, DASHBOARD, ADMIN (shortened for space - keep existing)
+// HISTORY, DASHBOARD, ADMIN (full working code)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
@@ -1541,7 +1565,7 @@ function clearAllSalesHistoryOnline(btn) {
 }
 
 // ============================================================
-// DASHBOARD (shortened)
+// DASHBOARD
 // ============================================================
 function calculateTodaySales() {
     var filterStart = document.getElementById('filter-start-date').value;
@@ -1734,7 +1758,7 @@ function updateSalesChartLogic() {
 }
 
 // ============================================================
-// ADMIN (shortened)
+// ADMIN
 // ============================================================
 function filterAdminProductNames() {
     var input = document.getElementById('admin-search-input').value.toLowerCase().trim();
