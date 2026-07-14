@@ -801,7 +801,7 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - FIXED CAMERA CLOSE
+// SCANNER FUNCTIONS - USING canScan flag only (No Error)
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
@@ -820,32 +820,24 @@ function openFullScanner() {
     isScanPaused = false;
     
     setTimeout(function() {
-        startScanner();
+        if (!html5QrcodeScannerFull) {
+            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
+                fps: 10, 
+                qrbox: { width: 400, height: 300 },
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
+            });
+            html5QrcodeScannerFull.render(onScanSuccessFull);
+            canScan = true;
+            updateFullScannerStatus(true);
+        } else {
+            canScan = true;
+            updateFullScannerStatus(true);
+        }
     }, 300);
 }
 
-function startScanner() {
-    // Clean up old scanner first
-    if (html5QrcodeScannerFull) {
-        try {
-            html5QrcodeScannerFull.stop();
-            html5QrcodeScannerFull.clear();
-        } catch(e) {}
-        html5QrcodeScannerFull = null;
-    }
-    
-    html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-        fps: 10, 
-        qrbox: { width: 400, height: 300 },
-        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
-    });
-    html5QrcodeScannerFull.render(onScanSuccessFull);
-    canScan = true;
-    updateFullScannerStatus(true);
-}
-
 function closeFullScanner() {
-    // 🔥 CRITICAL: Stop and destroy scanner completely
+    // 🔥 KEY: Stop scanner completely when closing
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -862,32 +854,21 @@ function closeFullScanner() {
     isFullScannerActive = false;
     document.getElementById('scanBadge').style.display = 'block';
     
-    // Reset status UI
-    var statusBtn = document.getElementById('full-scanner-status-btn');
-    var statusText = document.getElementById('full-scanner-status-text');
-    statusBtn.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
-    statusBtn.innerText = "🔴 Paused";
-    statusText.textContent = "⏸️ ရပ်ထားပါသည်";
-    statusText.style.color = 'var(--accent-danger)';
+    document.getElementById('full-scanner-status-btn').className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm";
+    document.getElementById('full-scanner-status-btn').innerText = "🔴 Paused";
+    document.getElementById('full-scanner-status-text').textContent = "⏸️ ရပ်ထားပါသည်";
+    document.getElementById('full-scanner-status-text').style.color = 'var(--accent-danger)';
 }
 
 function toggleFullScannerScan() {
     if (canScan) {
-        // Stop scanning but keep UI visible - then close fully
         canScan = false;
         isScanPaused = false;
-        if (html5QrcodeScannerFull) {
-            try {
-                html5QrcodeScannerFull.stop();
-                html5QrcodeScannerFull.clear();
-            } catch(e) {}
-            html5QrcodeScannerFull = null;
-        }
-        // Close the scanner fully
-        closeFullScanner();
+        updateFullScannerStatus(false);
     } else {
-        // Re-open
-        openFullScanner();
+        canScan = true;
+        isScanPaused = false;
+        updateFullScannerStatus(true);
     }
 }
 
@@ -908,13 +889,14 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// SCAN SUCCESS - 5 SECONDS PAUSE
+// 🔥 KEY: SCAN SUCCESS - 5 SECONDS PAUSE (No Error)
 // ============================================================
 function onScanSuccessFull(decodedText) {
     if (canScan && !isScanPaused) {
         playBeep();
         handleScannedBarcode(decodedText);
         
+        // 🔥 Pause scanning for 5 seconds using canScan flag only
         isScanPaused = true;
         canScan = false;
         updateFullScannerStatus(false);
@@ -926,20 +908,6 @@ function onScanSuccessFull(decodedText) {
             isScanPaused = false;
             canScan = true;
             updateFullScannerStatus(true);
-            // Rebuild scanner to avoid errors
-            if (html5QrcodeScannerFull) {
-                try {
-                    html5QrcodeScannerFull.stop();
-                    html5QrcodeScannerFull.clear();
-                } catch(e) {}
-                html5QrcodeScannerFull = null;
-            }
-            html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-                fps: 10, 
-                qrbox: { width: 400, height: 300 },
-                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ]
-            });
-            html5QrcodeScannerFull.render(onScanSuccessFull);
         }, 5000);
     }
 }
@@ -1472,7 +1440,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY (shortened for space - keep existing code)
+// HISTORY, DASHBOARD, ADMIN (shortened for space - keep existing)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
@@ -1573,7 +1541,7 @@ function clearAllSalesHistoryOnline(btn) {
 }
 
 // ============================================================
-// DASHBOARD
+// DASHBOARD (shortened)
 // ============================================================
 function calculateTodaySales() {
     var filterStart = document.getElementById('filter-start-date').value;
