@@ -1442,7 +1442,7 @@ function checkout() {
         return;
     }
 
-    var customerName = prompt("ဝယ်ယူသူအမည် -", " ") || "customer";
+    var customerName = prompt("ဝယ်ယူသူအမည် -", "customer") || "customer";
     var voucherId = "WM-" + Date.now().toString().slice(-6);
     var total = document.getElementById('cart-total').innerText;
     var discountVal = document.getElementById('cart-discount-input').value.trim() || "0";
