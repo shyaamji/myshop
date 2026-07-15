@@ -1,24 +1,21 @@
 {
-  "name": "ကောင်းမြတ် Premium POS",
   "short_name": "KM-POS",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#f8fafc",
-  "orientation": "portrait",
-  "description": "Premium POS System",
+  "name": "ကောင်းမြတ် ကုန်စုံဆိုင် POS",
   "icons": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
+      "src": "https://cdn-icons-png.flaticon.com/512/9322/9322127.png",
       "type": "image/png",
-      "purpose": "any maskable"
+      "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
-      "sizes": "512x512",
+      "src": "https://cdn-icons-png.flaticon.com/512/9322/9322127.png",
       "type": "image/png",
-      "purpose": "any maskable"
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "background_color": "#343a40",
+  "theme_color": "#0d6efd",
+  "display": "standalone",
+  "orientation": "portrait"
 }
