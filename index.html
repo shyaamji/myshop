@@ -810,35 +810,61 @@ function toastQtyConfirm() {
         return;
     }
     
-    var cart = carts[activeCartIndex];
-    var item = null;
-    for (var i = 0; i < cart.length; i++) {
-        if (cart[i].barcode.toString() === barcode) {
-            item = cart[i];
-            break;
-        }
-    }
+// ============================================================
+// TOAST FUNCTIONS - Dynamic Position (Bottom when scanning, Top otherwise)
+// ============================================================
+function showBigToast(message, subMessage, type, showActions, product) {
+    type = type || 'success';
+    var el = document.getElementById('toastBig');
+    var msg = document.getElementById('toastBigMsg');
+    var sub = document.getElementById('toastBigSub');
+    var actions = document.getElementById('toastBigActions');
     
-    if (item) {
-        if (item.qty + qty > stock) {
-            showBigToast('⚠️ လက်ကျန် ' + stock + ' ခုသာ ရှိပါသည်', '', 'danger', false);
-            return;
-        }
-        item.qty += qty;
+    msg.textContent = message;
+    sub.textContent = subMessage || '';
+    el.className = 'toast-big show ' + type;
+    
+    // 🔥 Dynamic position: Bottom when scanner is active, Top otherwise
+    var isScannerOpen = document.getElementById('scannerFullMode').classList.contains('active');
+    
+    if (isScannerOpen) {
+        // Scanner is open → show at bottom
+        el.style.bottom = '30px';
+        el.style.top = 'auto';
+        el.style.animation = 'slideUp 0.4s ease';
     } else {
-        var newItem = { 
-            barcode: toastProduct.barcode, 
-            name: toastProduct.name, 
-            price: toastProduct.price, 
-            stock: toastProduct.stock,
-            qty: qty 
-        };
-        cart.push(newItem);
+        // Scanner is closed → show at top (below menu)
+        el.style.top = '80px';
+        el.style.bottom = 'auto';
+        el.style.animation = 'slideDown 0.4s ease';
     }
     
-    renderCart();
-    updateScannedPreview();
-    showBigToast('✅ ' + toastProduct.name + ' ×' + qty + ' ထည့်ပြီးပါပြီ', 'လက်ကျန် ' + (stock - qty) + ' ခု', 'success', false);
+    if (showActions && product) {
+        toastProduct = product;
+        toastQty = 1;
+        var stock = getStockNumber(product);
+        var maxQty = Math.min(stock, 100);
+        var select = document.getElementById('toastQtySelect');
+        select.innerHTML = '';
+        for (var i = 1; i <= maxQty; i++) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            select.appendChild(opt);
+        }
+        select.value = '1';
+        actions.style.display = 'flex';
+    } else {
+        actions.style.display = 'none';
+        toastProduct = null;
+    }
+    
+    clearTimeout(el._hideTimer);
+    if (!showActions) {
+        el._hideTimer = setTimeout(function() {
+            el.classList.remove('show');
+        }, 3500);
+    }
 }
 
 // ============================================================
