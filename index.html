@@ -98,6 +98,83 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
+        /* 🆕 Admin Confirm Dialog */
+        .admin-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOverlay 0.3s ease;
+        }
+        .admin-confirm-overlay.active { display: flex; }
+        .admin-confirm-box {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: scaleIn 0.3s ease;
+        }
+        .admin-confirm-box h5 {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 18px;
+        }
+        .admin-confirm-box .sub {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .admin-confirm-box .sub b {
+            color: var(--accent-gold);
+        }
+        .admin-confirm-box .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .admin-confirm-box .btn-group button {
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            flex: 1;
+        }
+        .admin-confirm-box .btn-group button:active { transform: scale(0.92); }
+        .admin-confirm-box .btn-confirm {
+            background: var(--accent-success);
+            color: #fff;
+        }
+        [data-theme=dark] .admin-confirm-box .btn-confirm {
+            background: #10b981;
+            color: #fff;
+        }
+        .admin-confirm-box .btn-cancel {
+            background: var(--bg-input);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
         .cart-tab-container{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
         .cart-tab-btn{background:var(--bg-input);border:2px solid var(--border-color);border-radius:12px;padding:6px 16px;font-weight:700;font-size:13px;color:var(--text-muted);cursor:pointer;transition:all .2s}
         .cart-tab-btn.active{border-color:var(--accent-gold);background:var(--accent-gold);color:#fff}
@@ -283,10 +360,27 @@
             .toast-big{font-size:15px;padding:12px 16px;top:70px;min-width:200px}
             .toast-big .toast-actions button{font-size:12px;padding:4px 12px}
             .toast-big .toast-actions select{font-size:14px;padding:4px 8px;min-width:60px}
+            .admin-confirm-box{padding:20px}
+            .admin-confirm-box .btn-group button{padding:10px 16px;font-size:14px}
         }
     </style>
 </head>
 <body>
+
+<!-- 🆕 Admin Confirm Dialog -->
+<div class="admin-confirm-overlay" id="adminConfirmOverlay">
+    <div class="admin-confirm-box">
+        <div style="font-size:48px;margin-bottom:8px;">📦</div>
+        <h5>ပစ္စည်းအသစ်ထည့်ရန်</h5>
+        <div class="sub" id="adminConfirmMsg">
+            Barcode: <b id="confirmBarcode"></b> အတွက် <br>ပစ္စည်းအသစ်ထည့်မလား?
+        </div>
+        <div class="btn-group">
+            <button class="btn-confirm" onclick="confirmAddProduct()">✅ ယခုထည့်မည်</button>
+            <button class="btn-cancel" onclick="cancelAddProduct()">⏹️ နောက်မှ</button>
+        </div>
+    </div>
+</div>
 
 <div id="toastBig" class="toast-big">
     <div id="toastBigMsg">✅ ပစ္စည်းထည့်ပြီးပါပြီ</div>
@@ -313,7 +407,7 @@
         </div>
         <div id="full-reader"></div>
         <div class="scanner-controls">
-            <span class="scanner-status-text" id="full-scanner-status-text">?? စကန်ဖတ်နေပါသည်...</span>
+            <span class="scanner-status-text" id="full-scanner-status-text">🔍 စကန်ဖတ်နေပါသည်...</span>
         </div>
     </div>
 </div>
@@ -490,31 +584,28 @@
 
 <script>
 // ============================================================
-// 🆕 BLOCK BROWSER ACCESS - ONLY ALLOW INSTALLED APP (FIXED)
+// 🆕 BLOCK BROWSER ACCESS - ONLY ALLOW INSTALLED APP
 // ============================================================
 (function() {
-    // Check if running in standalone mode (installed app)
     var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                        window.navigator.standalone || 
                        window.location.protocol === 'app:';
     
-    // 🔥 If in standalone mode, allow access immediately
     if (isStandalone) {
         console.log('✅ Running as installed app - access granted');
         return;
     }
     
-    // Check if it's Chrome browser on Android
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     
-    // Block only if: Android + Chrome + NOT standalone
     if (isAndroid && isChrome) {
         document.body.innerHTML = `
             <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f1f5f9;font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:20px;text-align:center;">
                 <div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);">
                     <div style="font-size:64px;margin-bottom:16px;">📱</div>
-                    <p><b>App Install</b> လုပ်ပြီးမှ သုံးပါ။</p>
+                    <h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3>
+                    <p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p>
                     <button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">
                         📲 အက်ပ်ထည့်သွင်းမည်
                     </button>
@@ -554,12 +645,13 @@ window.addEventListener('beforeinstallprompt', function(e) {
     window.deferredPrompt = e;
     console.log('📲 Install prompt captured');
 });
+
 // ============================================================
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 's';
-var adminPassword = 'd';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -572,6 +664,7 @@ var myTopProductsChart = null;
 var scanPauseTimer = null;
 var isScanPaused = false;
 var isScannerClosed = false;
+var pendingBarcode = null;
 
 var carts = [[], [], [], []];
 var activeCartIndex = 0;
@@ -867,14 +960,13 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - FORCE CLOSE CAMERA WITH VIDEO REMOVAL
+// SCANNER FUNCTIONS
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
     if (mode.classList.contains('active')) {
         closeFullScanner();
     } else {
-        // If scanner was previously closed, reset state
         if (isScannerClosed) {
             isScannerClosed = false;
         }
@@ -883,10 +975,8 @@ function toggleFullScanner() {
 }
 
 function openFullScanner() {
-    // Reset closed flag
     isScannerClosed = false;
     
-    // Force clean up first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -894,10 +984,8 @@ function openFullScanner() {
         } catch(e) {}
         html5QrcodeScannerFull = null;
     }
-    // Clear reader div completely
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
-        // Remove any video elements
         var videos = readerDiv.querySelectorAll('video');
         videos.forEach(function(v) {
             try {
@@ -920,7 +1008,6 @@ function openFullScanner() {
 }
 
 function startScanner() {
-    // Clean up old scanner first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -941,7 +1028,6 @@ function startScanner() {
 }
 
 function closeFullScanner() {
-    // Force stop scanner completely
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -950,13 +1036,11 @@ function closeFullScanner() {
         html5QrcodeScannerFull = null;
     }
     
-    // Remove ALL video elements from reader div
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
         var videos = readerDiv.querySelectorAll('video');
         videos.forEach(function(v) {
             try {
-                // Stop all tracks
                 if (v.srcObject) {
                     var tracks = v.srcObject.getTracks();
                     tracks.forEach(function(track) {
@@ -970,7 +1054,6 @@ function closeFullScanner() {
         readerDiv.innerHTML = '';
     }
     
-    // Also try to find any video elements in the whole page
     var allVideos = document.querySelectorAll('video');
     allVideos.forEach(function(v) {
         try {
@@ -1012,10 +1095,8 @@ function toggleFullScannerScan() {
                 html5QrcodeScannerFull.stop();
             } catch(e) {}
         }
-        // Close fully to free camera
         closeFullScanner();
     } else {
-        // If closed, open fresh
         if (isScannerClosed) {
             isScannerClosed = false;
             openFullScanner();
@@ -1042,12 +1123,57 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// SCAN SUCCESS - 5 SECONDS PAUSE (No Error)
+// 🆕 ADMIN CONFIRM FUNCTIONS
+// ============================================================
+function confirmAddProduct() {
+    document.getElementById('adminConfirmOverlay').classList.remove('active');
+    // Switch to admin tab with barcode filled
+    switchTab('admin');
+    document.getElementById('new-barcode').value = pendingBarcode;
+    document.getElementById('new-name').focus();
+    pendingBarcode = null;
+}
+
+function cancelAddProduct() {
+    document.getElementById('adminConfirmOverlay').classList.remove('active');
+    pendingBarcode = null;
+    // Resume scanning
+    if (!isScanPaused && !isScannerClosed) {
+        canScan = true;
+        updateFullScannerStatus(true);
+    }
+}
+
+// ============================================================
+// SCAN SUCCESS - 5 SECONDS PAUSE + Admin Confirm
 // ============================================================
 function onScanSuccessFull(decodedText) {
     if (canScan && !isScanPaused) {
         playBeep();
-        handleScannedBarcode(decodedText);
+        
+        var product = null;
+        for (var i = 0; i < productsDB.length; i++) {
+            if (productsDB[i].barcode.toString() === decodedText.toString()) {
+                product = productsDB[i];
+                break;
+            }
+        }
+
+        if (!product) {
+            // 🔥 Show admin confirm dialog instead of auto-switching
+            pendingBarcode = decodedText;
+            document.getElementById('confirmBarcode').textContent = decodedText;
+            document.getElementById('adminConfirmOverlay').classList.add('active');
+            return;
+        }
+
+        var stock = getStockNumber(product);
+        if (stock <= 0) {
+            showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger', false);
+            return;
+        }
+
+        showBigToast('📦 ' + product.name, 'လက်ကျန် ' + stock + ' ခု | အရေအတွက်ရွေးပါ', 'success', true, product);
         
         isScanPaused = true;
         canScan = false;
@@ -1062,35 +1188,6 @@ function onScanSuccessFull(decodedText) {
             updateFullScannerStatus(true);
         }, 5000);
     }
-}
-
-// ============================================================
-// BARCODE HANDLER
-// ============================================================
-function handleScannedBarcode(decodedText) {
-    var product = null;
-    for (var i = 0; i < productsDB.length; i++) {
-        if (productsDB[i].barcode.toString() === decodedText.toString()) {
-            product = productsDB[i];
-            break;
-        }
-    }
-
-    if (!product) {
-        showBigToast('📢 Barcode မရှိသေးပါ', 'စီမံခန်းသို့ အလိုအလျောက်ပို့ထားပါသည်', 'danger', false);
-        switchTab('admin');
-        document.getElementById('new-barcode').value = decodedText;
-        document.getElementById('new-name').focus();
-        return;
-    }
-
-    var stock = getStockNumber(product);
-    if (stock <= 0) {
-        showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger', false);
-        return;
-    }
-
-    showBigToast('📦 ' + product.name, 'လက်ကျန် ' + stock + ' ခု | အရေအတွက်ရွေးပါ', 'success', true, product);
 }
 
 // ============================================================
@@ -1592,7 +1689,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY, DASHBOARD, ADMIN (shortened for space)
+// HISTORY, DASHBOARD, ADMIN (full working code)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
