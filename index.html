@@ -98,7 +98,7 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         
-        /* 🆕 Admin Confirm Dialog */
+        /* Admin Confirm Dialog */
         .admin-confirm-overlay {
             position: fixed;
             top: 0;
@@ -367,7 +367,7 @@
 </head>
 <body>
 
-<!-- 🆕 Admin Confirm Dialog -->
+<!-- Admin Confirm Dialog -->
 <div class="admin-confirm-overlay" id="adminConfirmOverlay">
     <div class="admin-confirm-box">
         <div style="font-size:48px;margin-bottom:8px;">📦</div>
@@ -650,8 +650,8 @@ window.addEventListener('beforeinstallprompt', function(e) {
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'km';
-var adminPassword = 'kmpos';
+var homePassword = 's';
+var adminPassword = 'ss';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -1123,11 +1123,16 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// 🆕 ADMIN CONFIRM FUNCTIONS
+// 🆕 ADMIN CONFIRM FUNCTIONS - FIXED (Close scanner on confirm)
 // ============================================================
 function confirmAddProduct() {
+    // 1. Close the confirm dialog
     document.getElementById('adminConfirmOverlay').classList.remove('active');
-    // Switch to admin tab with barcode filled
+    
+    // 2. 🔥 Close the scanner completely (like clicking X)
+    closeFullScanner();
+    
+    // 3. Switch to admin tab with barcode filled
     switchTab('admin');
     document.getElementById('new-barcode').value = pendingBarcode;
     document.getElementById('new-name').focus();
@@ -1135,10 +1140,12 @@ function confirmAddProduct() {
 }
 
 function cancelAddProduct() {
+    // 1. Close the confirm dialog
     document.getElementById('adminConfirmOverlay').classList.remove('active');
     pendingBarcode = null;
-    // Resume scanning
-    if (!isScanPaused && !isScannerClosed) {
+    
+    // 2. Resume scanning (if not already closed)
+    if (!isScannerClosed) {
         canScan = true;
         updateFullScannerStatus(true);
     }
@@ -1160,10 +1167,13 @@ function onScanSuccessFull(decodedText) {
         }
 
         if (!product) {
-            // 🔥 Show admin confirm dialog instead of auto-switching
+            // 🔥 Show admin confirm dialog
             pendingBarcode = decodedText;
             document.getElementById('confirmBarcode').textContent = decodedText;
             document.getElementById('adminConfirmOverlay').classList.add('active');
+            // Pause scanning while dialog is open
+            canScan = false;
+            updateFullScannerStatus(false);
             return;
         }
 
