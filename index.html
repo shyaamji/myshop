@@ -490,11 +490,76 @@
 
 <script>
 // ============================================================
+// 🆕 BLOCK BROWSER ACCESS - ONLY ALLOW INSTALLED APP (FIXED)
+// ============================================================
+(function() {
+    // Check if running in standalone mode (installed app)
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone || 
+                       window.location.protocol === 'app:';
+    
+    // 🔥 If in standalone mode, allow access immediately
+    if (isStandalone) {
+        console.log('✅ Running as installed app - access granted');
+        return;
+    }
+    
+    // Check if it's Chrome browser on Android
+    var isAndroid = /android/i.test(navigator.userAgent);
+    var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
+    
+    // Block only if: Android + Chrome + NOT standalone
+    if (isAndroid && isChrome) {
+        document.body.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f1f5f9;font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:20px;text-align:center;">
+                <div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);">
+                    <div style="font-size:64px;margin-bottom:16px;">📱</div>
+                    <p><b>App Install</b> လုပ်ပြီးမှ သုံးပါ။</p>
+                    <button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">
+                        📲 အက်ပ်ထည့်သွင်းမည်
+                    </button>
+                    <p style="color:#64748b;font-size:12px;margin-top:16px;"> <span onclick="tryAnyway()" style="color:#b45309;cursor:pointer;font-weight:600;"></span></p>
+                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(15,23,42,0.08);">                    
+                    </div>
+                </div>
+            </div>
+        `;
+        document.documentElement.style.background = '#f1f5f9';
+        document.documentElement.style.height = '100%';
+    }
+})();
+
+function installApp() {
+    if (window.deferredPrompt) {
+        window.deferredPrompt.prompt();
+        window.deferredPrompt.userChoice.then(function(choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ User accepted the install prompt');
+            } else {
+                console.log('❌ User dismissed the install prompt');
+            }
+            window.deferredPrompt = null;
+        });
+    } else {
+        alert('📲 အက်ပ်ထည့်သွင်းရန်:\n\n1. အပေါ်ဆုံး ⋮ (အစက်သုံးစက်) ကိုနှိပ်ပါ\n2. "Install App" ကိုရွေးပါ\n3. Install ကိုနှိပ်ပါ');
+    }
+}
+
+function tryAnyway() {
+    location.reload();
+}
+
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    console.log('📲 Install prompt captured');
+});
+// ============================================================
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'km';
-var adminPassword = 'kmpos';
+var homePassword = 's';
+var adminPassword = 'd';
 
 var canScan = false;
 var isFullScannerActive = false;
