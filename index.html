@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ကောင်းမြတ် - Premium POS</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
@@ -11,9 +11,17 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Disable pull-to-refresh */
+        body {
+            overscroll-behavior: contain;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            transition: background .3s, color .3s;
+        }
+        
         :root,[data-theme=light]{--bg-main:#f1f5f9;--bg-card:#ffffff;--bg-input:#f8fafc;--text-main:#0f172a;--text-muted:#64748b;--accent-gold:#b45309;--accent-success:#10b981;--accent-danger:#ef4444;--border-color:rgba(15,23,42,0.08);--chart-grid:rgba(0,0,0,0.03)}
         [data-theme=dark]{--bg-main:#0b0f19;--bg-card:#151c2c;--bg-input:#1e2640;--text-main:#f8fafc;--text-muted:#94a3b8;--accent-gold:#fbbf24;--accent-success:#10b981;--accent-danger:#f43f5e;--border-color:rgba(255,255,255,0.05);--chart-grid:rgba(255,255,255,0.03)}
-        body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg-main);color:var(--text-main);transition:background .3s,color .3s}
         #app-lock-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-main);z-index:99999;display:flex;align-items:center;justify-content:center}
         .lock-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:24px;padding:2.5rem 2rem;width:90%;max-width:380px;box-shadow:0 20px 40px -10px rgba(0,0,0,0.1)}
         #app-main-content{display:none}
@@ -30,6 +38,26 @@
         .btn-premium-gold{background:linear-gradient(135deg,#d97706,#b45309);color:#fff!important;font-weight:700;border:none;border-radius:14px;transition:all .2s}
         [data-theme=dark] .btn-premium-gold{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .btn-premium-gold:hover{opacity:.9;transform:translateY(-1px)}
+        
+        /* Refresh Button */
+        .refresh-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .refresh-btn:active {
+            transform: rotate(180deg) scale(0.9);
+        }
         
         .toast-big {
             position: fixed;
@@ -273,6 +301,82 @@
         .history-item-total{width:95px;text-align:right;font-weight:600}
         .admin-only-feature{display:none}
         
+        /* 🆕 Admin Confirm Dialog */
+        .admin-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInOverlay 0.3s ease;
+        }
+        .admin-confirm-overlay.active {
+            display: flex;
+        }
+        .admin-confirm-box {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: scaleIn 0.3s ease;
+        }
+        .admin-confirm-box h5 {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .admin-confirm-box .sub {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .admin-confirm-box .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .admin-confirm-box .btn-group button {
+            padding: 12px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+        .admin-confirm-box .btn-group button:active {
+            transform: scale(0.9);
+        }
+        .admin-confirm-box .btn-confirm {
+            background: var(--accent-success);
+            color: #fff;
+        }
+        .admin-confirm-box .btn-cancel {
+            background: var(--bg-input);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        [data-theme=dark] .admin-confirm-box .btn-confirm {
+            background: #10b981;
+            color: #fff;
+        }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
         @media (max-width:600px){
             .scanner-popup-toggle{width:54px;height:54px;font-size:24px;bottom:80px;right:12px}
             .scanner-full-mode .scanner-close-btn{top:8px;right:8px;width:40px;height:40px;font-size:18px}
@@ -283,10 +387,24 @@
             .toast-big{font-size:15px;padding:12px 16px;top:70px;min-width:200px}
             .toast-big .toast-actions button{font-size:12px;padding:4px 12px}
             .toast-big .toast-actions select{font-size:14px;padding:4px 8px;min-width:60px}
+            .admin-confirm-box{padding:20px}
+            .admin-confirm-box .btn-group button{padding:10px 20px;font-size:14px}
         }
     </style>
 </head>
 <body>
+
+<!-- 🆕 Admin Confirm Dialog -->
+<div class="admin-confirm-overlay" id="adminConfirmOverlay">
+    <div class="admin-confirm-box">
+        <h5>📦 ပစ္စည်းအသစ်ထည့်ရန်</h5>
+        <div class="sub" id="adminConfirmMsg">Barcode: <b id="confirmBarcode"></b> အတွက် ပစ္စည်းအသစ်ထည့်မလား?</div>
+        <div class="btn-group">
+            <button class="btn-confirm" onclick="confirmAddProduct()">✅ ထည့်မည်</button>
+            <button class="btn-cancel" onclick="cancelAddProduct()">⏹️ နောက်မှ</button>
+        </div>
+    </div>
+</div>
 
 <div id="toastBig" class="toast-big">
     <div id="toastBigMsg">✅ ပစ္စည်းထည့်ပြီးပါပြီ</div>
@@ -343,6 +461,12 @@
                 <span style="color:var(--accent-gold);">✨</span> ကောင်းမြတ် ကုန်စုံဆိုင်
                 <span id="role-badge" class="badge font-monospace ms-2" style="font-size:11px;display:none;"></span>
             </span>
+            <div class="d-flex gap-2">
+                <!-- 🆕 Refresh Button (instead of pull-to-refresh) -->
+                <button class="refresh-btn" onclick="manualRefresh()" title="Refresh Data">
+                    🔄
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -493,8 +617,8 @@
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 'ok';
-var adminPassword = 'okok';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 
 var canScan = false;
 var isFullScannerActive = false;
@@ -513,6 +637,40 @@ var activeCartIndex = 0;
 var toastProduct = null;
 var toastQty = 1;
 
+// Admin confirm variables
+var pendingBarcode = null;
+var pendingProduct = null;
+
+// ============================================================
+// 🆕 MANUAL REFRESH (instead of pull-to-refresh)
+// ============================================================
+function manualRefresh() {
+    // Show loading state
+    var btn = document.querySelector('.refresh-btn');
+    btn.innerHTML = '⏳';
+    btn.style.transform = 'rotate(180deg)';
+    
+    // Reload data from sheet
+    loadProductsFromSheet();
+    loadSalesHistoryFromSheet();
+    
+    setTimeout(function() {
+        btn.innerHTML = '🔄';
+        btn.style.transform = 'rotate(0deg)';
+        showBigToast('✅ Data Refresh ပြီးပါပြီ', '', 'success', false);
+    }, 1500);
+}
+
+// Disable pull-to-refresh
+document.addEventListener('touchmove', function(e) {
+    if (e.target.closest('#app-main-content') && window.scrollY === 0) {
+        // Allow scrolling inside content but prevent pull-to-refresh
+    }
+}, { passive: true });
+
+// ============================================================
+// Helper: Get Stock as Number
+// ============================================================
 function getStockNumber(product) {
     if (!product) return 0;
     var val = product.stock;
@@ -717,6 +875,34 @@ function switchTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
     if (tabId === 'admin') renderAdminProducts(productsDB);
     if (tabId === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); }
+    
+    // If switching to admin and there's a pending barcode, show confirm
+    if (tabId === 'admin' && pendingBarcode) {
+        showAdminConfirm(pendingBarcode);
+    }
+}
+
+// ============================================================
+// 🆕 ADMIN CONFIRM DIALOG
+// ============================================================
+function showAdminConfirm(barcode) {
+    document.getElementById('confirmBarcode').textContent = barcode;
+    document.getElementById('adminConfirmOverlay').classList.add('active');
+}
+
+function confirmAddProduct() {
+    document.getElementById('adminConfirmOverlay').classList.remove('active');
+    // Focus on name field
+    document.getElementById('new-name').focus();
+    showBigToast('✏️ ပစ္စည်းအချက်အလက်ဖြည့်ပါ', '', 'success', false);
+}
+
+function cancelAddProduct() {
+    document.getElementById('adminConfirmOverlay').classList.remove('active');
+    pendingBarcode = null;
+    // Switch back to sales tab
+    switchTab('sales');
+    showBigToast('⏹️ နောက်မှထည့်ပါမည်', '', 'info', false);
 }
 
 // ============================================================
@@ -802,14 +988,13 @@ function reloadOnlineHistoryTab(btn) {
 }
 
 // ============================================================
-// SCANNER FUNCTIONS - FORCE CLOSE CAMERA WITH VIDEO REMOVAL
+// SCANNER FUNCTIONS
 // ============================================================
 function toggleFullScanner() {
     var mode = document.getElementById('scannerFullMode');
     if (mode.classList.contains('active')) {
         closeFullScanner();
     } else {
-        // If scanner was previously closed, reset state
         if (isScannerClosed) {
             isScannerClosed = false;
         }
@@ -818,10 +1003,8 @@ function toggleFullScanner() {
 }
 
 function openFullScanner() {
-    // Reset closed flag
     isScannerClosed = false;
     
-    // Force clean up first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -829,10 +1012,8 @@ function openFullScanner() {
         } catch(e) {}
         html5QrcodeScannerFull = null;
     }
-    // Clear reader div completely
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
-        // Remove any video elements
         var videos = readerDiv.querySelectorAll('video');
         videos.forEach(function(v) {
             try {
@@ -855,7 +1036,6 @@ function openFullScanner() {
 }
 
 function startScanner() {
-    // Clean up old scanner first
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -876,7 +1056,6 @@ function startScanner() {
 }
 
 function closeFullScanner() {
-    // Force stop scanner completely
     if (html5QrcodeScannerFull) {
         try {
             html5QrcodeScannerFull.stop();
@@ -885,13 +1064,11 @@ function closeFullScanner() {
         html5QrcodeScannerFull = null;
     }
     
-    // Remove ALL video elements from reader div
     var readerDiv = document.getElementById('full-reader');
     if (readerDiv) {
         var videos = readerDiv.querySelectorAll('video');
         videos.forEach(function(v) {
             try {
-                // Stop all tracks
                 if (v.srcObject) {
                     var tracks = v.srcObject.getTracks();
                     tracks.forEach(function(track) {
@@ -905,7 +1082,6 @@ function closeFullScanner() {
         readerDiv.innerHTML = '';
     }
     
-    // Also try to find any video elements in the whole page
     var allVideos = document.querySelectorAll('video');
     allVideos.forEach(function(v) {
         try {
@@ -947,10 +1123,8 @@ function toggleFullScannerScan() {
                 html5QrcodeScannerFull.stop();
             } catch(e) {}
         }
-        // Close fully to free camera
         closeFullScanner();
     } else {
-        // If closed, open fresh
         if (isScannerClosed) {
             isScannerClosed = false;
             openFullScanner();
@@ -977,13 +1151,40 @@ function updateFullScannerStatus(isScanning) {
 }
 
 // ============================================================
-// SCAN SUCCESS - 5 SECONDS PAUSE (No Error)
+// 🆕 SCAN SUCCESS - WITH ADMIN CONFIRM (No Scanner Close)
 // ============================================================
 function onScanSuccessFull(decodedText) {
     if (canScan && !isScanPaused) {
         playBeep();
-        handleScannedBarcode(decodedText);
         
+        var product = null;
+        for (var i = 0; i < productsDB.length; i++) {
+            if (productsDB[i].barcode.toString() === decodedText.toString()) {
+                product = productsDB[i];
+                break;
+            }
+        }
+
+        if (!product) {
+            // 🔥 NEW: Don't close scanner, just switch to admin with confirm
+            pendingBarcode = decodedText;
+            // Switch to admin tab
+            switchTab('admin');
+            // Show confirm dialog
+            showAdminConfirm(decodedText);
+            // Keep scanner running in background
+            return;
+        }
+
+        var stock = getStockNumber(product);
+        if (stock <= 0) {
+            showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger', false);
+            return;
+        }
+
+        showBigToast('📦 ' + product.name, 'လက်ကျန် ' + stock + ' ခု | အရေအတွက်ရွေးပါ', 'success', true, product);
+        
+        // Pause scanning for 5 seconds
         isScanPaused = true;
         canScan = false;
         updateFullScannerStatus(false);
@@ -997,35 +1198,6 @@ function onScanSuccessFull(decodedText) {
             updateFullScannerStatus(true);
         }, 5000);
     }
-}
-
-// ============================================================
-// BARCODE HANDLER
-// ============================================================
-function handleScannedBarcode(decodedText) {
-    var product = null;
-    for (var i = 0; i < productsDB.length; i++) {
-        if (productsDB[i].barcode.toString() === decodedText.toString()) {
-            product = productsDB[i];
-            break;
-        }
-    }
-
-    if (!product) {
-        showBigToast('📢 Barcode မရှိသေးပါ', 'စီမံခန်းသို့ အလိုအလျောက်ပို့ထားပါသည်', 'danger', false);
-        switchTab('admin');
-        document.getElementById('new-barcode').value = decodedText;
-        document.getElementById('new-name').focus();
-        return;
-    }
-
-    var stock = getStockNumber(product);
-    if (stock <= 0) {
-        showBigToast('🔴 "' + product.name + '" ကုန်သွားပါပြီ', 'လက်ကျန် ၀', 'danger', false);
-        return;
-    }
-
-    showBigToast('📦 ' + product.name, 'လက်ကျန် ' + stock + ' ခု | အရေအတွက်ရွေးပါ', 'success', true, product);
 }
 
 // ============================================================
@@ -1433,7 +1605,7 @@ function changeQtySelectFromSuggestion(barcode, newQty) {
 }
 
 // ============================================================
-// CHECKOUT
+// 🆕 CHECKOUT - Customer Name Blank by Default
 // ============================================================
 function checkout() {
     var cart = carts[activeCartIndex];
@@ -1442,7 +1614,12 @@ function checkout() {
         return;
     }
 
-    var customerName = prompt("ဝယ်ယူသူအမည် -", "အထွေထွေ") || "အထွေထွေ";
+    var customerName = prompt("ဝယ်ယူသူအမည် -", "") || "";
+    if (customerName === null) return; // User cancelled
+    if (customerName.trim() === "") {
+        customerName = "ဧည့်သည်";
+    }
+    
     var voucherId = "WM-" + Date.now().toString().slice(-6);
     var total = document.getElementById('cart-total').innerText;
     var discountVal = document.getElementById('cart-discount-input').value.trim() || "0";
@@ -1527,7 +1704,7 @@ function printVoucher(sale) {
 }
 
 // ============================================================
-// HISTORY, DASHBOARD, ADMIN (shortened for space)
+// HISTORY, DASHBOARD, ADMIN (full working code)
 // ============================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list');
@@ -1968,6 +2145,8 @@ function addNewProduct() {
                 document.getElementById('new-stock').value = '';
                 document.getElementById('new-cost').value = '0';
                 document.getElementById('new-min-stock').value = '5';
+                // Clear pending barcode
+                pendingBarcode = null;
                 loadProductsFromSheet();
                 switchTab('sales');
             }, 1500);
