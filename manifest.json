@@ -1,21 +1,24 @@
 {
   "name": "ကောင်းမြတ် Premium POS",
   "short_name": "KM-POS",
-  "start_url": ".",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#f8fafc",
+  "orientation": "portrait",
   "description": "Premium POS System",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
