@@ -582,13 +582,31 @@ function printVoucher(sale) {
     frameDoc.write(printContent);
     frameDoc.close();
     
-    printFrame.contentWindow.focus();
-    printFrame.contentWindow.print();
+    // Wait for iframe content to completely load before trigger printing
+    printFrame.onload = function() {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        
+        // Remove iframe after print dialog opens
+        setTimeout(function() {
+            if(printFrame && printFrame.parentNode) {
+                document.body.removeChild(printFrame);
+            }
+        }, 1000);
+    };
     
-    // Remove iframe after print
+    // Fallback for browsers that don't trigger iframe onload perfectly
     setTimeout(function() {
-        document.body.removeChild(printFrame);
-    }, 1000);
+        try {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+            setTimeout(function() {
+                if(printFrame && printFrame.parentNode) {
+                    document.body.removeChild(printFrame);
+                }
+            }, 1000);
+        } catch(e) {}
+    }, 500);
 }
 
 // HISTORY
