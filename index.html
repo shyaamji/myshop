@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* 🔥 Disable pull-to-refresh 3times after 10 minutes */
+        /* 🔥 Disable pull-to-refresh completely */
         html, body {
             overscroll-behavior: none !important;
             overscroll-behavior-y: none !important;
@@ -542,8 +542,8 @@ window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault();
 // CONFIGURATION
 // ============================================================
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 's';
-var adminPassword = 'ss';
+var homePassword = 'km';
+var adminPassword = 'kmpos';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
 var mySalesChart = null, myTopProductsChart = null;
