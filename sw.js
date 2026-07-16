@@ -1,4 +1,4 @@
-const CACHE_NAME = 'km-pos-v1';
+const CACHE_NAME = 'ဝင်းသီရိ-v1';
 const ASSETS = [
   './',
   './index.html',
