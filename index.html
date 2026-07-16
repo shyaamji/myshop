@@ -99,7 +99,7 @@
         .inline-cart-btn:active{transform:scale(0.97);background:var(--bg-input)}
         .inline-cart-btn .inline-cart-icon{font-size:16px}
         .inline-cart-btn .inline-cart-text{flex:1;text-align:left}
-        /* 🔥 FIXED: Cart Total - more prominent */
+        /* 🔥 Cart Total Badge - Ks in front */
         .inline-cart-btn .inline-cart-total {
             color: #fff !important;
             background: linear-gradient(135deg, #d97706, #b45309);
@@ -115,6 +115,34 @@
             background: linear-gradient(135deg, #fbbf24, #d97706);
             color: #000 !important;
             box-shadow: 0 2px 6px rgba(251,191,36,0.4);
+        }
+        
+        /* 🔥 Discount & Payment Labels */
+        .discount-label, .payment-label {
+            font-weight: 700 !important;
+            font-size: 10px !important;
+        }
+        .discount-label {
+            color: var(--accent-gold) !important;
+        }
+        .payment-label {
+            color: var(--accent-gold) !important;
+        }
+        /* 🔥 Payment Mode Select - colored options */
+        #cart-payment-mode {
+            font-weight: 700 !important;
+        }
+        #cart-payment-mode option[value="Cash"] {
+            color: #16a34a !important;
+            font-weight: 700;
+        }
+        #cart-payment-mode option[value="KPay"] {
+            color: #2563eb !important;
+            font-weight: 700;
+        }
+        #cart-payment-mode option[value="Wave"] {
+            color: #0891b2 !important;
+            font-weight: 700;
         }
         
         /* Cart tabs & Search */
@@ -298,7 +326,7 @@
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn">
                     <span class="inline-cart-icon">🛒</span>
                     <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
-                    <span class="inline-cart-total" id="inlineCartTotal">0 Ks</span>
+                    <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
             </div>
             <div class="sales-grid-layout">
@@ -332,15 +360,15 @@
                     <div class="px-4 py-3 border-top" style="background:var(--bg-card);">
                         <div class="row g-2">
                             <div class="col-6">
-                                <label class="text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
+                                <label class="discount-label text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
                                 <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="ဥပမာ- 500 သို့ 5%" oninput="renderCart()">
                             </div>
                             <div class="col-6">
-                                <label class="text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
+                                <label class="payment-label text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
                                 <select id="cart-payment-mode" class="form-control form-control-sm">
-                                    <option value="Cash">Cash (လက်ငင်း)</option>
-                                    <option value="KPay">KPay</option>
-                                    <option value="Wave">Wave Money</option>
+                                    <option value="Cash">💵 Cash (လက်ငင်း)</option>
+                                    <option value="KPay">📱 KPay</option>
+                                    <option value="Wave">🌊 Wave Money</option>
                                 </select>
                             </div>
                         </div>
@@ -376,61 +404,23 @@
         </div>
 
         <div id="dashboard" class="tab-content">
-            <div class="custom-card">
-                <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6>
-                <div class="row g-2">
-                    <div class="col-6"><label class="small text-muted mb-1">စတင်မည့်ရက်</label><input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div>
-                    <div class="col-6"><label class="small text-muted mb-1">နောက်ဆုံးရက်</label><input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div>
-                </div>
-            </div>
-            <div class="row g-3 mb-4">
-                <div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(217,119,6,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">TOTAL SALES</small><h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color:var(--accent-gold);">0 Ks</h2><div class="small text-muted font-monospace" id="payment-split-summary" style="font-size:11px;"></div></div></div>
-                <div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(16,185,129,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">NET PROFIT</small><h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2><small class="small text-muted" id="today-date-string"></small></div></div>
-            </div>
+            <div class="custom-card"><h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6><div class="row g-2"><div class="col-6"><label class="small text-muted mb-1">စတင်မည့်ရက်</label><input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div><div class="col-6"><label class="small text-muted mb-1">နောက်ဆုံးရက်</label><input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div></div></div>
+            <div class="row g-3 mb-4"><div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(217,119,6,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">TOTAL SALES</small><h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color:var(--accent-gold);">0 Ks</h2><div class="small text-muted font-monospace" id="payment-split-summary" style="font-size:11px;"></div></div></div><div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(16,185,129,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">NET PROFIT</small><h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2><small class="small text-muted" id="today-date-string"></small></div></div></div>
             <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6><div style="position:relative;width:100%;height:220px;"><canvas id="salesChart"></canvas></div></div>
             <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">🏆 အရောင်းရဆုံး ပစ္စည်းပြဇယား</h6><div style="position:relative;width:100%;height:220px;"><canvas id="topProductsChart"></canvas></div></div>
             <div class="custom-card"><h6 class="fw-bold text-secondary mb-3">📅 ရက်စွဲအလိုက် စုစုပေါင်း ရောင်းရငွေစာရင်း</h6><div class="table-responsive"><table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px;border-color:var(--border-color);"><thead><tr class="table-light" style="color:var(--accent-gold);"><th>နေ့ရက်စွဲ</th><th>စုစုပေါင်းရောင်းရငွေ</th></tr></thead><tbody id="date-sales-table-body"><tr><td colspan="2" class="text-muted py-3">ဒေတာများကို တွက်ချက်နေပါသည်...</td></tr></tbody></table></div></div>
         </div>
 
         <div id="admin" class="tab-content">
-            <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button>
-            </div>
-            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
-                    <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button>
-                </div>
-                <form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3">
-                    <input type="hidden" name="jsonData" id="form-json-data">
-                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div>
-                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div>
-                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div>
-                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div>
-                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div>
-                    <div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div>
-                    <div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button></div>
-                </form>
-                <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
-            </div>
-            <div class="custom-card">
-                <h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6>
-                <div class="position-relative mb-4">
-                    <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                        <input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search">
-                    </form>
-                    <div id="admin-search-suggestions" class="search-results"></div>
-                </div>
-                <div id="admin-product-list" class="d-flex flex-column gap-2"></div>
-            </div>
+            <div class="d-flex justify-content-end mb-3"><button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button></div>
+            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6><button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button></div><form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3"><input type="hidden" name="jsonData" id="form-json-data"><div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div><div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div><div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button></div></form><iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe></div>
+            <div class="custom-card"><h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6><div class="position-relative mb-4"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search"></form><div id="admin-search-suggestions" class="search-results"></div></div><div id="admin-product-list" class="d-flex flex-column gap-2"></div></div>
         </div>
     </div>
 </div>
 
 <script>
-// ============================================================
 // BLOCK BROWSER ACCESS
-// ============================================================
 (function() {
     var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'app:';
     if (isStandalone) { console.log('✅ Running as installed app - access granted'); return; }
@@ -465,14 +455,14 @@ function closePopCartDirect() { document.getElementById('popCartOverlay').classL
 function updatePopCartContent() {
     var cart = carts[activeCartIndex] || [], content = document.getElementById('popCartContent'), totalRow = document.getElementById('popCartTotalRow'), totalValue = document.getElementById('popCartTotalValue');
     if (cart.length === 0) { content.innerHTML = '<div class="pop-cart-empty">ပစ္စည်းများ မရှိသေးပါ</div>'; totalRow.style.display = 'none'; }
-    else { var html = '', total = 0; for (var i = 0; i < cart.length; i++) { var item = cart[i]; total += item.price * item.qty; html += '<div class="pop-cart-item"><span class="pop-item-name">' + item.name + '</span><span class="pop-item-price">' + Number(item.price).toLocaleString() + ' Ks</span><span class="pop-item-qty">×' + item.qty + '</span></div>'; } content.innerHTML = html; totalRow.style.display = 'flex'; totalValue.textContent = total.toLocaleString() + ' Ks'; }
+    else { var html = '', total = 0; for (var i = 0; i < cart.length; i++) { var item = cart[i]; total += item.price * item.qty; html += '<div class="pop-cart-item"><span class="pop-item-name">' + item.name + '</span><span class="pop-item-price">' + Number(item.price).toLocaleString() + ' Ks</span><span class="pop-item-qty">×' + item.qty + '</span></div>'; } content.innerHTML = html; totalRow.style.display = 'flex'; totalValue.textContent = 'Ks - ' + total.toLocaleString(); }
     updateInlineCartPreview();
 }
 function updateInlineCartPreview() {
     var cart = carts[activeCartIndex] || [], textEl = document.getElementById('inlineCartText'), totalEl = document.getElementById('inlineCartTotal'), totalItems = 0, totalAmount = 0;
     for (var i = 0; i < cart.length; i++) { totalItems += cart[i].qty; totalAmount += cart[i].price * cart[i].qty; }
-    if (cart.length === 0) { textEl.textContent = 'ပစ္စည်းမရှိသေးပါ'; totalEl.textContent = '0 Ks'; }
-    else { textEl.textContent = totalItems + ' ခု'; totalEl.textContent = totalAmount.toLocaleString() + ' Ks'; }
+    if (cart.length === 0) { textEl.textContent = 'ပစ္စည်းမရှိသေးပါ'; totalEl.textContent = 'Ks - 0'; }
+    else { textEl.textContent = totalItems + ' ခု'; totalEl.textContent = 'Ks - ' + totalAmount.toLocaleString(); }
 }
 
 // AUDIO
@@ -536,30 +526,16 @@ function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toStr
 // CHECKOUT
 function checkout() { var cart = carts[activeCartIndex]; if (!cart.length) { showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false); return; } var cn = prompt("ဝယ်သူအမည် -", "customer") || "customer", vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { action: "addSale", voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() }; salesHistory.unshift(sd); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); printVoucher(sd); var fd = new FormData(); fd.append('jsonData', JSON.stringify(sd)); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false); }).catch(function() {}); carts[activeCartIndex] = []; document.getElementById('cart-discount-input').value = ''; renderCart(); updateScannedPreview(); updatePopCartContent(); clearSearchInputAndBox(); showBigToast('🧹 ရှင်းပြီး', '', 'success', false); }
 
-// 🔥 FIXED: PRINT VOUCHER - handles both object and string
+// PRINT VOUCHER
 function printVoucher(sale) {
-    // If sale is a string (from history onclick), find it in salesHistory
-    if (typeof sale === 'string') {
-        for (var i = 0; i < salesHistory.length; i++) {
-            if (salesHistory[i].voucherId === sale) {
-                sale = salesHistory[i];
-                break;
-            }
-        }
-        if (typeof sale === 'string') return; // not found
-    }
-    
+    if (typeof sale === 'string') { for (var i = 0; i < salesHistory.length; i++) { if (salesHistory[i].voucherId === sale) { sale = salesHistory[i]; break; } } if (typeof sale === 'string') return; }
     var pz = document.getElementById('print-receipt-zone'), ih = '', st = 0;
-    for (var i = 0; i < sale.items.length; i++) {
-        var it = sale.items[i];
-        st += Number(it.price) * Number(it.qty);
-        ih += '<tr style="font-size:16px;font-weight:bold;border-bottom:1px dashed #bbb;"><td style="text-align:left;padding:10px 0;word-break:break-word;">' + it.name + '</td><td style="text-align:right;padding:10px 0;">' + Number(it.price).toLocaleString() + '</td><td style="text-align:center;padding:10px 0;">' + it.qty + '</td><td style="text-align:right;padding:10px 0;">' + (it.price * it.qty).toLocaleString() + '</td></tr>';
-    }
+    for (var i = 0; i < sale.items.length; i++) { var it = sale.items[i]; st += Number(it.price) * Number(it.qty); ih += '<tr style="font-size:16px;font-weight:bold;border-bottom:1px dashed #bbb;"><td style="text-align:left;padding:10px 0;word-break:break-word;">' + it.name + '</td><td style="text-align:right;padding:10px 0;">' + Number(it.price).toLocaleString() + '</td><td style="text-align:center;padding:10px 0;">' + it.qty + '</td><td style="text-align:right;padding:10px 0;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; }
     pz.innerHTML = '<div style="width:100%;box-sizing:border-box;padding:15px;font-family:Arial,sans-serif;color:#000;background:white;"><div style="text-align:center;font-size:26px;font-weight:bold;margin-bottom:5px;">ကောင်းမြတ် ကုန်စုံဆိုင်</div><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:15px;border-collapse:collapse;margin-bottom:10px;line-height:1.6;"><tr><td style="font-weight:bold;width:30%;">Voucher:</td><td style="text-align:right;font-weight:bold;font-size:16px;">' + sale.voucherId + '</td></tr><tr><td style="font-weight:bold;">ဝယ်သူ:</td><td style="text-align:right;font-weight:bold;">' + sale.customerName + '</td></tr><tr><td style="font-weight:bold;">နေ့ရက်:</td><td style="text-align:right;">' + (sale.date || new Date().toLocaleString()) + '</td></tr><tr><td style="font-weight:bold;">ပေးချေမှု:</td><td style="text-align:right;font-weight:bold;">' + (sale.paymentMode || 'Cash') + '</td></tr></table><table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead><tr style="font-size:15px;font-weight:bold;border-top:2px dashed #000;border-bottom:2px dashed #000;background:#f9f9f9;"><th style="text-align:left;padding:8px 0;">ပစ္စည်း</th><th style="text-align:right;padding:8px 0;">ဈေး</th><th style="text-align:center;padding:8px 0;">ခု</th><th style="text-align:right;padding:8px 0;">သင့်ငွေ</th></tr></thead><tbody>' + ih + '</tbody></table><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:16px;border-collapse:collapse;"><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + st.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + (sale.discount || 0) + '</td></tr><tr style="font-size:22px;font-weight:bold;"><td>စုစုပေါင်း:</td><td style="text-align:right;color:#000;">' + sale.total + ' Ks</td></tr></table><div style="border-top:2px dashed #000;margin:10px 0;"></div><div style="text-align:center;font-size:14px;font-weight:bold;margin-top:15px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></div>';
     setTimeout(function() { window.print(); }, 300);
 }
 
-// 🔥 FIXED: HISTORY - print button uses voucherId instead of JSON string
+// HISTORY
 function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + sale.voucherId + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span><small class="text-muted font-monospace">' + (sale.date || '') + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + sale.customerName + '</b> | 💳 ' + (sale.paymentMode || 'Cash') + '</div><div class="small mb-2 text-danger">Discount: <b>' + (sale.discount || '0') + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + sale.total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + sale.voucherId + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
 function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { return s.voucherId.toLowerCase().includes(t) || s.customerName.toLowerCase().includes(t); })); }
 function deleteSaleFromSheet(vid) { if (!confirm("ဖျက်မှာသေချာလား?")) return; salesHistory = salesHistory.filter(function(s) { return s.voucherId.toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: vid })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); }); }
