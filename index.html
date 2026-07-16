@@ -521,6 +521,17 @@ window.onload = function() {
     var si = document.getElementById('name-search-input'); if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent();
     if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); }
+    
+    // 🆕 Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./service-worker.js').then(function(registration) {
+                console.log('✅ Service Worker registered');
+            }).catch(function(err) {
+                console.log('❌ Service Worker registration failed:', err);
+            });
+        });
+    }
 };
 function dismissKeyboard() { if (document.activeElement) document.activeElement.blur(); }
 </script>
