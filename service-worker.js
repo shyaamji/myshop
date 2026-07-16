@@ -1,5 +1,5 @@
-// Service Worker for ကောင်းမြတ် POS
-var CACHE_NAME = 'km-pos-v1';
+// Service Worker for ဝင်းသီရိ
+var CACHE_NAME = 'ဝင်းသီရိ-v1';
 var urlsToCache = [
     './',
     './index.html',
