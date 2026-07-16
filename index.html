@@ -76,7 +76,7 @@
         @keyframes fadeInOverlay{from{opacity:0}to{opacity:1}}
         @keyframes scaleIn{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
         
-        /* 🆕 POP CART OVERLAY */
+        /* POP CART OVERLAY */
         .pop-cart-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99990;display:none;align-items:flex-end;justify-content:center}
         .pop-cart-overlay.active{display:flex}
         .pop-cart-sheet{background:var(--bg-card);border-radius:24px 24px 0 0;width:100%;max-width:600px;max-height:70vh;overflow-y:auto;padding:20px 16px 30px;box-shadow:0 -10px 40px rgba(0,0,0,0.3);border:1px solid var(--border-color);border-bottom:none;animation:slideUp 0.3s ease}
@@ -93,15 +93,31 @@
         .pop-cart-total-row .pop-total-value{color:var(--accent-gold);font-size:20px}
         .pop-cart-empty{text-align:center;color:var(--text-muted);padding:24px 0;font-size:13px}
         
-        /* 🆕 Inline Cart Preview */
+        /* Inline Cart Preview */
         .inline-cart-preview-row{display:flex;align-items:center;gap:6px;margin-bottom:0.75rem}
         .inline-cart-btn{display:flex;align-items:center;gap:5px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:6px 10px;cursor:pointer;transition:all 0.2s;font-size:12px;font-weight:600;color:var(--text-main);flex:1}
         .inline-cart-btn:active{transform:scale(0.97);background:var(--bg-input)}
         .inline-cart-btn .inline-cart-icon{font-size:16px}
         .inline-cart-btn .inline-cart-text{flex:1;text-align:left}
-        .inline-cart-btn .inline-cart-total{color:var(--accent-gold);font-weight:700;white-space:nowrap}
+        /* 🔥 FIXED: Cart Total - more prominent */
+        .inline-cart-btn .inline-cart-total {
+            color: #fff !important;
+            background: linear-gradient(135deg, #d97706, #b45309);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(180,83,9,0.3);
+            letter-spacing: 0.3px;
+        }
+        [data-theme=dark] .inline-cart-btn .inline-cart-total {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #000 !important;
+            box-shadow: 0 2px 6px rgba(251,191,36,0.4);
+        }
         
-        /* 🆕 REDESIGNED: Cart tabs & Search */
+        /* Cart tabs & Search */
         .search-card-box h6{font-size:13px!important;margin-bottom:6px!important}
         .search-card-box .form-control{padding:10px 14px!important;font-size:14px!important}
         .cart-tab-container{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
@@ -520,11 +536,31 @@ function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toStr
 // CHECKOUT
 function checkout() { var cart = carts[activeCartIndex]; if (!cart.length) { showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false); return; } var cn = prompt("ဝယ်သူအမည် -", "customer") || "customer", vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { action: "addSale", voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() }; salesHistory.unshift(sd); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); printVoucher(sd); var fd = new FormData(); fd.append('jsonData', JSON.stringify(sd)); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false); }).catch(function() {}); carts[activeCartIndex] = []; document.getElementById('cart-discount-input').value = ''; renderCart(); updateScannedPreview(); updatePopCartContent(); clearSearchInputAndBox(); showBigToast('🧹 ရှင်းပြီး', '', 'success', false); }
 
-// PRINT VOUCHER
-function printVoucher(sale) { var pz = document.getElementById('print-receipt-zone'), ih = '', st = 0; for (var i = 0; i < sale.items.length; i++) { var it = sale.items[i]; st += Number(it.price) * Number(it.qty); ih += '<tr style="font-size:16px;font-weight:bold;border-bottom:1px dashed #bbb;"><td style="text-align:left;padding:10px 0;">' + it.name + '</td><td style="text-align:right;padding:10px 0;">' + Number(it.price).toLocaleString() + '</td><td style="text-align:center;padding:10px 0;">' + it.qty + '</td><td style="text-align:right;padding:10px 0;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; } pz.innerHTML = '<div style="width:100%;padding:15px;font-family:Arial;color:#000;background:white;"><div style="text-align:center;font-size:26px;font-weight:bold;">ကောင်းမြတ် ကုန်စုံဆိုင်</div><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:15px;"><tr><td>Voucher:</td><td style="text-align:right;font-weight:bold;">' + sale.voucherId + '</td></tr><tr><td>ဝယ်သူ:</td><td style="text-align:right;">' + sale.customerName + '</td></tr><tr><td>နေ့ရက်:</td><td style="text-align:right;">' + (sale.date || '') + '</td></tr><tr><td>ပေးချေမှု:</td><td style="text-align:right;">' + (sale.paymentMode || 'Cash') + '</td></tr></table><table style="width:100%;margin-top:5px;"><thead><tr style="font-size:15px;font-weight:bold;border-top:2px dashed #000;border-bottom:2px dashed #000;"><th>ပစ္စည်း</th><th>ဈေး</th><th>ခု</th><th>သင့်ငွေ</th></tr></thead><tbody>' + ih + '</tbody></table><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:16px;"><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + st.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + (sale.discount || 0) + '</td></tr><tr style="font-size:22px;font-weight:bold;"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + sale.total + ' Ks</td></tr></table><div style="text-align:center;font-size:14px;margin-top:15px;">ဝယ်ယူမှုအတွက် ကျေးဇူးတင်ပါသည်!</div></div>'; setTimeout(function() { window.print(); }, 300); }
+// 🔥 FIXED: PRINT VOUCHER - handles both object and string
+function printVoucher(sale) {
+    // If sale is a string (from history onclick), find it in salesHistory
+    if (typeof sale === 'string') {
+        for (var i = 0; i < salesHistory.length; i++) {
+            if (salesHistory[i].voucherId === sale) {
+                sale = salesHistory[i];
+                break;
+            }
+        }
+        if (typeof sale === 'string') return; // not found
+    }
+    
+    var pz = document.getElementById('print-receipt-zone'), ih = '', st = 0;
+    for (var i = 0; i < sale.items.length; i++) {
+        var it = sale.items[i];
+        st += Number(it.price) * Number(it.qty);
+        ih += '<tr style="font-size:16px;font-weight:bold;border-bottom:1px dashed #bbb;"><td style="text-align:left;padding:10px 0;word-break:break-word;">' + it.name + '</td><td style="text-align:right;padding:10px 0;">' + Number(it.price).toLocaleString() + '</td><td style="text-align:center;padding:10px 0;">' + it.qty + '</td><td style="text-align:right;padding:10px 0;">' + (it.price * it.qty).toLocaleString() + '</td></tr>';
+    }
+    pz.innerHTML = '<div style="width:100%;box-sizing:border-box;padding:15px;font-family:Arial,sans-serif;color:#000;background:white;"><div style="text-align:center;font-size:26px;font-weight:bold;margin-bottom:5px;">ကောင်းမြတ် ကုန်စုံဆိုင်</div><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:15px;border-collapse:collapse;margin-bottom:10px;line-height:1.6;"><tr><td style="font-weight:bold;width:30%;">Voucher:</td><td style="text-align:right;font-weight:bold;font-size:16px;">' + sale.voucherId + '</td></tr><tr><td style="font-weight:bold;">ဝယ်သူ:</td><td style="text-align:right;font-weight:bold;">' + sale.customerName + '</td></tr><tr><td style="font-weight:bold;">နေ့ရက်:</td><td style="text-align:right;">' + (sale.date || new Date().toLocaleString()) + '</td></tr><tr><td style="font-weight:bold;">ပေးချေမှု:</td><td style="text-align:right;font-weight:bold;">' + (sale.paymentMode || 'Cash') + '</td></tr></table><table style="width:100%;border-collapse:collapse;margin-top:5px;"><thead><tr style="font-size:15px;font-weight:bold;border-top:2px dashed #000;border-bottom:2px dashed #000;background:#f9f9f9;"><th style="text-align:left;padding:8px 0;">ပစ္စည်း</th><th style="text-align:right;padding:8px 0;">ဈေး</th><th style="text-align:center;padding:8px 0;">ခု</th><th style="text-align:right;padding:8px 0;">သင့်ငွေ</th></tr></thead><tbody>' + ih + '</tbody></table><div style="border-top:2px dashed #000;margin:10px 0;"></div><table style="width:100%;font-size:16px;border-collapse:collapse;"><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + st.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + (sale.discount || 0) + '</td></tr><tr style="font-size:22px;font-weight:bold;"><td>စုစုပေါင်း:</td><td style="text-align:right;color:#000;">' + sale.total + ' Ks</td></tr></table><div style="border-top:2px dashed #000;margin:10px 0;"></div><div style="text-align:center;font-size:14px;font-weight:bold;margin-top:15px;">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></div>';
+    setTimeout(function() { window.print(); }, 300);
+}
 
-// HISTORY
-function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); var sj = JSON.stringify(sale).replace(/'/g, "\\'"), db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + sale.voucherId + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span><small class="text-muted font-monospace">' + (sale.date || '') + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + sale.customerName + '</b> | 💳 ' + (sale.paymentMode || 'Cash') + '</div><div class="small mb-2 text-danger">Discount: <b>' + (sale.discount || '0') + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + sale.total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(' + sj + ')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
+// 🔥 FIXED: HISTORY - print button uses voucherId instead of JSON string
+function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + sale.voucherId + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span><small class="text-muted font-monospace">' + (sale.date || '') + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + sale.customerName + '</b> | 💳 ' + (sale.paymentMode || 'Cash') + '</div><div class="small mb-2 text-danger">Discount: <b>' + (sale.discount || '0') + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + sale.total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + sale.voucherId + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
 function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { return s.voucherId.toLowerCase().includes(t) || s.customerName.toLowerCase().includes(t); })); }
 function deleteSaleFromSheet(vid) { if (!confirm("ဖျက်မှာသေချာလား?")) return; salesHistory = salesHistory.filter(function(s) { return s.voucherId.toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: vid })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); }); }
 function clearAllSalesHistoryOnline(btn) { if (!confirm("အားလုံးဖျက်မှာသေချာလား?")) return; btn.disabled = true; btn.innerText = "⏳"; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "clearAllSales" })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory); btn.disabled = false; btn.innerText = "⚠️ အားလုံးဖျက်မည်"; showBigToast('✅ ရှင်းပြီး', '', 'success', false); }, 2000); }); }
