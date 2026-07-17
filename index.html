@@ -130,6 +130,7 @@
         .search-card-box .form-control{padding:10px 14px!important;font-size:14px!important}
         .cart-tab-container{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
         .cart-tab-btn{background:var(--bg-input);border:2px solid var(--border-color);border-radius:20px;padding:6px 14px;font-weight:600;font-size:12px;color:var(--text-muted);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+        .cart-tab-btn::before{content:'';position:absolute;inset:0;background:var(--accent-gold);opacity:0;transition:opacity .25s;z-index:0;border-radius:20px}
         .cart-tab-btn.active{border-color:var(--accent-gold);background:transparent;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(180,83,9,0.3)}
         .cart-tab-btn.active::before{opacity:1}
         .cart-tab-btn span{position:relative;z-index:1}
@@ -175,6 +176,38 @@
         .scanner-full-mode .scanner-close-btn:active{transform:scale(0.85)}
         .scanner-full-mode .scanner-controls{display:flex;gap:12px;margin-top:10px;align-items:center;justify-content:center;flex-wrap:wrap}
         .scanner-full-mode .scanner-status-text{font-weight:600;color:var(--accent-gold);font-size:15px;text-align:center}
+        
+        /* 🔦 Flashlight Button Style */
+        .flashlight-btn {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .flashlight-btn:active {
+            transform: scale(0.85);
+        }
+        .flashlight-btn.active {
+            background: #fbbf24;
+            border-color: #fbbf24;
+            color: #000;
+            box-shadow: 0 0 20px rgba(251,191,36,0.6);
+        }
+        [data-theme=dark] .flashlight-btn.active {
+            background: #fbbf24;
+            border-color: #fbbf24;
+            color: #000;
+            box-shadow: 0 0 25px rgba(251,191,36,0.8);
+        }
         
         .scanned-preview{position:fixed;bottom:0;left:0;right:0;z-index:99998;background:var(--bg-card);border-top:2px solid var(--accent-gold);padding:10px 16px;max-height:160px;overflow-y:auto;display:none;box-shadow:0 -8px 30px rgba(0,0,0,0.1)}
         .scanned-preview.active{display:block}
@@ -262,7 +295,10 @@
         <div id="full-reader"></div>
         <div class="scanner-controls">
             <span class="scanner-status-text" id="full-scanner-status-text">🔍 စကန်ဖတ်နေပါသည်...</span>
-            <button id="torch-toggle-btn" class="btn btn-sm btn-warning fw-bold px-3 py-1.5" style="border-radius:10px; font-size:12px; display:none;" onclick="toggleTorch()">🔦 Flashlight</button>
+            <!-- 🔦 FLASHLIGHT BUTTON -->
+            <button class="flashlight-btn" id="flashlightToggleBtn" onclick="toggleFlashlight()" title="ဓာတ်မီး ဖွင့်/ပိတ်">
+                🔦
+            </button>
         </div>
     </div>
 </div>
@@ -424,8 +460,8 @@ window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault();
 
 // CONFIGURATION
 var scriptURL = 'https://script.google.com/macros/s/AKfycbyVO27_JUWhrwB_RQbOo3JeKu1QDifJrwzBBo66GIuiKBe7tFjGPbAmXCgPVkty9oQM/exec';
-var homePassword = 's';
-var adminPassword = 'ss';
+var homePassword = 'w';
+var adminPassword = 'wtr';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
 var mySalesChart = null, myTopProductsChart = null;
@@ -433,7 +469,10 @@ var scanPauseTimer = null, isScanPaused = false, isScannerClosed = false, pendin
 var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
 var isPrinting = false;
-var isTorchOn = false; // ဓာတ်မီး အခြေအနေစောင့်ကြည့်ရန်
+
+// 🔦 FLASHLIGHT VARIABLES
+var isFlashlightOn = false;
+var currentVideoTrack = null;
 
 function getStockNumber(p) { if (!p) return 0; var v = p.stock; if (v === undefined || v === null || v === '') return 0; var n = Number(v); return isNaN(n) ? 0 : n; }
 
@@ -483,86 +522,114 @@ function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading
 function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = "🔄 Sync Sheet"; renderAdminProducts(productsDB); showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Sheet"; }); }
 function reloadOnlineHistoryTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { if (d && d.length > 0) { salesHistory = d; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } b.disabled = false; b.innerText = "🔄 Sync Online"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Online"; }); }
 
-// SCANNER (WITH FLASHLIGHT SUPPORT)
-function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
-function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannedPreview').classList.add('active'); isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; setTimeout(function() { startScanner(); }, 500); }
-function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 400, height: 300 }, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ] }); html5QrcodeScannerFull.render(onScanSuccessFull); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); checkTorchAvailability(); }
-
-// ဓာတ်မီးစနစ် (Flashlight Feature)
-function checkTorchAvailability() {
-    setTimeout(function() {
-        var videoTrack = getActiveVideoTrack();
-        var torchBtn = document.getElementById('torch-toggle-btn');
-        if (videoTrack) {
-            var capabilities = videoTrack.getCapabilities();
-            if (capabilities && capabilities.torch) {
-                if (torchBtn) torchBtn.style.display = 'inline-block';
-                return;
+// 🔦 FLASHLIGHT FUNCTION
+function toggleFlashlight() {
+    var btn = document.getElementById('flashlightToggleBtn');
+    
+    if (!currentVideoTrack) {
+        // Try to get video track from the scanner
+        var videos = document.querySelectorAll('#full-reader video');
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].srcObject) {
+                var tracks = videos[i].srcObject.getVideoTracks();
+                if (tracks.length > 0) {
+                    currentVideoTrack = tracks[0];
+                    break;
+                }
             }
         }
-        if (torchBtn) torchBtn.style.display = 'none';
-    }, 1500); // Wait camera to warm up and get features
-}
-function getActiveVideoTrack() {
-    var videoEl = document.querySelector('#full-reader video');
-    if (videoEl && videoEl.srcObject) {
-        var tracks = videoEl.srcObject.getVideoTracks();
-        if (tracks.length > 0) return tracks[0];
     }
-    return null;
-}
-function toggleTorch() {
-    var videoTrack = getActiveVideoTrack();
-    if (!videoTrack) {
-        showBigToast('⚠️ ကင်မရာအလုပ်မလုပ်သေးပါ', '', 'danger', false);
-        return;
-    }
-    var capabilities = videoTrack.getCapabilities();
-    if (!capabilities || !capabilities.torch) {
-        showBigToast('⚠️ စက်ပစ္စည်းတွင် ဓာတ်မီးမပါဝင်ပါ', '', 'danger', false);
-        return;
-    }
-    playBeep();
-    isTorchOn = !isTorchOn;
-    videoTrack.applyConstraints({
-        advanced: [{ torch: isTorchOn }]
-    }).then(function() {
-        var torchBtn = document.getElementById('torch-toggle-btn');
-        if (isTorchOn) {
-            if (torchBtn) {
-                torchBtn.innerText = '💡 Flashlight: ON';
-                torchBtn.className = 'btn btn-sm btn-light fw-bold px-3 py-1.5';
+    
+    if (currentVideoTrack) {
+        try {
+            if (isFlashlightOn) {
+                currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] });
+                isFlashlightOn = false;
+                btn.classList.remove('active');
+                btn.innerHTML = '🔦';
+                showBigToast('🔦 ဓာတ်မီး ပိတ်', '', 'success', false);
+            } else {
+                currentVideoTrack.applyConstraints({ advanced: [{ torch: true }] });
+                isFlashlightOn = true;
+                btn.classList.add('active');
+                btn.innerHTML = '💡';
+                showBigToast('🔦 ဓာတ်မီး ဖွင့်', '', 'success', false);
+            }
+        } catch(e) {
+            showBigToast('⚠️ ဓာတ်မီး မရပါ', 'ဤစက်တွင် flashlight မပါဝင်ပါ', 'danger', false);
+        }
+    } else {
+        // Try to find track again
+        var videos = document.querySelectorAll('#full-reader video');
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].srcObject) {
+                var tracks = videos[i].srcObject.getVideoTracks();
+                if (tracks.length > 0) {
+                    currentVideoTrack = tracks[0];
+                    break;
+                }
+            }
+        }
+        
+        if (currentVideoTrack) {
+            try {
+                currentVideoTrack.applyConstraints({ advanced: [{ torch: true }] });
+                isFlashlightOn = true;
+                btn.classList.add('active');
+                btn.innerHTML = '💡';
+                showBigToast('🔦 ဓာတ်မီး ဖွင့်', '', 'success', false);
+            } catch(e) {
+                showBigToast('⚠️ ဓာတ်မီး မရပါ', 'ဤစက်တွင် flashlight မပါဝင်ပါ', 'danger', false);
             }
         } else {
-            if (torchBtn) {
-                torchBtn.innerText = '🔦 Flashlight';
-                torchBtn.className = 'btn btn-sm btn-warning fw-bold px-3 py-1.5';
-            }
+            showBigToast('⚠️ Camera မတွေ့ပါ', 'Scanner ကိုအရင်ဖွင့်ပါ', 'danger', false);
         }
-    }).catch(function(err) {
-        isTorchOn = false;
-        showBigToast('❌ ဓာတ်မီးဖွင့်မရပါ', '', 'danger', false);
-    });
+    }
 }
 
-function closeFullScanner() { 
-    isTorchOn = false; // Reset flashlight state
-    var torchBtn = document.getElementById('torch-toggle-btn');
-    if (torchBtn) {
-        torchBtn.innerText = '🔦 Flashlight';
-        torchBtn.className = 'btn btn-sm btn-warning fw-bold px-3 py-1.5';
-        torchBtn.style.display = 'none';
+// Reset flashlight when scanner closes
+function resetFlashlight() {
+    if (isFlashlightOn && currentVideoTrack) {
+        try {
+            currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] });
+        } catch(e) {}
     }
-    if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
-    var rd = document.getElementById('full-reader'); 
-    if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } 
-    document.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } } catch(e) {} }); 
-    canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); 
-    document.getElementById('scannerFullMode').classList.remove('active'); 
-    document.getElementById('scannedPreview').classList.remove('active'); 
-    isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; 
-    updateFullScannerStatus(false); 
+    isFlashlightOn = false;
+    currentVideoTrack = null;
+    var btn = document.getElementById('flashlightToggleBtn');
+    if (btn) {
+        btn.classList.remove('active');
+        btn.innerHTML = '🔦';
+    }
 }
+
+// SCANNER
+function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
+function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannedPreview').classList.add('active'); isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); setTimeout(function() { startScanner(); }, 500); }
+function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 400, height: 300 }, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ] }); html5QrcodeScannerFull.render(onScanSuccessFull); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); 
+    // Update flashlight button after scanner starts
+    setTimeout(function() {
+        var videos = document.querySelectorAll('#full-reader video');
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].srcObject) {
+                var tracks = videos[i].srcObject.getVideoTracks();
+                if (tracks.length > 0) {
+                    currentVideoTrack = tracks[0];
+                    // Check if torch is available
+                    var capabilities = tracks[0].getCapabilities();
+                    var btn = document.getElementById('flashlightToggleBtn');
+                    if (capabilities && capabilities.torch) {
+                        btn.style.display = 'flex';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                    break;
+                }
+            }
+        }
+    }, 1000);
+}
+function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } } catch(e) {} }); canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); }
 function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { openFullScanner(); } }
 function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; t.style.color = 'var(--accent-success)'; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; t.style.color = 'var(--accent-danger)'; } }
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
