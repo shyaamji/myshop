@@ -455,7 +455,6 @@ var mySalesChart = null, myTopProductsChart = null;
 var scanPauseTimer = null, isScanPaused = false, isScannerClosed = false, pendingBarcode = null;
 var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
-var isPrinting = false;
 
 var isFlashlightOn = false;
 var currentVideoTrack = null;
@@ -510,15 +509,22 @@ function loadProductsFromSheet() {
 }
 
 function loadSalesHistoryFromSheet() {
-    supabase.from('saleshistory').select('*').order('id', { ascending: false })
+    supabase.from('SalesHistory').select('*').order('id', { ascending: false })
         .then(function(response) {
             if (response.data && response.data.length > 0) {
                 salesHistory = response.data;
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
                 displayHistory(salesHistory);
+            } else {
+                var local = localStorage.getItem('salesHistory');
+                if (local) { salesHistory = JSON.parse(local); displayHistory(salesHistory); }
             }
         })
-        .catch(function(error) { console.log('Sales history load failed:', error.message); });
+        .catch(function(error) {
+            console.log('Sales history load failed:', error.message);
+            var local = localStorage.getItem('salesHistory');
+            if (local) { salesHistory = JSON.parse(local); displayHistory(salesHistory); }
+        });
 }
 
 function reloadOnlineSalesTab(b) {
@@ -537,7 +543,7 @@ function reloadOnlineAdminTab(b) {
 
 function reloadOnlineHistoryTab(b) {
     b.disabled = true; b.innerText = "⏳ Loading...";
-    supabase.from('saleshistory').select('*').order('id', { ascending: false })
+    supabase.from('SalesHistory').select('*').order('id', { ascending: false })
         .then(function(response) {
             if (response.data && response.data.length > 0) { salesHistory = response.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); }
             b.disabled = false; b.innerText = "🔄 Sync"; showBigToast('✅ Update ပြီး', '', 'success', false);
@@ -555,7 +561,7 @@ function checkout() {
         pm = document.getElementById('cart-payment-mode').value,
         sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), discount: disc, payment_mode: pm };
     
-    supabase.from('saleshistory').insert([sd])
+    supabase.from('SalesHistory').insert([sd])
         .then(function() {
             salesHistory.unshift({ voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() });
             localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
@@ -606,15 +612,15 @@ function deleteProductFromSheet(idx) {
 
 function deleteSaleFromSheet(vid) {
     if (!confirm("ဖျက်မှာသေချာလား?")) return;
-    supabase.from('saleshistory').delete().eq('voucher_id', vid.toString())
-        .then(function() { salesHistory = salesHistory.filter(function(s) { return s.voucherId.toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); })
+    supabase.from('SalesHistory').delete().eq('voucher_id', vid.toString())
+        .then(function() { salesHistory = salesHistory.filter(function(s) { return (s.voucherId || s.voucher_id || '').toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); })
         .catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
 
 function clearAllSalesHistoryOnline(btn) {
     if (!confirm("အားလုံးဖျက်မှာသေချာလား?")) return;
     btn.disabled = true; btn.innerText = "⏳";
-    supabase.from('saleshistory').delete().neq('id', 0)
+    supabase.from('SalesHistory').delete().neq('id', 0)
         .then(function() { localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory); btn.disabled = false; btn.innerText = "⚠️ အားလုံးဖျက်မည်"; showBigToast('✅ ရှင်းပြီး', '', 'success', false); })
         .catch(function(err) { btn.disabled = false; btn.innerText = "⚠️ အားလုံးဖျက်မည်"; showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
@@ -668,14 +674,23 @@ function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toStr
 function printVoucher(sale) {
     if (typeof sale === 'string') {
         var found = null;
-        for (var i = 0; i < salesHistory.length; i++) { if (salesHistory[i].voucherId === sale || salesHistory[i].voucherId.toString() === sale.toString()) { found = salesHistory[i]; break; } }
+        for (var i = 0; i < salesHistory.length; i++) { var vid = salesHistory[i].voucherId || salesHistory[i].voucher_id || ''; if (vid === sale || vid.toString() === sale.toString()) { found = salesHistory[i]; break; } }
         if (!found) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; }
         sale = found;
     }
     if (!sale || !sale.items) return;
+    var itemsArr = sale.items;
+    if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } }
+    if (!Array.isArray(itemsArr)) return;
     var itemsHTML = '', subtotal = 0;
-    for (var i = 0; i < sale.items.length; i++) { var it = sale.items[i]; subtotal += Number(it.price) * Number(it.qty); itemsHTML += '<tr style="font-size:14px;border-bottom:1px dashed #ccc;"><td style="padding:8px 5px;text-align:left;">' + it.name + '</td><td style="padding:8px 5px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="padding:8px 5px;text-align:center;">' + it.qty + '</td><td style="padding:8px 5px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; }
-    var printContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:Arial,sans-serif;margin:0;padding:15px;color:#000;}h2{text-align:center;margin:0 0 2px 0;font-size:22px;}.shop-address{text-align:center;font-size:11px;color:#555;margin:0 0 8px 0;line-height:1.4;}.dashed{border-top:2px dashed #000;margin:8px 0;}table{width:100%;border-collapse:collapse;}th{background:#f5f5f5;padding:6px;font-size:13px;}td{padding:6px;font-size:13px;}.total-row td{font-weight:bold;font-size:16px;}.thanks{text-align:center;font-size:12px;margin-top:10px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + sale.voucherId + '</b></td></tr><tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + sale.customerName + '</td></tr><tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + (sale.date || '') + '</td></tr><tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + (sale.paymentMode || 'Cash') + '</td></tr></table><table style="margin-top:8px;"><thead><tr style="border-top:2px dashed #000;border-bottom:2px dashed #000;"><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + (sale.discount || 0) + '</td></tr><tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + sale.total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
+    for (var i = 0; i < itemsArr.length; i++) { var it = itemsArr[i]; subtotal += Number(it.price) * Number(it.qty); itemsHTML += '<tr style="font-size:14px;border-bottom:1px dashed #ccc;"><td style="padding:8px 5px;text-align:left;">' + it.name + '</td><td style="padding:8px 5px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="padding:8px 5px;text-align:center;">' + it.qty + '</td><td style="padding:8px 5px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; }
+    var vid = sale.voucherId || sale.voucher_id || '';
+    var cn = sale.customerName || sale.customer_name || '';
+    var dt = sale.date || '';
+    var pm = sale.paymentMode || sale.payment_mode || 'Cash';
+    var disc = sale.discount || '0';
+    var total = sale.total || sale.total_amount || '0';
+    var printContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:Arial,sans-serif;margin:0;padding:15px;color:#000;}h2{text-align:center;margin:0 0 2px 0;font-size:22px;}.shop-address{text-align:center;font-size:11px;color:#555;margin:0 0 8px 0;line-height:1.4;}.dashed{border-top:2px dashed #000;margin:8px 0;}table{width:100%;border-collapse:collapse;}th{background:#f5f5f5;padding:6px;font-size:13px;}td{padding:6px;font-size:13px;}.total-row td{font-weight:bold;font-size:16px;}.thanks{text-align:center;font-size:12px;margin-top:10px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + vid + '</b></td></tr><tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + cn + '</td></tr><tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + dt + '</td></tr><tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + pm + '</td></tr></table><table style="margin-top:8px;"><thead><tr style="border-top:2px dashed #000;border-bottom:2px dashed #000;"><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
     var printFrame = document.createElement('iframe'); printFrame.style.position = 'fixed'; printFrame.style.right = '0'; printFrame.style.bottom = '0'; printFrame.style.width = '0'; printFrame.style.height = '0'; printFrame.style.border = 'none'; document.body.appendChild(printFrame);
     var frameDoc = printFrame.contentWindow.document; frameDoc.open(); frameDoc.write(printContent); frameDoc.close();
     printFrame.onload = function() { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); setTimeout(function() { if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); } }, 1000); };
@@ -683,8 +698,8 @@ function printVoucher(sale) {
 }
 
 // HISTORY
-function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; if (typeof sale.items === 'string') { try { sale.items = JSON.parse(sale.items); } catch(e) {} } if (Array.isArray(sale.items)) { sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); } var vid = sale.voucherId || sale.voucher_id || ''; var cn = sale.customerName || sale.customer_name || ''; var dt = sale.date || ''; var pm = sale.paymentMode || sale.payment_mode || 'Cash'; var disc = sale.discount || '0'; var total = sale.total || sale.total_amount || '0'; var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
-function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { var vid = s.voucherId || s.voucher_id || ''; var cn = s.customerName || s.customer_name || ''; return vid.toLowerCase().includes(t) || cn.toLowerCase().includes(t); })); }
+function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); } var vid = sale.voucherId || sale.voucher_id || ''; var cn = sale.customerName || sale.customer_name || ''; var dt = sale.date || ''; var pm = sale.paymentMode || sale.payment_mode || 'Cash'; var disc = sale.discount || '0'; var total = sale.total || sale.total_amount || '0'; var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
+function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { var vid = (s.voucherId || s.voucher_id || '').toLowerCase(); var cn = (s.customerName || s.customer_name || '').toLowerCase(); return vid.includes(t) || cn.includes(t); })); }
 
 // DASHBOARD
 function calculateTodaySales() { var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y; document.getElementById('today-date-string').innerText = fs ? fs : "ယနေ့ထိ"; var ts = 0, tp = 0, cs = 0, ks = 0, ws = 0; salesHistory.forEach(function(sale) { var dt = sale.date || ''; var sd = new Date(dt), inside = true; if (sts && sd.getTime() < sts) inside = false; if (ets && sd.getTime() > ets) inside = false; if (!fs && !fe) { var so = dt ? dt.split(',')[0].trim() : ''; if (!(so.includes(tf1) || so.includes(tf2) || sd.toLocaleDateString() === now.toLocaleDateString())) inside = false; } if (!inside) return; var total = sale.total || sale.total_amount || '0'; var ct = Number(total.toString().replace(/,/g, '')) || 0; ts += ct; var pm = sale.paymentMode || sale.payment_mode || "Cash"; if (pm === "Cash") cs += ct; else if (pm === "KPay") ks += ct; else if (pm === "Wave") ws += ct; var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } var sc = 0; if (items && Array.isArray(items)) { items.forEach(function(item) { var match = productsDB.find(function(p) { return p.barcode.toString() === item.barcode.toString(); }); sc += (match ? Number(match.extra1 || match.cost || 0) : 0) * Number(item.qty); }); } var gross = 0; if (items && Array.isArray(items)) { items.forEach(function(item) { gross += Number(item.price) * Number(item.qty); }); } var disc = sale.discount || "0", da = disc.toString().includes('%') ? gross * (parseFloat(disc.replace('%','')) / 100) : Number(disc) || 0; tp += ((gross - da) - sc); }); document.getElementById('today-sales-summary').innerText = ts.toLocaleString() + " Ks"; document.getElementById('payment-split-summary').innerHTML = '💵 Cash: ' + cs.toLocaleString() + ' | 📱 KPay: ' + ks.toLocaleString() + ' | 🌊 Wave: ' + ws.toLocaleString(); document.getElementById('today-profit-summary').innerText = tp.toLocaleString() + " Ks"; }
