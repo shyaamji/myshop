@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>ဝင်းသီရိ</title>
+    <title></title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc" id="nav-theme-color">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,7 +12,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         html, body {
             overscroll-behavior: none !important;
@@ -49,7 +48,7 @@
         [data-theme=dark] .btn-premium-gold{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .btn-premium-gold:hover{opacity:.9;transform:translateY(-1px)}
         
-        /* 🔥 TOAST - Inside Navbar */
+        /*  TOAST - Inside Navbar */
         .toast-big{
             position:fixed;
             top:0;
@@ -178,7 +177,7 @@
         .scanner-full-mode .scanner-controls{display:flex;gap:12px;margin-top:10px;align-items:center;justify-content:center;flex-wrap:wrap}
         .scanner-full-mode .scanner-status-text{font-weight:600;color:var(--accent-gold);font-size:15px;text-align:center}
         
-        /* 🔦 Flashlight Button Style */
+        /*  Flashlight Button Style */
         .flashlight-btn {
             background: var(--bg-card);
             border: 2px solid var(--border-color);
@@ -246,24 +245,24 @@
 <!-- Admin Confirm Dialog -->
 <div class="admin-confirm-overlay" id="adminConfirmOverlay">
     <div class="admin-confirm-box">
-        <div style="font-size:48px;margin-bottom:8px;">📦</div>
-        <h5>ပစ္စည်းအသစ်ထည့်ရန်</h5>
-        <div class="sub" id="adminConfirmMsg">Barcode: <b id="confirmBarcode"></b> အတွက် <br>ပစ္စည်းအသစ်ထည့်မလား?</div>
+        <div style="font-size:48px;margin-bottom:8px;"></div>
+        <h5></h5>
+        <div class="sub" id="adminConfirmMsg">Barcode: <b id="confirmBarcode"></b>  <br>?</div>
         <div class="btn-group">
-            <button class="btn-confirm" onclick="confirmAddProduct()">✅ ယခုထည့်မည်</button>
-            <button class="btn-cancel" onclick="cancelAddProduct()">⏹️ နောက်မှ</button>
+            <button class="btn-confirm" onclick="confirmAddProduct()"> </button>
+            <button class="btn-cancel" onclick="cancelAddProduct()"> </button>
         </div>
     </div>
 </div>
 
 <div id="toastBig" class="toast-big">
-    <div id="toastBigMsg">✅ ပစ္စည်းထည့်ပြီးပါပြီ</div>
-    <div id="toastBigSub" class="toast-sub">လက်ကျန် ၅၀ ခု ကျန်ပါသည်</div>
+    <div id="toastBigMsg"> </div>
+    <div id="toastBigSub" class="toast-sub">   </div>
     <div id="toastBigActions" class="toast-actions" style="display:none;">
-        <button onclick="toastQtyChange(-1)">−</button>
+        <button onclick="toastQtyChange(-1)"></button>
         <select id="toastQtySelect" onchange="toastQtySelectChange(this.value)"></select>
         <button onclick="toastQtyChange(1)">+</button>
-        <button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>
+        <button class="btn-qty" onclick="toastQtyConfirm()"> </button>
     </div>
 </div>
 
@@ -271,52 +270,52 @@
 <div class="pop-cart-overlay" id="popCartOverlay" onclick="closePopCart(event)">
     <div class="pop-cart-sheet" id="popCartSheet" onclick="event.stopPropagation()">
         <div class="pop-cart-header">
-            <h6>🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
-            <button class="pop-close-btn" onclick="closePopCartDirect()">✕</button>
+            <h6>  </h6>
+            <button class="pop-close-btn" onclick="closePopCartDirect()"></button>
         </div>
         <div id="popCartContent"></div>
         <div class="pop-cart-total-row" id="popCartTotalRow" style="display:none;">
-            <span class="pop-total-label">စုစုပေါင်း</span>
+            <span class="pop-total-label"></span>
             <span class="pop-total-value" id="popCartTotalValue">Ks - 0</span>
         </div>
     </div>
 </div>
 
 <button class="scanner-popup-toggle" id="scannerToggleBtn" onclick="toggleFullScanner()">
-    📷 <span class="badge-scan" id="scanBadge">●</span>
+     <span class="badge-scan" id="scanBadge"></span>
 </button>
 
 <div class="scanner-full-mode" id="scannerFullMode">
-    <button class="scanner-close-btn" onclick="closeFullScanner()">✕</button>
+    <button class="scanner-close-btn" onclick="closeFullScanner()"></button>
     <div class="scanner-box">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold mb-0 text-secondary" style="font-size:14px;">📷 Barcode Scanner</h6>
-            <button id="full-scanner-status-btn" class="btn btn-sm btn-success py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="toggleFullScannerScan()">🟢 Scanning</button>
+            <h6 class="fw-bold mb-0 text-secondary" style="font-size:14px;"> Barcode Scanner</h6>
+            <button id="full-scanner-status-btn" class="btn btn-sm btn-success py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="toggleFullScannerScan()"> Scanning</button>
         </div>
         <div id="full-reader"></div>
         <div class="scanner-controls">
-            <span class="scanner-status-text" id="full-scanner-status-text">🔍 စကန်ဖတ်နေပါသည်...</span>
-            <!-- 🔦 FLASHLIGHT BUTTON -->
-            <button class="flashlight-btn" id="flashlightToggleBtn" onclick="toggleFlashlight()" title="ဓာတ်မီး ဖွင့်/ပိတ်">
-                🔦
+            <span class="scanner-status-text" id="full-scanner-status-text"> ...</span>
+            <!--  FLASHLIGHT BUTTON -->
+            <button class="flashlight-btn" id="flashlightToggleBtn" onclick="toggleFlashlight()" title=" /">
+                
             </button>
         </div>
     </div>
 </div>
 
 <div class="scanned-preview" id="scannedPreview">
-    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">📦 စကန်ဖတ်မိသော ပစ္စည်းများ</div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">  </div>
     <div id="scannedPreviewList"></div>
 </div>
 
 <div id="app-lock-screen">
     <div class="lock-card text-center">
-        <div class="mb-3"><span style="font-size:44px;">✨</span></div>
-        <h4 class="fw-bold mb-1">ဝင်းသီရိ</h4>
+        <div class="mb-3"><span style="font-size:44px;"></span></div>
+        <h4 class="fw-bold mb-1"></h4>
         <p class="small mb-4 fw-bold" style="color:var(--accent-gold);">PREMIUM POS SYSTEM</p>
-        <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size:24px;letter-spacing:6px;">
-        <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
-        <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display:none;">❌ Password မှားယွင်းနေပါသည်။</div>
+        <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="����" style="font-size:24px;letter-spacing:6px;">
+        <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6" onclick="checkUniversalLogin()"> </button>
+        <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display:none;"> Password </div>
     </div>
 </div>
 
@@ -326,7 +325,7 @@
     <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <span class="navbar-brand mb-0 h1 fw-bold fs-5 d-flex align-items-center gap-2">
-                <span style="color:var(--accent-gold);">✨</span> ဝင်းသီရိ
+                <span style="color:var(--accent-gold);"></span> 
                 <span id="role-badge" class="badge font-monospace ms-2" style="font-size:11px;display:none;"></span>
             </span>
         </div>
@@ -334,65 +333,65 @@
 
     <div class="container mt-4">
         <div class="nav-tabs-custom" role="group">
-            <button id="btn-sales" class="btn active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-            <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-            <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
-            <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
-            <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
-            <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
+            <button id="btn-sales" class="btn active" onclick="switchTab('sales')"> </button>
+            <button id="btn-history" class="btn" onclick="switchTab('history')"> </button>
+            <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')"> </button>
+            <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')"> </button>
+            <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()"> </button>
+            <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn"></button>
         </div>
     </div>
 
     <div class="container mt-4 pb-5">
         <div id="sales" class="tab-content active">
             <div class="inline-cart-preview-row">
-                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync Sheet</button>
+                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineSalesTab(this)"> Sync Sheet</button>
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn">
-                    <span class="inline-cart-icon">🛒</span>
-                    <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
+                    <span class="inline-cart-icon"></span>
+                    <span class="inline-cart-text" id="inlineCartText"></span>
                     <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
             </div>
             <div class="sales-grid-layout">
                 <div class="custom-card search-container-box search-card-box" id="main-search-card">
-                    <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
+                    <h6 class="fw-bold mb-2 text-secondary">  </h6>
                     <div class="position-relative">
                         <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="ရိုက်ထည့်ပါ..." autocomplete="off" enterkeyhint="search">
+                            <input type="search" id="name-search-input" class="form-control form-control-lg" placeholder="..." autocomplete="off" enterkeyhint="search">
                         </form>
-                        <span id="close-search-btn" style="position:absolute;right:15px;top:50%;transform:translateY(-50%);cursor:pointer;display:none;font-size:18px;color:var(--text-muted);" onclick="clearSearchInputAndBox()">✕</span>
+                        <span id="close-search-btn" style="position:absolute;right:15px;top:50%;transform:translateY(-50%);cursor:pointer;display:none;font-size:18px;color:var(--text-muted);" onclick="clearSearchInputAndBox()"></span>
                     </div>
                     <div id="search-suggestions" class="search-results"></div>
                 </div>
 
                 <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
-                        <h6 class="fw-bold mb-0">🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
+                        <h6 class="fw-bold mb-0">  </h6>
                         <span class="badge rounded-pill bg-light text-dark border font-monospace" id="cart-count-badge" style="font-size:12px;padding:6px 12px;">0 items</span>
                     </div>
                     <div class="px-3 pt-3">
                         <div class="cart-tab-container" id="cart-tab-container">
-                            <button class="cart-tab-btn active" data-cart="0" onclick="switchCartTab(0)"><span>👤 ၁</span> <span class="badge-cart" id="cart-badge-0">0</span></button>
-                            <button class="cart-tab-btn" data-cart="1" onclick="switchCartTab(1)"><span>👤 ၂</span> <span class="badge-cart" id="cart-badge-1">0</span></button>
-                            <button class="cart-tab-btn" data-cart="2" onclick="switchCartTab(2)"><span>👤 ၃</span> <span class="badge-cart" id="cart-badge-2">0</span></button>
-                            <button class="cart-tab-btn" data-cart="3" onclick="switchCartTab(3)"><span>👤 ၄</span> <span class="badge-cart" id="cart-badge-3">0</span></button>
+                            <button class="cart-tab-btn active" data-cart="0" onclick="switchCartTab(0)"><span> </span> <span class="badge-cart" id="cart-badge-0">0</span></button>
+                            <button class="cart-tab-btn" data-cart="1" onclick="switchCartTab(1)"><span> </span> <span class="badge-cart" id="cart-badge-1">0</span></button>
+                            <button class="cart-tab-btn" data-cart="2" onclick="switchCartTab(2)"><span> </span> <span class="badge-cart" id="cart-badge-2">0</span></button>
+                            <button class="cart-tab-btn" data-cart="3" onclick="switchCartTab(3)"><span> </span> <span class="badge-cart" id="cart-badge-3">0</span></button>
                         </div>
                     </div>
                     <div id="cart-list" class="px-3 py-2" style="max-height:280px;overflow-y:auto;">
-                        <div class="text-center text-muted py-4 small">ပစ္စည်းများ စကန်ဖတ်ပါ သို့မဟုတ် ရွေးချယ်ပါ</div>
+                        <div class="text-center text-muted py-4 small">   </div>
                     </div>
                     <div class="px-4 py-3 border-top" style="background:var(--bg-card);">
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="discount-label text-secondary small fw-bold mb-1">Discount (Ks / %)</label>
-                                <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="ဥပမာ- 500 သို့ 5%" oninput="renderCart()">
+                                <input type="text" id="cart-discount-input" class="form-control form-control-sm" placeholder="- 500  5%" oninput="renderCart()">
                             </div>
                             <div class="col-6">
-                                <label class="payment-label text-secondary small fw-bold mb-1">ငွေချေမှုစနစ်</label>
+                                <label class="payment-label text-secondary small fw-bold mb-1"></label>
                                 <select id="cart-payment-mode" class="form-control form-control-sm">
-                                    <option value="Cash">💵 Cash (လက်ငင်း)</option>
-                                    <option value="KPay">📱 KPay</option>
-                                    <option value="Wave">🌊 Wave Money</option>
+                                    <option value="Cash"> Cash ()</option>
+                                    <option value="KPay"> KPay</option>
+                                    <option value="Wave"> Wave Money</option>
                                 </select>
                             </div>
                         </div>
@@ -405,7 +404,7 @@
                             </div>
                             <div class="col-6 text-end">
                                 <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm" onclick="checkout()">
-                                    <span>Voucher ထုတ်မည်</span> ➡️
+                                    <span>Voucher </span> 
                                 </button>
                             </div>
                         </div>
@@ -416,29 +415,29 @@
 
         <div id="history" class="tab-content">
             <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync Online</button>
+                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineHistoryTab(this)"> Sync Online</button>
             </div>
             <div class="custom-card d-flex flex-column gap-3">
                 <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
-                    <input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search">
+                    <input type="search" id="search-input" class="form-control form-control-lg" placeholder=" Voucher ID   ..." onkeyup="searchHistory()" enterkeyhint="search">
                 </form>
-                <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ စက်ထဲရှိမှတ်တမ်းနှင့် Sheet မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
+                <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">  Sheet  </button>
             </div>
-            <div id="history-list"><div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div></div>
+            <div id="history-list"><div class="text-center text-muted py-4"> ...</div></div>
         </div>
 
         <div id="dashboard" class="tab-content">
-            <div class="custom-card"><h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6><div class="row g-2"><div class="col-6"><label class="small text-muted mb-1">စတင်မည့်ရက်</label><input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div><div class="col-6"><label class="small text-muted mb-1">နောက်ဆုံးရက်</label><input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div></div></div>
+            <div class="custom-card"><h6 class="fw-bold text-secondary mb-2">  </h6><div class="row g-2"><div class="col-6"><label class="small text-muted mb-1"></label><input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div><div class="col-6"><label class="small text-muted mb-1"></label><input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();"></div></div></div>
             <div class="row g-3 mb-4"><div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(217,119,6,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">TOTAL SALES</small><h2 class="fw-bold my-2 fs-3" id="today-sales-summary" style="color:var(--accent-gold);">0 Ks</h2><div class="small text-muted font-monospace" id="payment-split-summary" style="font-size:11px;"></div></div></div><div class="col-6"><div class="custom-card text-center shadow-sm h-100 m-0" style="border:1px solid rgba(16,185,129,0.15);"><small class="fw-bold text-secondary" style="font-size:11px;">NET PROFIT</small><h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2><small class="small text-muted" id="today-date-string"></small></div></div></div>
-            <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6><div style="position:relative;width:100%;height:220px;"><canvas id="salesChart"></canvas></div></div>
-            <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">🏆 အရောင်းရဆုံး ပစ္စည်းပြဇယား</h6><div style="position:relative;width:100%;height:220px;"><canvas id="topProductsChart"></canvas></div></div>
-            <div class="custom-card"><h6 class="fw-bold text-secondary mb-3">📅 ရက်စွဲအလိုက် စုစုပေါင်း ရောင်းရငွေစာရင်း</h6><div class="table-responsive"><table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px;border-color:var(--border-color);"><thead><tr class="table-light" style="color:var(--accent-gold);"><th>နေ့ရက်စွဲ</th><th>စုစုပေါင်းရောင်းရငွေ</th></tr></thead><tbody id="date-sales-table-body"><tr><td colspan="2" class="text-muted py-3">ဒေတာများကို တွက်ချက်နေပါသည်...</td></tr></tbody></table></div></div>
+            <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">    </h6><div style="position:relative;width:100%;height:220px;"><canvas id="salesChart"></canvas></div></div>
+            <div class="custom-card p-3"><h6 class="fw-bold text-secondary mb-4">  </h6><div style="position:relative;width:100%;height:220px;"><canvas id="topProductsChart"></canvas></div></div>
+            <div class="custom-card"><h6 class="fw-bold text-secondary mb-3">   </h6><div class="table-responsive"><table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px;border-color:var(--border-color);"><thead><tr class="table-light" style="color:var(--accent-gold);"><th></th><th></th></tr></thead><tbody id="date-sales-table-body"><tr><td colspan="2" class="text-muted py-3"> ...</td></tr></tbody></table></div></div>
         </div>
 
         <div id="admin" class="tab-content">
-            <div class="d-flex justify-content-end mb-3"><button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync Sheet</button></div>
-            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6><button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button></div><form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3"><input type="hidden" name="jsonData" id="form-json-data"><div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div><div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div><div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 Sheet ထဲသို့ ပစ္စည်းအသစ်သိမ်းမည်</button></div></form><iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe></div>
-            <div class="custom-card"><h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6><div class="position-relative mb-4"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search"></form><div id="admin-search-suggestions" class="search-results"></div></div><div id="admin-product-list" class="d-flex flex-column gap-2"></div></div>
+            <div class="d-flex justify-content-end mb-3"><button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)"> Sync Sheet</button></div>
+            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="fw-bold text-success mb-0">  </h6><button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()"> App </button></div><form id="hidden-form" method="POST" target="hidden-iframe" class="row g-3"><input type="hidden" name="jsonData" id="form-json-data"><div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div><div class="col-12"><label class="text-secondary small fw-bold mb-1"></label><input type="text" id="new-name" class="form-control" placeholder="" required></div><div class="col-6"><label class="text-secondary small fw-bold mb-1"> (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="" value="0"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1"> (Ks)</label><input type="number" id="new-price" class="form-control" placeholder=""></div><div class="col-6"><label class="text-secondary small fw-bold mb-1"></label><input type="number" id="new-stock" class="form-control" placeholder=""></div><div class="col-6"><label class="text-secondary small fw-bold mb-1"></label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div><div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()"> Sheet  </button></div></form><iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe></div>
+            <div class="custom-card"><h6 class="fw-bold mb-3 text-secondary">  / </h6><div class="position-relative mb-4"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="admin-search-input" class="form-control" placeholder="   ..." onkeyup="filterAdminProductNames()" enterkeyhint="search"></form><div id="admin-search-suggestions" class="search-results"></div></div><div id="admin-product-list" class="d-flex flex-column gap-2"></div></div>
         </div>
     </div>
 </div>
@@ -447,15 +446,15 @@
 // BLOCK BROWSER ACCESS
 (function() {
     var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'app:';
-    if (isStandalone) { console.log('✅ Running as installed app - access granted'); return; }
+    if (isStandalone) { console.log(' Running as installed app - access granted'); return; }
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     if (isAndroid && isChrome) {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f1f5f9;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;padding:20px;text-align:center;"><div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);"><div style="font-size:64px;margin-bottom:16px;">📱</div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">📲 အက်ပ်ထည့်သွင်းမည်</button></div></div>';
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f1f5f9;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;padding:20px;text-align:center;"><div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);"><div style="font-size:64px;margin-bottom:16px;"></div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;"> </h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;"> <b>Chrome Browser</b>    <b>Install App</b>  </p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;"> </button></div></div>';
         document.documentElement.style.background = '#f1f5f9';
     }
 })();
-function installApp() { if (window.deferredPrompt) { window.deferredPrompt.prompt(); } else { alert('📲 အက်ပ်ထည့်သွင်းရန်:\n\n1. အပေါ်ဆုံး ⋮ (အစက်သုံးစက်) ကိုနှိပ်ပါ\n2. "Install App" ကိုရွေးပါ\n3. Install ကိုနှိပ်ပါ'); } }
+function installApp() { if (window.deferredPrompt) { window.deferredPrompt.prompt(); } else { alert(' :\n\n1.   () \n2. "Install App" \n3. Install '); } }
 function tryAnyway() { location.reload(); }
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); window.deferredPrompt = e; });
 
@@ -471,12 +470,7 @@ var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
 var isPrinting = false;
 
-// SUPABASE CONFIGURATION
-var SUPABASE_URL = 'https://mqkvfcjhwhurdakozote.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
-var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 🔦 FLASHLIGHT VARIABLES
+//  FLASHLIGHT VARIABLES
 var isFlashlightOn = false;
 var currentVideoTrack = null;
 
@@ -488,15 +482,15 @@ function closePopCart(e) { if (e.target === document.getElementById('popCartOver
 function closePopCartDirect() { document.getElementById('popCartOverlay').classList.remove('active'); }
 function updatePopCartContent() {
     var cart = carts[activeCartIndex] || [], content = document.getElementById('popCartContent'), totalRow = document.getElementById('popCartTotalRow'), totalValue = document.getElementById('popCartTotalValue');
-    if (cart.length === 0) { content.innerHTML = '<div class="pop-cart-empty">ပစ္စည်းများ မရှိသေးပါ</div>'; totalRow.style.display = 'none'; }
-    else { var html = '', total = 0; for (var i = 0; i < cart.length; i++) { var item = cart[i]; total += item.price * item.qty; html += '<div class="pop-cart-item"><span class="pop-item-name">' + item.name + '</span><span class="pop-item-price">' + Number(item.price).toLocaleString() + ' Ks</span><span class="pop-item-qty">×' + item.qty + '</span></div>'; } content.innerHTML = html; totalRow.style.display = 'flex'; totalValue.textContent = 'Ks - ' + total.toLocaleString(); }
+    if (cart.length === 0) { content.innerHTML = '<div class="pop-cart-empty"> </div>'; totalRow.style.display = 'none'; }
+    else { var html = '', total = 0; for (var i = 0; i < cart.length; i++) { var item = cart[i]; total += item.price * item.qty; html += '<div class="pop-cart-item"><span class="pop-item-name">' + item.name + '</span><span class="pop-item-price">' + Number(item.price).toLocaleString() + ' Ks</span><span class="pop-item-qty">�' + item.qty + '</span></div>'; } content.innerHTML = html; totalRow.style.display = 'flex'; totalValue.textContent = 'Ks - ' + total.toLocaleString(); }
     updateInlineCartPreview();
 }
 function updateInlineCartPreview() {
     var cart = carts[activeCartIndex] || [], textEl = document.getElementById('inlineCartText'), totalEl = document.getElementById('inlineCartTotal'), totalItems = 0, totalAmount = 0;
     for (var i = 0; i < cart.length; i++) { totalItems += cart[i].qty; totalAmount += cart[i].price * cart[i].qty; }
-    if (cart.length === 0) { textEl.textContent = 'ပစ္စည်းမရှိသေးပါ'; totalEl.textContent = 'Ks - 0'; }
-    else { textEl.textContent = totalItems + ' ခု'; totalEl.textContent = 'Ks - ' + totalAmount.toLocaleString(); }
+    if (cart.length === 0) { textEl.textContent = ''; totalEl.textContent = 'Ks - 0'; }
+    else { textEl.textContent = totalItems + ' '; totalEl.textContent = 'Ks - ' + totalAmount.toLocaleString(); }
 }
 
 // AUDIO
@@ -508,10 +502,10 @@ function playBeep() { try { initAudio(); if (!audioCtx) return; var o = audioCtx
 function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100), sel = document.getElementById('toastQtySelect'); sel.innerHTML = ''; for (var i = 1; i <= mq; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); } sel.value = '1'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
 function toastQtyChange(c) { playBeep(); var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct); if (nv < 1) nv = 1; if (nv > st) nv = st; if (nv > 100) nv = 100; s.value = nv; toastQty = nv; }
 function toastQtySelectChange(v) { playBeep(); toastQty = parseInt(v) || 1; }
-function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false); }
+function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('  ' + st + ' ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('  ' + st + ' ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); showBigToast(' ' + toastProduct.name + ' �' + q + ' ', '', 'success', false); }
 
 // THEME
-function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
+function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '' : ''; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
 
 // LOCK SCREEN
 function checkUniversalLogin() { var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword) { sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user'); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; } }
@@ -519,33 +513,16 @@ function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole
 function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }
 
 // SWITCH TAB
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast(' ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
 
 // LOAD DATA
-function loadProductsFromSheet() {
-    supabase
-        .from('products')
-        .select('*')
-        .then(function(response) {
-            if (response.data && response.data.length > 0) {
-                productsDB = response.data;
-                console.log('✅ Products loaded from Supabase: ' + productsDB.length);
-            }
-        })
-        .catch(function(error) {
-            console.log('❌ Supabase load failed, trying Google Sheets...');
-            fetch(scriptURL + '?t=' + new Date().getTime())
-                .then(function(r) { return r.json(); })
-                .then(function(d) { productsDB = d; })
-                .catch(function() {});
-        });
-}
+function loadProductsFromSheet() { fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; }).catch(function() {}); }
 function loadSalesHistoryFromSheet() { fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { if (d && d.length > 0) { salesHistory = d; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } }).catch(function() {}); }
-function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = "🔄 Sync Sheet"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Sheet"; }); }
-function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = "🔄 Sync Sheet"; renderAdminProducts(productsDB); showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Sheet"; }); }
-function reloadOnlineHistoryTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { if (d && d.length > 0) { salesHistory = d; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } b.disabled = false; b.innerText = "🔄 Sync Online"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Online"; }); }
+function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = " Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = " Sync Sheet"; showBigToast(' Update ', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = " Sync Sheet"; }); }
+function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = " Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = " Sync Sheet"; renderAdminProducts(productsDB); showBigToast(' Update ', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = " Sync Sheet"; }); }
+function reloadOnlineHistoryTab(b) { b.disabled = true; b.innerText = " Loading..."; fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { if (d && d.length > 0) { salesHistory = d; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } b.disabled = false; b.innerText = " Sync Online"; showBigToast(' Update ', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = " Sync Online"; }); }
 
-// 🔦 FLASHLIGHT FUNCTION
+//  FLASHLIGHT FUNCTION
 function toggleFlashlight() {
     var btn = document.getElementById('flashlightToggleBtn');
     
@@ -569,17 +546,17 @@ function toggleFlashlight() {
                 currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] });
                 isFlashlightOn = false;
                 btn.classList.remove('active');
-                btn.innerHTML = '🔦';
-                showBigToast('🔦 ဓာတ်မီး ပိတ်', '', 'success', false);
+                btn.innerHTML = '';
+                showBigToast('  ', '', 'success', false);
             } else {
                 currentVideoTrack.applyConstraints({ advanced: [{ torch: true }] });
                 isFlashlightOn = true;
                 btn.classList.add('active');
-                btn.innerHTML = '💡';
-                showBigToast('🔦 ဓာတ်မီး ဖွင့်', '', 'success', false);
+                btn.innerHTML = '';
+                showBigToast('  ', '', 'success', false);
             }
         } catch(e) {
-            showBigToast('⚠️ ဓာတ်မီး မရပါ', 'ဤစက်တွင် flashlight မပါဝင်ပါ', 'danger', false);
+            showBigToast('  ', ' flashlight ', 'danger', false);
         }
     } else {
         // Try to find track again
@@ -599,13 +576,13 @@ function toggleFlashlight() {
                 currentVideoTrack.applyConstraints({ advanced: [{ torch: true }] });
                 isFlashlightOn = true;
                 btn.classList.add('active');
-                btn.innerHTML = '💡';
-                showBigToast('🔦 ဓာတ်မီး ဖွင့်', '', 'success', false);
+                btn.innerHTML = '';
+                showBigToast('  ', '', 'success', false);
             } catch(e) {
-                showBigToast('⚠️ ဓာတ်မီး မရပါ', 'ဤစက်တွင် flashlight မပါဝင်ပါ', 'danger', false);
+                showBigToast('  ', ' flashlight ', 'danger', false);
             }
         } else {
-            showBigToast('⚠️ Camera မတွေ့ပါ', 'Scanner ကိုအရင်ဖွင့်ပါ', 'danger', false);
+            showBigToast(' Camera ', 'Scanner ', 'danger', false);
         }
     }
 }
@@ -622,7 +599,7 @@ function resetFlashlight() {
     var btn = document.getElementById('flashlightToggleBtn');
     if (btn) {
         btn.classList.remove('active');
-        btn.innerHTML = '🔦';
+        btn.innerHTML = '';
     }
 }
 
@@ -654,33 +631,33 @@ function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScanner
 }
 function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } } catch(e) {} }); canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); }
 function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { openFullScanner(); } }
-function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; t.style.color = 'var(--accent-success)'; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; t.style.color = 'var(--accent-danger)'; } }
+function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = " Scanning"; t.textContent = " ..."; t.style.color = 'var(--accent-success)'; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = " Paused"; t.textContent = " "; t.style.color = 'var(--accent-danger)'; } }
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
 function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
-function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; playBeep(); var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === dt.toString()) { p = productsDB[i]; break; } } if (!p) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ခု', 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); document.getElementById('full-scanner-status-text').textContent = '⏳ ၅ စက္ကန့် ခေတ္တရပ်...'; clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); }
+function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; playBeep(); var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === dt.toString()) { p = productsDB[i]; break; } } if (!p) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } var st = getStockNumber(p); if (st <= 0) { showBigToast(' "' + p.name + '" ', '', 'danger', false); return; } showBigToast(' ' + p.name, ' ' + st + ' ', 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); document.getElementById('full-scanner-status-text').textContent = '   ...'; clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); }
 
 // PREVIEW
-function updateScannedPreview() { var c = document.getElementById('scannedPreviewList'), cart = carts[activeCartIndex] || []; if (cart.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">စကန်ဖတ်မိသော ပစ္စည်းမရှိသေးပါ</div>'; return; } var h = '', cnt = 0; for (var i = cart.length - 1; i >= 0 && cnt < 8; i--) { var it = cart[i]; h += '<div class="preview-item"><span class="preview-name">' + it.name + '</span><span class="preview-price">' + Number(it.price).toLocaleString() + ' Ks</span><span class="preview-qty">×' + it.qty + '</span></div>'; cnt++; } if (cart.length > 8) h += '<div style="text-align:center;font-size:11px;">+ ' + (cart.length - 8) + ' ခု</div>'; c.innerHTML = h; }
+function updateScannedPreview() { var c = document.getElementById('scannedPreviewList'), cart = carts[activeCartIndex] || []; if (cart.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;"> </div>'; return; } var h = '', cnt = 0; for (var i = cart.length - 1; i >= 0 && cnt < 8; i--) { var it = cart[i]; h += '<div class="preview-item"><span class="preview-name">' + it.name + '</span><span class="preview-price">' + Number(it.price).toLocaleString() + ' Ks</span><span class="preview-qty">�' + it.qty + '</span></div>'; cnt++; } if (cart.length > 8) h += '<div style="text-align:center;font-size:11px;">+ ' + (cart.length - 8) + ' </div>'; c.innerHTML = h; }
 
 // SEARCH
-function filterProductNames() { var inp = document.getElementById('name-search-input').value.toLowerCase().trim(), box = document.getElementById('search-suggestions'), cb = document.getElementById('close-search-btn'); if (!inp) { box.style.display = 'none'; if (cb) cb.style.display = 'none'; return; } if (cb) cb.style.display = 'block'; var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; if (!f.length) { box.innerHTML = '<div class="text-center text-muted py-3 small">မတွေ့ပါ</div>'; box.style.display = 'block'; return; } f.forEach(function(prod) { var bStr = prod.barcode.toString(), cart = carts[activeCartIndex], ci = null; for (var j = 0; j < cart.length; j++) { if (cart[j].barcode.toString() === bStr) { ci = cart[j]; break; } } var cq = ci ? ci.qty : 0, st = getStockNumber(prod), ms = Number(prod.minStock) || 5, sTxt = '', sCls = ''; if (st <= 0) { sTxt = '🔴 ကုန်'; sCls = 'out-of-stock'; } else if (st <= ms) { sTxt = '🟡 နည်း(' + st + ')'; sCls = 'low-stock'; } else { sTxt = '🟢 ' + st; sCls = 'in-stock'; } var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center'; var info = document.createElement('div'); info.style.flex = "1"; info.style.minWidth = "0"; info.style.marginRight = "8px"; info.innerHTML = '<div class="fw-bold text-truncate" style="font-size:14px;">' + prod.name + '</div><div style="color:var(--accent-gold);font-size:13px;" class="fw-bold">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '" style="font-size:10px;">' + sTxt + '</div>'; var act = document.createElement('div'); act.className = "d-flex align-items-center gap-1"; if (cq > 0) { var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === cq ? ' selected' : '') + '>' + k + '</option>'; act.innerHTML = '<button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',-1)">-</button><select class="suggestion-qty-select" onchange="changeQtySelectFromSuggestion(\'' + bStr + '\',this.value)">' + opts + '</select><button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',1)">+</button>'; } else { var ab = document.createElement('button'); ab.className = "suggestion-add-btn"; ab.innerText = "+ ထည့်မည်"; ab.onmousedown = (function(b, p) { return function(e) { e.preventDefault(); if (getStockNumber(p) <= 0) { showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false); return; } playBeep(); addByBarcodeDirectly(b); filterProductNames(); }; })(bStr, prod); act.appendChild(ab); } div.appendChild(info); div.appendChild(act); box.appendChild(div); }); box.style.display = 'block'; }
+function filterProductNames() { var inp = document.getElementById('name-search-input').value.toLowerCase().trim(), box = document.getElementById('search-suggestions'), cb = document.getElementById('close-search-btn'); if (!inp) { box.style.display = 'none'; if (cb) cb.style.display = 'none'; return; } if (cb) cb.style.display = 'block'; var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; if (!f.length) { box.innerHTML = '<div class="text-center text-muted py-3 small"></div>'; box.style.display = 'block'; return; } f.forEach(function(prod) { var bStr = prod.barcode.toString(), cart = carts[activeCartIndex], ci = null; for (var j = 0; j < cart.length; j++) { if (cart[j].barcode.toString() === bStr) { ci = cart[j]; break; } } var cq = ci ? ci.qty : 0, st = getStockNumber(prod), ms = Number(prod.minStock) || 5, sTxt = '', sCls = ''; if (st <= 0) { sTxt = ' '; sCls = 'out-of-stock'; } else if (st <= ms) { sTxt = ' (' + st + ')'; sCls = 'low-stock'; } else { sTxt = ' ' + st; sCls = 'in-stock'; } var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center'; var info = document.createElement('div'); info.style.flex = "1"; info.style.minWidth = "0"; info.style.marginRight = "8px"; info.innerHTML = '<div class="fw-bold text-truncate" style="font-size:14px;">' + prod.name + '</div><div style="color:var(--accent-gold);font-size:13px;" class="fw-bold">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '" style="font-size:10px;">' + sTxt + '</div>'; var act = document.createElement('div'); act.className = "d-flex align-items-center gap-1"; if (cq > 0) { var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === cq ? ' selected' : '') + '>' + k + '</option>'; act.innerHTML = '<button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',-1)">-</button><select class="suggestion-qty-select" onchange="changeQtySelectFromSuggestion(\'' + bStr + '\',this.value)">' + opts + '</select><button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',1)">+</button>'; } else { var ab = document.createElement('button'); ab.className = "suggestion-add-btn"; ab.innerText = "+ "; ab.onmousedown = (function(b, p) { return function(e) { e.preventDefault(); if (getStockNumber(p) <= 0) { showBigToast(' ', '', 'danger', false); return; } playBeep(); addByBarcodeDirectly(b); filterProductNames(); }; })(bStr, prod); act.appendChild(ab); } div.appendChild(info); div.appendChild(act); box.appendChild(div); }); box.style.display = 'block'; }
 function clearSearchInputAndBox() { document.getElementById('name-search-input').value = ''; document.getElementById('search-suggestions').style.display = 'none'; document.getElementById('close-search-btn').style.display = 'none'; }
-function addByBarcodeDirectly(bc) { var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === bc.toString()) { p = productsDB[i]; break; } } if (!p) return; var st = getStockNumber(p), cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bc.toString()) { item = cart[i]; break; } } if (item) { if (item.qty + 1 > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty++; showBigToast('✅ ' + p.name + ' +1', '', 'success', false); } else { if (st <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); showBigToast('✅ ' + p.name + ' ထည့်ပြီး', '', 'success', false); } renderCart(); updateScannedPreview(); updatePopCartContent(); }
+function addByBarcodeDirectly(bc) { var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === bc.toString()) { p = productsDB[i]; break; } } if (!p) return; var st = getStockNumber(p), cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bc.toString()) { item = cart[i]; break; } } if (item) { if (item.qty + 1 > st) { showBigToast(' ' + st + ' ', '', 'danger', false); return; } item.qty++; showBigToast(' ' + p.name + ' +1', '', 'success', false); } else { if (st <= 0) { showBigToast(' ', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); showBigToast(' ' + p.name + ' ', '', 'success', false); } renderCart(); updateScannedPreview(); updatePopCartContent(); }
 
 // CART
 function switchCartTab(idx) { activeCartIndex = idx; document.querySelectorAll('.cart-tab-btn').forEach(function(b, i) { b.classList.toggle('active', i === idx); }); renderCart(); updateScannedPreview(); updatePopCartContent(); document.getElementById('name-search-input').focus(); }
 function updateCartBadges() { for (var i = 0; i < carts.length; i++) { var b = document.getElementById('cart-badge-' + i); if (b) { var t = 0; for (var j = 0; j < carts[i].length; j++) t += carts[i][j].qty; b.textContent = t; } } }
-function renderCart() { var cart = carts[activeCartIndex] || [], list = document.getElementById('cart-list'), badge = document.getElementById('cart-count-badge'), total = 0, ti = 0; if (!cart.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>'; document.getElementById('cart-total').innerText = '0'; if (badge) badge.innerText = "0 items"; updateCartBadges(); updateInlineCartPreview(); return; } list.innerHTML = ''; cart.forEach(function(item, i) { total += item.price * item.qty; ti += item.qty; var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === item.qty ? ' selected' : '') + '>' + k + '</option>'; list.innerHTML += '<div class="cart-item d-flex justify-content-between align-items-center"><div style="flex:1;min-width:0;" class="pe-2"><h6 class="fw-bold mb-1 text-truncate" style="font-size:14px;">' + item.name + '</h6><small class="font-monospace small fw-bold" style="color:var(--accent-gold);">' + Number(item.price).toLocaleString() + ' Ks</small></div><div class="d-flex align-items-center gap-2"><div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',-1)">-</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',1)">+</button></div><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')">❌</button></div></div>'; }); var dIn = document.getElementById('cart-discount-input').value.trim(), dAmt = 0; if (dIn.includes('%')) dAmt = total * (parseFloat(dIn.replace('%', '')) / 100); else dAmt = Number(dIn) || 0; document.getElementById('cart-total').innerText = Math.max(0, total - dAmt).toLocaleString(); if (badge) badge.innerText = ti + (ti > 1 ? " items" : " item"); updateCartBadges(); updateInlineCartPreview(); }
-function changeQty(i, c) { playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return; var st = getStockNumber(cart[i]), nq = cart[i].qty + c; if (nq <= 0) cart.splice(i, 1); else if (nq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } else cart[i].qty = nq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
-function changeQtySelectFromCart(i, nq) { playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return; var st = getStockNumber(cart[i]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } cart[i].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
+function renderCart() { var cart = carts[activeCartIndex] || [], list = document.getElementById('cart-list'), badge = document.getElementById('cart-count-badge'), total = 0, ti = 0; if (!cart.length) { list.innerHTML = '<div class="text-center text-muted py-4 small"> </div>'; document.getElementById('cart-total').innerText = '0'; if (badge) badge.innerText = "0 items"; updateCartBadges(); updateInlineCartPreview(); return; } list.innerHTML = ''; cart.forEach(function(item, i) { total += item.price * item.qty; ti += item.qty; var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === item.qty ? ' selected' : '') + '>' + k + '</option>'; list.innerHTML += '<div class="cart-item d-flex justify-content-between align-items-center"><div style="flex:1;min-width:0;" class="pe-2"><h6 class="fw-bold mb-1 text-truncate" style="font-size:14px;">' + item.name + '</h6><small class="font-monospace small fw-bold" style="color:var(--accent-gold);">' + Number(item.price).toLocaleString() + ' Ks</small></div><div class="d-flex align-items-center gap-2"><div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',-1)">-</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',1)">+</button></div><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')"></button></div></div>'; }); var dIn = document.getElementById('cart-discount-input').value.trim(), dAmt = 0; if (dIn.includes('%')) dAmt = total * (parseFloat(dIn.replace('%', '')) / 100); else dAmt = Number(dIn) || 0; document.getElementById('cart-total').innerText = Math.max(0, total - dAmt).toLocaleString(); if (badge) badge.innerText = ti + (ti > 1 ? " items" : " item"); updateCartBadges(); updateInlineCartPreview(); }
+function changeQty(i, c) { playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return; var st = getStockNumber(cart[i]), nq = cart[i].qty + c; if (nq <= 0) cart.splice(i, 1); else if (nq > st) { showBigToast(' ' + st + ' ', '', 'danger', false); return; } else cart[i].qty = nq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
+function changeQtySelectFromCart(i, nq) { playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return; var st = getStockNumber(cart[i]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast(' ' + st + ' ', '', 'danger', false); return; } cart[i].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
 function removeCartItemCompletely(i) { playBeep(); carts[activeCartIndex].splice(i, 1); renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
-function changeQtyFromSuggestion(bc, c) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1 && c > 0) { var p = productsDB.find(function(x) { return x.barcode.toString() === bStr; }); if (p) { var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); } } else if (idx !== -1) { var st = getStockNumber(cart[idx]), nq = cart[idx].qty + c; if (nq <= 0) cart.splice(idx, 1); else if (nq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } else cart[idx].qty = nq; } renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
-function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1) return; var st = getStockNumber(cart[idx]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } cart[idx].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
+function changeQtyFromSuggestion(bc, c) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1 && c > 0) { var p = productsDB.find(function(x) { return x.barcode.toString() === bStr; }); if (p) { var st = getStockNumber(p); if (st <= 0) { showBigToast(' ', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); } } else if (idx !== -1) { var st = getStockNumber(cart[idx]), nq = cart[idx].qty + c; if (nq <= 0) cart.splice(idx, 1); else if (nq > st) { showBigToast(' ' + st + ' ', '', 'danger', false); return; } else cart[idx].qty = nq; } renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
+function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1) return; var st = getStockNumber(cart[idx]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast(' ' + st + ' ', '', 'danger', false); return; } cart[idx].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
 
 // CHECKOUT
-function checkout() { var cart = carts[activeCartIndex]; if (!cart.length) { showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false); return; } var cn = prompt("ဝယ်သူအမည် -", "customer") || "customer", vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { action: "addSale", voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() }; salesHistory.unshift(sd); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); setTimeout(function() { printVoucher(sd); }, 400); var fd = new FormData(); fd.append('jsonData', JSON.stringify(sd)); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false); }).catch(function() {}); carts[activeCartIndex] = []; document.getElementById('cart-discount-input').value = ''; renderCart(); updateScannedPreview(); updatePopCartContent(); clearSearchInputAndBox(); showBigToast('🧹 ရှင်းပြီး', '', 'success', false); }
+function checkout() { var cart = carts[activeCartIndex]; if (!cart.length) { showBigToast('', '', 'danger', false); return; } var cn = prompt(" -", "customer") || "customer", vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { action: "addSale", voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() }; salesHistory.unshift(sd); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); setTimeout(function() { printVoucher(sd); }, 400); var fd = new FormData(); fd.append('jsonData', JSON.stringify(sd)); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast(' ' + vid + ' ', '', 'success', false); }).catch(function() {}); carts[activeCartIndex] = []; document.getElementById('cart-discount-input').value = ''; renderCart(); updateScannedPreview(); updatePopCartContent(); clearSearchInputAndBox(); showBigToast(' ', '', 'success', false); }
 
-// 🔥 PRINT VOUCHER - With Address
+//  PRINT VOUCHER - With Address
 function printVoucher(sale) {
     if (typeof sale === 'string') {
         var found = null;
@@ -690,7 +667,7 @@ function printVoucher(sale) {
                 break;
             }
         }
-        if (!found) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; }
+        if (!found) { showBigToast('', '', 'danger', false); return; }
         sale = found;
     }
     if (!sale || !sale.items) return;
@@ -719,22 +696,22 @@ function printVoucher(sale) {
         '.thanks{text-align:center;font-size:12px;margin-top:10px;}' +
         '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}' +
         '</style></head><body>' +
-        '<h2>ဝင်းသီရိ</h2>' +
-        '<div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div>' +
+        '<h2></h2>' +
+        '<div class="shop-address">   </div>' +
         '<div class="dashed"></div>' +
         '<table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + sale.voucherId + '</b></td></tr>' +
-        '<tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + sale.customerName + '</td></tr>' +
-        '<tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + (sale.date || '') + '</td></tr>' +
-        '<tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + (sale.paymentMode || 'Cash') + '</td></tr></table>' +
+        '<tr><td><b>:</b></td><td style="text-align:right;">' + sale.customerName + '</td></tr>' +
+        '<tr><td><b>:</b></td><td style="text-align:right;">' + (sale.date || '') + '</td></tr>' +
+        '<tr><td><b>:</b></td><td style="text-align:right;">' + (sale.paymentMode || 'Cash') + '</td></tr></table>' +
         '<table style="margin-top:8px;"><thead><tr style="border-top:2px dashed #000;border-bottom:2px dashed #000;">' +
-        '<th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' +
+        '<th style="text-align:left;"></th><th style="text-align:right;"></th><th style="text-align:center;"></th><th style="text-align:right;"></th></tr></thead><tbody>' +
         itemsHTML + '</tbody></table>' +
         '<div class="dashed"></div>' +
-        '<table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr>' +
+        '<table><tr><td>:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr>' +
         '<tr><td>Discount:</td><td style="text-align:right;">-' + (sale.discount || 0) + '</td></tr>' +
-        '<tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + sale.total + ' Ks</td></tr></table>' +
+        '<tr class="total-row"><td>:</td><td style="text-align:right;">' + sale.total + ' Ks</td></tr></table>' +
         '<div class="dashed"></div>' +
-        '<div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>' +
+        '<div class="thanks"> !</div>' +
         '</body></html>';
     
     // Use iframe for printing
@@ -780,107 +757,26 @@ function printVoucher(sale) {
 }
 
 // HISTORY
-function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + sale.voucherId + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span><small class="text-muted font-monospace">' + (sale.date || '') + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + sale.customerName + '</b> | 💳 ' + (sale.paymentMode || 'Cash') + '</div><div class="small mb-2 text-danger">Discount: <b>' + (sale.discount || '0') + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + sale.total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + sale.voucherId + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
+function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small"></div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; sale.items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + sale.voucherId + '\')"> </button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + sale.voucherId + '</span><small class="text-muted font-monospace">' + (sale.date || '') + '</small></div><div class="small mb-1">: <b>' + sale.customerName + '</b> |  ' + (sale.paymentMode || 'Cash') + '</div><div class="small mb-2 text-danger">Discount: <b>' + (sale.discount || '0') + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + sale.total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + sale.voucherId + '\')"> </button>' + db + '</div></div></div>'; }); }
 function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { return s.voucherId.toLowerCase().includes(t) || s.customerName.toLowerCase().includes(t); })); }
-function deleteSaleFromSheet(vid) { if (!confirm("ဖျက်မှာသေချာလား?")) return; salesHistory = salesHistory.filter(function(s) { return s.voucherId.toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: vid })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); }); }
-function clearAllSalesHistoryOnline(btn) { if (!confirm("အားလုံးဖျက်မှာသေချာလား?")) return; btn.disabled = true; btn.innerText = "⏳"; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "clearAllSales" })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory); btn.disabled = false; btn.innerText = "⚠️ အားလုံးဖျက်မည်"; showBigToast('✅ ရှင်းပြီး', '', 'success', false); }, 2000); }); }
+function deleteSaleFromSheet(vid) { if (!confirm("?")) return; salesHistory = salesHistory.filter(function(s) { return s.voucherId.toString() !== vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteSale", voucherId: vid })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { showBigToast(' ', '', 'success', false); }); }
+function clearAllSalesHistoryOnline(btn) { if (!confirm("?")) return; btn.disabled = true; btn.innerText = ""; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "clearAllSales" })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { localStorage.removeItem('salesHistory'); salesHistory = []; displayHistory(salesHistory); btn.disabled = false; btn.innerText = " "; showBigToast(' ', '', 'success', false); }, 2000); }); }
 
 // DASHBOARD
-function calculateTodaySales() { var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y; document.getElementById('today-date-string').innerText = fs ? fs : "ယနေ့ထိ"; var ts = 0, tp = 0, cs = 0, ks = 0, ws = 0; salesHistory.forEach(function(sale) { var sd = new Date(sale.date), inside = true; if (sts && sd.getTime() < sts) inside = false; if (ets && sd.getTime() > ets) inside = false; if (!fs && !fe) { var so = sale.date ? sale.date.split(',')[0].trim() : ''; if (!(so.includes(tf1) || so.includes(tf2) || sd.toLocaleDateString() === now.toLocaleDateString())) inside = false; } if (!inside) return; var ct = Number(sale.total.toString().replace(/,/g, '')) || 0; ts += ct; var pm = sale.paymentMode || "Cash"; if (pm === "Cash") cs += ct; else if (pm === "KPay") ks += ct; else if (pm === "Wave") ws += ct; var sc = 0; if (sale.items) { sale.items.forEach(function(item) { var match = productsDB.find(function(p) { return p.barcode.toString() === item.barcode.toString(); }); sc += (match ? Number(match.cost || 0) : 0) * Number(item.qty); }); } var gross = 0; if (sale.items) { sale.items.forEach(function(item) { gross += Number(item.price) * Number(item.qty); }); } var disc = sale.discount || "0", da = disc.toString().includes('%') ? gross * (parseFloat(disc.replace('%','')) / 100) : Number(disc) || 0; tp += ((gross - da) - sc); }); document.getElementById('today-sales-summary').innerText = ts.toLocaleString() + " Ks"; document.getElementById('payment-split-summary').innerHTML = '💵 Cash: ' + cs.toLocaleString() + ' | 📱 KPay: ' + ks.toLocaleString() + ' | 🌊 Wave: ' + ws.toLocaleString(); document.getElementById('today-profit-summary').innerText = tp.toLocaleString() + " Ks"; }
-function updateSalesChartLogic() { try { var sm = {}; for (var i = 6; i >= 0; i--) { var d = new Date(); d.setDate(d.getDate() - i); sm[d.toLocaleDateString('en-GB')] = 0; } var adm = {}, pcm = {}; salesHistory.forEach(function(sale) { if (sale.date) { var raw = sale.date.split(',')[0].trim(), fmt = raw; if (raw.includes('/')) { var parts = raw.split('/'); if (parts[0].length < 2) parts[0] = '0' + parts[0]; if (parts[1].length < 2) parts[1] = '0' + parts[1]; fmt = parts[0] + '/' + parts[1] + '/' + parts[2]; } else { fmt = new Date(sale.date).toLocaleDateString('en-GB'); } var total = Number(sale.total.toString().replace(/,/g, '')) || 0; if (sm[fmt] !== undefined) sm[fmt] += total; if (!adm[fmt]) adm[fmt] = 0; adm[fmt] += total; } if (sale.items) { sale.items.forEach(function(item) { if (!pcm[item.name]) pcm[item.name] = 0; pcm[item.name] += Number(item.qty); }); } }); var ctx = document.getElementById('salesChart'); if (ctx && typeof Chart !== 'undefined') { var isDark = document.documentElement.getAttribute('data-theme') === 'dark', gold = isDark ? '#fbbf24' : '#b45309', fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)', grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim(), text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(); if (mySalesChart) mySalesChart.destroy(); mySalesChart = new Chart(ctx, { type: 'line', data: { labels: Object.keys(sm), datasets: [{ label: 'Sales', data: Object.values(sm), borderColor: gold, backgroundColor: fill, borderWidth: 3, fill: true, tension: 0.3, pointBackgroundColor: gold, pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: text, font: { size: 10 } } } } } }); } var topCtx = document.getElementById('topProductsChart'); if (topCtx && typeof Chart !== 'undefined') { var sorted = Object.keys(pcm).sort(function(a, b) { return pcm[b] - pcm[a]; }), tl = sorted.slice(0, 5), td = tl.map(function(l) { return pcm[l]; }); if (myTopProductsChart) myTopProductsChart.destroy(); var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; myTopProductsChart = new Chart(topCtx, { type: 'bar', data: { labels: tl, datasets: [{ data: td, backgroundColor: isDark ? '#fbbf24' : '#b45309', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); } var tbody = document.getElementById('date-sales-table-body'); if (tbody) { var keys = Object.keys(adm).sort(function(a,b){ var p1=a.split('/'),p2=b.split('/'); return new Date(p2[2],p2[1]-1,p2[0])-new Date(p1[2],p1[1]-1,p1[0]); }); tbody.innerHTML = keys.length ? keys.map(function(dt){ return '<tr><td class="fw-bold">'+dt+'</td><td class="text-danger fw-bold">'+adm[dt].toLocaleString()+' Ks</td></tr>'; }).join('') : '<tr><td colspan="2" class="text-muted">မရှိပါ</td></tr>'; } } catch(e) {} }
+function calculateTodaySales() { var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y; document.getElementById('today-date-string').innerText = fs ? fs : ""; var ts = 0, tp = 0, cs = 0, ks = 0, ws = 0; salesHistory.forEach(function(sale) { var sd = new Date(sale.date), inside = true; if (sts && sd.getTime() < sts) inside = false; if (ets && sd.getTime() > ets) inside = false; if (!fs && !fe) { var so = sale.date ? sale.date.split(',')[0].trim() : ''; if (!(so.includes(tf1) || so.includes(tf2) || sd.toLocaleDateString() === now.toLocaleDateString())) inside = false; } if (!inside) return; var ct = Number(sale.total.toString().replace(/,/g, '')) || 0; ts += ct; var pm = sale.paymentMode || "Cash"; if (pm === "Cash") cs += ct; else if (pm === "KPay") ks += ct; else if (pm === "Wave") ws += ct; var sc = 0; if (sale.items) { sale.items.forEach(function(item) { var match = productsDB.find(function(p) { return p.barcode.toString() === item.barcode.toString(); }); sc += (match ? Number(match.cost || 0) : 0) * Number(item.qty); }); } var gross = 0; if (sale.items) { sale.items.forEach(function(item) { gross += Number(item.price) * Number(item.qty); }); } var disc = sale.discount || "0", da = disc.toString().includes('%') ? gross * (parseFloat(disc.replace('%','')) / 100) : Number(disc) || 0; tp += ((gross - da) - sc); }); document.getElementById('today-sales-summary').innerText = ts.toLocaleString() + " Ks"; document.getElementById('payment-split-summary').innerHTML = ' Cash: ' + cs.toLocaleString() + ' |  KPay: ' + ks.toLocaleString() + ' |  Wave: ' + ws.toLocaleString(); document.getElementById('today-profit-summary').innerText = tp.toLocaleString() + " Ks"; }
+function updateSalesChartLogic() { try { var sm = {}; for (var i = 6; i >= 0; i--) { var d = new Date(); d.setDate(d.getDate() - i); sm[d.toLocaleDateString('en-GB')] = 0; } var adm = {}, pcm = {}; salesHistory.forEach(function(sale) { if (sale.date) { var raw = sale.date.split(',')[0].trim(), fmt = raw; if (raw.includes('/')) { var parts = raw.split('/'); if (parts[0].length < 2) parts[0] = '0' + parts[0]; if (parts[1].length < 2) parts[1] = '0' + parts[1]; fmt = parts[0] + '/' + parts[1] + '/' + parts[2]; } else { fmt = new Date(sale.date).toLocaleDateString('en-GB'); } var total = Number(sale.total.toString().replace(/,/g, '')) || 0; if (sm[fmt] !== undefined) sm[fmt] += total; if (!adm[fmt]) adm[fmt] = 0; adm[fmt] += total; } if (sale.items) { sale.items.forEach(function(item) { if (!pcm[item.name]) pcm[item.name] = 0; pcm[item.name] += Number(item.qty); }); } }); var ctx = document.getElementById('salesChart'); if (ctx && typeof Chart !== 'undefined') { var isDark = document.documentElement.getAttribute('data-theme') === 'dark', gold = isDark ? '#fbbf24' : '#b45309', fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)', grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim(), text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(); if (mySalesChart) mySalesChart.destroy(); mySalesChart = new Chart(ctx, { type: 'line', data: { labels: Object.keys(sm), datasets: [{ label: 'Sales', data: Object.values(sm), borderColor: gold, backgroundColor: fill, borderWidth: 3, fill: true, tension: 0.3, pointBackgroundColor: gold, pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: text, font: { size: 10 } } } } } }); } var topCtx = document.getElementById('topProductsChart'); if (topCtx && typeof Chart !== 'undefined') { var sorted = Object.keys(pcm).sort(function(a, b) { return pcm[b] - pcm[a]; }), tl = sorted.slice(0, 5), td = tl.map(function(l) { return pcm[l]; }); if (myTopProductsChart) myTopProductsChart.destroy(); var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; myTopProductsChart = new Chart(topCtx, { type: 'bar', data: { labels: tl, datasets: [{ data: td, backgroundColor: isDark ? '#fbbf24' : '#b45309', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); } var tbody = document.getElementById('date-sales-table-body'); if (tbody) { var keys = Object.keys(adm).sort(function(a,b){ var p1=a.split('/'),p2=b.split('/'); return new Date(p2[2],p2[1]-1,p2[0])-new Date(p1[2],p1[1]-1,p1[0]); }); tbody.innerHTML = keys.length ? keys.map(function(dt){ return '<tr><td class="fw-bold">'+dt+'</td><td class="text-danger fw-bold">'+adm[dt].toLocaleString()+' Ks</td></tr>'; }).join('') : '<tr><td colspan="2" class="text-muted"></td></tr>'; } } catch(e) {} }
 
 // ADMIN
-function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = ProductsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
-function renderAdminProducts(arr) { var list = document.getElementById('admin-product-list'); list.innerHTML = ''; arr.forEach(function(prod, idx) { var limit = Number(prod.minStock) || 5, cost = prod.cost || prod.costPrice || 0, sd = getStockNumber(prod), sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + '</span>'; if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + '</span>'; list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2"><div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div><div class="text-muted small">Barcode: ' + prod.barcode + '</div><div class="row g-2"><div class="col-4"><small>အရင်း</small><input type="number" id="p-cost-' + idx + '" class="form-control form-control-sm" value="' + cost + '"></div><div class="col-4"><small>ရောင်း</small><input type="number" id="p-price-' + idx + '" class="form-control form-control-sm" value="' + prod.price + '"></div><div class="col-4"><small>စတော့</small><input type="number" id="p-stock-' + idx + '" class="form-control form-control-sm" value="' + sd + '"></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + idx + '" onclick="uploadProductToSheet(' + idx + ')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + idx + ')">🗑️</button></div></div></div>'; }); }
-function uploadProductToSheet(idx) {
-    var cost = document.getElementById('p-cost-' + idx).value,
-        price = document.getElementById('p-price-' + idx).value,
-        stock = document.getElementById('p-stock-' + idx).value,
-        prod = ProductsDB[idx];
-    
-    var btn = document.getElementById('edit-btn-' + idx);
-    btn.disabled = true;
-    btn.innerText = "⏳";
-    
-    supabase
-        .from('Products')
-        .update({
-            price: Number(price),
-            stock: Number(stock),
-            extra1: String(cost)
-        })
-        .eq('barcode', prod.barcode)
-        .then(function() {
-            btn.disabled = false;
-            btn.innerText = "💾 ပြင်";
-            showBigToast('✅ Supabase ပြင်ပြီး', '', 'success', false);
-            loadProductsFromSheet();
-        })
-        .catch(function(err) {
-            btn.disabled = false;
-            btn.innerText = "💾 ပြင်";
-            showBigToast('❌ Error', err.message, 'danger', false);
-        });
-}
-function deleteProductFromSheet(idx) {
-    var prod = ProductsDB[idx];
-    if (!confirm('ဖျက်မလား?')) return;
-    
-    supabase
-        .from('Products')
-        .delete()
-        .eq('barcode', prod.barcode)
-        .then(function() {
-            ProductsDB.splice(idx, 1);
-            renderAdminProducts(productsDB);
-            showBigToast('🗑️ Supabase ဖျက်ပြီး', '', 'success', false);
-            loadProductsFromSheet();
-        })
-        .catch(function(err) {
-            showBigToast('❌ Error', err.message, 'danger', false);
-        });
-}
-function addNewProduct() {
-    var name = document.getElementById('new-name').value.trim(),
-        price = document.getElementById('new-price').value.trim();
-    if (!name || !price) { showBigToast('ဖြည့်ပါ', '', 'danger', false); return; }
-    var btn = document.getElementById('add-prod-btn');
-    btn.disabled = true;
-    
-    var newProduct = {
-        barcode: document.getElementById('new-barcode').value || "NB-" + Date.now(),
-        name: name,
-        price: Number(price),
-        stock: Number(document.getElementById('new-stock').value) || 0,
-        extra1: String(document.getElementById('new-cost').value) || '0',
-        extra2: String(document.getElementById('new-min-stock').value) || '5'
-    };
-    
-    supabase
-        .from('Products')
-        .insert([newProduct])
-        .then(function() {
-            btn.disabled = false;
-            showBigToast('✅ သိမ်းပြီး', '', 'success', false);
-            document.getElementById('new-barcode').value = '';
-            document.getElementById('new-name').value = '';
-            document.getElementById('new-price').value = '';
-            document.getElementById('new-stock').value = '';
-            document.getElementById('new-cost').value = '0';
-            document.getElementById('new-min-stock').value = '5';
-            loadProductsFromSheet();
-            switchTab('sales');
-        })
-        .catch(function(err) {
-            btn.disabled = false;
-            showBigToast('❌ Error', err.message, 'danger', false);
-        });
-}
+function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
+function renderAdminProducts(arr) { var list = document.getElementById('admin-product-list'); list.innerHTML = ''; arr.forEach(function(prod, idx) { var limit = Number(prod.minStock) || 5, cost = prod.cost || prod.costPrice || 0, sd = getStockNumber(prod), sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">: ' + sd + '</span>'; if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1"></span>'; else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">:' + sd + '</span>'; list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2"><div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div><div class="text-muted small">Barcode: ' + prod.barcode + '</div><div class="row g-2"><div class="col-4"><small></small><input type="number" id="p-cost-' + idx + '" class="form-control form-control-sm" value="' + cost + '"></div><div class="col-4"><small></small><input type="number" id="p-price-' + idx + '" class="form-control form-control-sm" value="' + prod.price + '"></div><div class="col-4"><small></small><input type="number" id="p-stock-' + idx + '" class="form-control form-control-sm" value="' + sd + '"></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + idx + '" onclick="uploadProductToSheet(' + idx + ')"> </button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + idx + ')"></button></div></div></div>'; }); }
+function uploadProductToSheet(idx) { var cost = document.getElementById('p-cost-' + idx).value, price = document.getElementById('p-price-' + idx).value, stock = document.getElementById('p-stock-' + idx).value, prod = productsDB[idx]; prod.cost = Number(cost); prod.costPrice = Number(cost); prod.price = Number(price); prod.stock = Number(stock); var btn = document.getElementById('edit-btn-' + idx); btn.disabled = true; btn.innerText = ""; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "updateProduct", barcode: prod.barcode, name: prod.name, price: prod.price, stock: prod.stock, cost: Number(cost), minStock: prod.minStock || 5 })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { btn.disabled = false; btn.innerText = " "; showBigToast(' ', '', 'success', false); loadProductsFromSheet(); }, 2000); }).catch(function() { btn.disabled = false; btn.innerText = " "; }); }
+function deleteProductFromSheet(idx) { var prod = productsDB[idx]; if (!confirm('?')) return; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteProduct", barcode: prod.barcode })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }); productsDB.splice(idx, 1); renderAdminProducts(productsDB); showBigToast(' ', '', 'success', false); }
+function addNewProduct() { var name = document.getElementById('new-name').value.trim(), price = document.getElementById('new-price').value.trim(); if (!name || !price) { showBigToast('', '', 'danger', false); return; } var btn = document.getElementById('add-prod-btn'); btn.disabled = true; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "updateProduct", barcode: document.getElementById('new-barcode').value || "NB-" + Date.now(), name: name, price: Number(price), stock: Number(document.getElementById('new-stock').value) || 0, cost: Number(document.getElementById('new-cost').value) || 0, minStock: Number(document.getElementById('new-min-stock').value) || 5 })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { btn.disabled = false; showBigToast(' ', '', 'success', false); document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = ''; document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = ''; document.getElementById('new-cost').value = '0'; document.getElementById('new-min-stock').value = '5'; loadProductsFromSheet(); switchTab('sales'); }, 1500); }).catch(function() { btn.disabled = false; }); }
 
 window.onload = function() {
     document.getElementById('hidden-form').action = scriptURL;
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
-    document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '' : '';
     if (sessionStorage.getItem('isAppUnlocked') === 'true') { setupRolePrivilegesUi(); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; }
     loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
     var pw = document.getElementById('home-pass-input'); if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
@@ -891,9 +787,9 @@ window.onload = function() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('./service-worker.js').then(function(registration) {
-                console.log('✅ Service Worker registered');
+                console.log(' Service Worker registered');
             }).catch(function(err) {
-                console.log('❌ Service Worker registration failed:', err);
+                console.log(' Service Worker registration failed:', err);
             });
         });
     }
