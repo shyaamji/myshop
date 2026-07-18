@@ -522,7 +522,24 @@ function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localS
 function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
 
 // LOAD DATA
-function loadProductsFromSheet() { fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; }).catch(function() {}); }
+function loadProductsFromSheet() {
+    supabase
+        .from('products')
+        .select('*')
+        .then(function(response) {
+            if (response.data && response.data.length > 0) {
+                productsDB = response.data;
+                console.log('✅ Products loaded from Supabase: ' + productsDB.length);
+            }
+        })
+        .catch(function(error) {
+            console.log('❌ Supabase load failed, trying Google Sheets...');
+            fetch(scriptURL + '?t=' + new Date().getTime())
+                .then(function(r) { return r.json(); })
+                .then(function(d) { productsDB = d; })
+                .catch(function() {});
+        });
+}
 function loadSalesHistoryFromSheet() { fetch(scriptURL + '?getSales=true&t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { if (d && d.length > 0) { salesHistory = d; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } }).catch(function() {}); }
 function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = "🔄 Sync Sheet"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Sheet"; }); }
 function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; fetch(scriptURL + '?t=' + new Date().getTime()).then(function(r) { return r.json(); }).then(function(d) { productsDB = d; b.disabled = false; b.innerText = "🔄 Sync Sheet"; renderAdminProducts(productsDB); showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync Sheet"; }); }
