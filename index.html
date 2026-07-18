@@ -792,9 +792,90 @@ function updateSalesChartLogic() { try { var sm = {}; for (var i = 6; i >= 0; i-
 // ADMIN
 function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
 function renderAdminProducts(arr) { var list = document.getElementById('admin-product-list'); list.innerHTML = ''; arr.forEach(function(prod, idx) { var limit = Number(prod.minStock) || 5, cost = prod.cost || prod.costPrice || 0, sd = getStockNumber(prod), sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + '</span>'; if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + '</span>'; list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2"><div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div><div class="text-muted small">Barcode: ' + prod.barcode + '</div><div class="row g-2"><div class="col-4"><small>အရင်း</small><input type="number" id="p-cost-' + idx + '" class="form-control form-control-sm" value="' + cost + '"></div><div class="col-4"><small>ရောင်း</small><input type="number" id="p-price-' + idx + '" class="form-control form-control-sm" value="' + prod.price + '"></div><div class="col-4"><small>စတော့</small><input type="number" id="p-stock-' + idx + '" class="form-control form-control-sm" value="' + sd + '"></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + idx + '" onclick="uploadProductToSheet(' + idx + ')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + idx + ')">🗑️</button></div></div></div>'; }); }
-function uploadProductToSheet(idx) { var cost = document.getElementById('p-cost-' + idx).value, price = document.getElementById('p-price-' + idx).value, stock = document.getElementById('p-stock-' + idx).value, prod = productsDB[idx]; prod.cost = Number(cost); prod.costPrice = Number(cost); prod.price = Number(price); prod.stock = Number(stock); var btn = document.getElementById('edit-btn-' + idx); btn.disabled = true; btn.innerText = "⏳"; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "updateProduct", barcode: prod.barcode, name: prod.name, price: prod.price, stock: prod.stock, cost: Number(cost), minStock: prod.minStock || 5 })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { btn.disabled = false; btn.innerText = "💾 ပြင်"; showBigToast('✅ ပြင်ပြီး', '', 'success', false); loadProductsFromSheet(); }, 2000); }).catch(function() { btn.disabled = false; btn.innerText = "💾 ပြင်"; }); }
-function deleteProductFromSheet(idx) { var prod = productsDB[idx]; if (!confirm('ဖျက်မလား?')) return; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "deleteProduct", barcode: prod.barcode })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }); productsDB.splice(idx, 1); renderAdminProducts(productsDB); showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); }
-function addNewProduct() { var name = document.getElementById('new-name').value.trim(), price = document.getElementById('new-price').value.trim(); if (!name || !price) { showBigToast('ဖြည့်ပါ', '', 'danger', false); return; } var btn = document.getElementById('add-prod-btn'); btn.disabled = true; var fd = new FormData(); fd.append('jsonData', JSON.stringify({ action: "updateProduct", barcode: document.getElementById('new-barcode').value || "NB-" + Date.now(), name: name, price: Number(price), stock: Number(document.getElementById('new-stock').value) || 0, cost: Number(document.getElementById('new-cost').value) || 0, minStock: Number(document.getElementById('new-min-stock').value) || 5 })); fetch(scriptURL, { method: 'POST', body: fd, mode: 'no-cors' }).then(function() { setTimeout(function() { btn.disabled = false; showBigToast('✅ သိမ်းပြီး', '', 'success', false); document.getElementById('new-barcode').value = ''; document.getElementById('new-name').value = ''; document.getElementById('new-price').value = ''; document.getElementById('new-stock').value = ''; document.getElementById('new-cost').value = '0'; document.getElementById('new-min-stock').value = '5'; loadProductsFromSheet(); switchTab('sales'); }, 1500); }).catch(function() { btn.disabled = false; }); }
+function uploadProductToSheet(idx) {
+    var cost = document.getElementById('p-cost-' + idx).value,
+        price = document.getElementById('p-price-' + idx).value,
+        stock = document.getElementById('p-stock-' + idx).value,
+        prod = productsDB[idx];
+    
+    var btn = document.getElementById('edit-btn-' + idx);
+    btn.disabled = true;
+    btn.innerText = "⏳";
+    
+    supabase
+        .from('products')
+        .update({
+            price: Number(price),
+            stock: Number(stock),
+            extra1: String(cost)
+        })
+        .eq('barcode', prod.barcode)
+        .then(function() {
+            btn.disabled = false;
+            btn.innerText = "💾 ပြင်";
+            showBigToast('✅ Supabase ပြင်ပြီး', '', 'success', false);
+            loadProductsFromSheet();
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerText = "💾 ပြင်";
+            showBigToast('❌ Error', err.message, 'danger', false);
+        });
+}
+function deleteProductFromSheet(idx) {
+    var prod = productsDB[idx];
+    if (!confirm('ဖျက်မလား?')) return;
+    
+    supabase
+        .from('products')
+        .delete()
+        .eq('barcode', prod.barcode)
+        .then(function() {
+            productsDB.splice(idx, 1);
+            renderAdminProducts(productsDB);
+            showBigToast('🗑️ Supabase ဖျက်ပြီး', '', 'success', false);
+            loadProductsFromSheet();
+        })
+        .catch(function(err) {
+            showBigToast('❌ Error', err.message, 'danger', false);
+        });
+}
+function addNewProduct() {
+    var name = document.getElementById('new-name').value.trim(),
+        price = document.getElementById('new-price').value.trim();
+    if (!name || !price) { showBigToast('ဖြည့်ပါ', '', 'danger', false); return; }
+    var btn = document.getElementById('add-prod-btn');
+    btn.disabled = true;
+    
+    var newProduct = {
+        barcode: document.getElementById('new-barcode').value || "NB-" + Date.now(),
+        name: name,
+        price: Number(price),
+        stock: Number(document.getElementById('new-stock').value) || 0,
+        extra1: String(document.getElementById('new-cost').value) || '0',
+        extra2: String(document.getElementById('new-min-stock').value) || '5'
+    };
+    
+    supabase
+        .from('products')
+        .insert([newProduct])
+        .then(function() {
+            btn.disabled = false;
+            showBigToast('✅ သိမ်းပြီး', '', 'success', false);
+            document.getElementById('new-barcode').value = '';
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-price').value = '';
+            document.getElementById('new-stock').value = '';
+            document.getElementById('new-cost').value = '0';
+            document.getElementById('new-min-stock').value = '5';
+            loadProductsFromSheet();
+            switchTab('sales');
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            showBigToast('❌ Error', err.message, 'danger', false);
+        });
+}
 
 window.onload = function() {
     document.getElementById('hidden-form').action = scriptURL;
