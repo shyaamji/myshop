@@ -790,20 +790,20 @@ function calculateTodaySales() { var fs = document.getElementById('filter-start-
 function updateSalesChartLogic() { try { var sm = {}; for (var i = 6; i >= 0; i--) { var d = new Date(); d.setDate(d.getDate() - i); sm[d.toLocaleDateString('en-GB')] = 0; } var adm = {}, pcm = {}; salesHistory.forEach(function(sale) { if (sale.date) { var raw = sale.date.split(',')[0].trim(), fmt = raw; if (raw.includes('/')) { var parts = raw.split('/'); if (parts[0].length < 2) parts[0] = '0' + parts[0]; if (parts[1].length < 2) parts[1] = '0' + parts[1]; fmt = parts[0] + '/' + parts[1] + '/' + parts[2]; } else { fmt = new Date(sale.date).toLocaleDateString('en-GB'); } var total = Number(sale.total.toString().replace(/,/g, '')) || 0; if (sm[fmt] !== undefined) sm[fmt] += total; if (!adm[fmt]) adm[fmt] = 0; adm[fmt] += total; } if (sale.items) { sale.items.forEach(function(item) { if (!pcm[item.name]) pcm[item.name] = 0; pcm[item.name] += Number(item.qty); }); } }); var ctx = document.getElementById('salesChart'); if (ctx && typeof Chart !== 'undefined') { var isDark = document.documentElement.getAttribute('data-theme') === 'dark', gold = isDark ? '#fbbf24' : '#b45309', fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)', grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim(), text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(); if (mySalesChart) mySalesChart.destroy(); mySalesChart = new Chart(ctx, { type: 'line', data: { labels: Object.keys(sm), datasets: [{ label: 'Sales', data: Object.values(sm), borderColor: gold, backgroundColor: fill, borderWidth: 3, fill: true, tension: 0.3, pointBackgroundColor: gold, pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: text, font: { size: 10 } } } } } }); } var topCtx = document.getElementById('topProductsChart'); if (topCtx && typeof Chart !== 'undefined') { var sorted = Object.keys(pcm).sort(function(a, b) { return pcm[b] - pcm[a]; }), tl = sorted.slice(0, 5), td = tl.map(function(l) { return pcm[l]; }); if (myTopProductsChart) myTopProductsChart.destroy(); var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; myTopProductsChart = new Chart(topCtx, { type: 'bar', data: { labels: tl, datasets: [{ data: td, backgroundColor: isDark ? '#fbbf24' : '#b45309', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); } var tbody = document.getElementById('date-sales-table-body'); if (tbody) { var keys = Object.keys(adm).sort(function(a,b){ var p1=a.split('/'),p2=b.split('/'); return new Date(p2[2],p2[1]-1,p2[0])-new Date(p1[2],p1[1]-1,p1[0]); }); tbody.innerHTML = keys.length ? keys.map(function(dt){ return '<tr><td class="fw-bold">'+dt+'</td><td class="text-danger fw-bold">'+adm[dt].toLocaleString()+' Ks</td></tr>'; }).join('') : '<tr><td colspan="2" class="text-muted">မရှိပါ</td></tr>'; } } catch(e) {} }
 
 // ADMIN
-function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
+function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = ProductsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
 function renderAdminProducts(arr) { var list = document.getElementById('admin-product-list'); list.innerHTML = ''; arr.forEach(function(prod, idx) { var limit = Number(prod.minStock) || 5, cost = prod.cost || prod.costPrice || 0, sd = getStockNumber(prod), sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + '</span>'; if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + '</span>'; list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2"><div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div><div class="text-muted small">Barcode: ' + prod.barcode + '</div><div class="row g-2"><div class="col-4"><small>အရင်း</small><input type="number" id="p-cost-' + idx + '" class="form-control form-control-sm" value="' + cost + '"></div><div class="col-4"><small>ရောင်း</small><input type="number" id="p-price-' + idx + '" class="form-control form-control-sm" value="' + prod.price + '"></div><div class="col-4"><small>စတော့</small><input type="number" id="p-stock-' + idx + '" class="form-control form-control-sm" value="' + sd + '"></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + idx + '" onclick="uploadProductToSheet(' + idx + ')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + idx + ')">🗑️</button></div></div></div>'; }); }
 function uploadProductToSheet(idx) {
     var cost = document.getElementById('p-cost-' + idx).value,
         price = document.getElementById('p-price-' + idx).value,
         stock = document.getElementById('p-stock-' + idx).value,
-        prod = productsDB[idx];
+        prod = ProductsDB[idx];
     
     var btn = document.getElementById('edit-btn-' + idx);
     btn.disabled = true;
     btn.innerText = "⏳";
     
     supabase
-        .from('products')
+        .from('Products')
         .update({
             price: Number(price),
             stock: Number(stock),
@@ -823,15 +823,15 @@ function uploadProductToSheet(idx) {
         });
 }
 function deleteProductFromSheet(idx) {
-    var prod = productsDB[idx];
+    var prod = ProductsDB[idx];
     if (!confirm('ဖျက်မလား?')) return;
     
     supabase
-        .from('products')
+        .from('Products')
         .delete()
         .eq('barcode', prod.barcode)
         .then(function() {
-            productsDB.splice(idx, 1);
+            ProductsDB.splice(idx, 1);
             renderAdminProducts(productsDB);
             showBigToast('🗑️ Supabase ဖျက်ပြီး', '', 'success', false);
             loadProductsFromSheet();
@@ -857,7 +857,7 @@ function addNewProduct() {
     };
     
     supabase
-        .from('products')
+        .from('Products')
         .insert([newProduct])
         .then(function() {
             btn.disabled = false;
