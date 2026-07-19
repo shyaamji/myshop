@@ -229,7 +229,6 @@
 </head>
 <body>
 
-<!-- Admin Confirm Dialog -->
 <div class="admin-confirm-overlay" id="adminConfirmOverlay">
     <div class="admin-confirm-box">
         <div style="font-size:48px;margin-bottom:8px;">📦</div>
@@ -253,7 +252,6 @@
     </div>
 </div>
 
-<!-- POP CART OVERLAY -->
 <div class="pop-cart-overlay" id="popCartOverlay" onclick="closePopCart(event)">
     <div class="pop-cart-sheet" id="popCartSheet" onclick="event.stopPropagation()">
         <div class="pop-cart-header">
@@ -428,10 +426,9 @@
 </div>
 
 <script>
-// BLOCK BROWSER ACCESS
 (function() {
     var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'app:';
-    if (isStandalone) { console.log('✅ Running as installed app - access granted'); return; }
+    if (isStandalone) { return; }
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     if (isAndroid && isChrome) {
@@ -442,7 +439,6 @@
 function installApp() { if (window.deferredPrompt) { window.deferredPrompt.prompt(); } else { alert('📲 အက်ပ်ထည့်သွင်းရန်:\n\n1. အပေါ်ဆုံး ⋮ (အစက်သုံးစက်) ကိုနှိပ်ပါ\n2. "Install App" ကိုရွေးပါ\n3. Install ကိုနှိပ်ပါ'); } }
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); window.deferredPrompt = e; });
 
-// SUPABASE CONFIGURATION
 var SUPABASE_URL = 'https://mqkvfcjhwhurdakozote.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
 var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -455,13 +451,10 @@ var mySalesChart = null, myTopProductsChart = null;
 var scanPauseTimer = null, isScanPaused = false, isScannerClosed = false, pendingBarcode = null;
 var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
-
-var isFlashlightOn = false;
-var currentVideoTrack = null;
+var isFlashlightOn = false, currentVideoTrack = null;
 
 function getStockNumber(p) { if (!p) return 0; var v = p.stock; if (v === undefined || v === null || v === '') return 0; var n = Number(v); return isNaN(n) ? 0 : n; }
 
-// POP CART
 function openPopCart() { updatePopCartContent(); document.getElementById('popCartOverlay').classList.add('active'); }
 function closePopCart(e) { if (e.target === document.getElementById('popCartOverlay')) document.getElementById('popCartOverlay').classList.remove('active'); }
 function closePopCartDirect() { document.getElementById('popCartOverlay').classList.remove('active'); }
@@ -478,26 +471,21 @@ function updateInlineCartPreview() {
     else { textEl.textContent = totalItems + ' ခု'; totalEl.textContent = 'Ks - ' + totalAmount.toLocaleString(); }
 }
 
-// AUDIO
 function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
 window.addEventListener('click', initAudio, { once: true }); window.addEventListener('touchstart', initAudio, { once: true });
 function playBeep() { try { initAudio(); if (!audioCtx) return; var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.08); } catch(e) {} }
 
-// TOAST
 function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100), sel = document.getElementById('toastQtySelect'); sel.innerHTML = ''; for (var i = 1; i <= mq; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); } sel.value = '1'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
 function toastQtyChange(c) { playBeep(); var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct); if (nv < 1) nv = 1; if (nv > st) nv = st; if (nv > 100) nv = 100; s.value = nv; toastQty = nv; }
 function toastQtySelectChange(v) { playBeep(); toastQty = parseInt(v) || 1; }
 function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false); }
 
-// THEME
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
 
-// LOCK SCREEN
 function checkUniversalLogin() { var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword) { sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user'); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; } }
 function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else { if (b) { b.innerText = ""; b.style.display = "none"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
 function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }
 
-// SWITCH TAB
 function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
 
 // ========== SUPABASE DATA FUNCTIONS ==========
@@ -521,7 +509,6 @@ function loadSalesHistoryFromSheet() {
             }
         })
         .catch(function(error) {
-            console.log('Sales history load failed:', error.message);
             var local = localStorage.getItem('salesHistory');
             if (local) { salesHistory = JSON.parse(local); displayHistory(salesHistory); }
         });
@@ -567,6 +554,26 @@ function checkout() {
             localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
             displayHistory(salesHistory);
             showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
+            
+            // UPDATE STOCK
+            for (var i = 0; i < cart.length; i++) {
+                var item = cart[i];
+                var currentStock = getStockNumber(item);
+                var newStock = Math.max(0, currentStock - item.qty);
+                
+                supabase.from('Products')
+                    .update({ stock: newStock })
+                    .eq('barcode', item.barcode.toString())
+                    .then(function() {})
+                    .catch(function(err) { console.log('Stock update failed:', err.message); });
+                
+                for (var j = 0; j < productsDB.length; j++) {
+                    if (productsDB[j].barcode.toString() === item.barcode.toString()) {
+                        productsDB[j].stock = newStock;
+                        break;
+                    }
+                }
+            }
         })
         .catch(function(err) {
             salesHistory.unshift({ voucherId: vid, customerName: cn, items: cart, total: total, discount: disc, paymentMode: pm, date: new Date().toLocaleString() });
@@ -625,7 +632,6 @@ function clearAllSalesHistoryOnline(btn) {
         .catch(function(err) { btn.disabled = false; btn.innerText = "⚠️ အားလုံးဖျက်မည်"; showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
 
-// 🔦 FLASHLIGHT
 function toggleFlashlight() {
     var btn = document.getElementById('flashlightToggleBtn');
     if (!currentVideoTrack) {
@@ -641,7 +647,6 @@ function toggleFlashlight() {
 }
 function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {} } isFlashlightOn = false; currentVideoTrack = null; var btn = document.getElementById('flashlightToggleBtn'); if (btn) { btn.classList.remove('active'); btn.innerHTML = '🔦'; } }
 
-// SCANNER
 function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
 function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannedPreview').classList.add('active'); isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); setTimeout(function() { startScanner(); }, 500); }
 function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 400, height: 300 }, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ] }); html5QrcodeScannerFull.render(onScanSuccessFull); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); }
@@ -652,15 +657,12 @@ function confirmAddProduct() { document.getElementById('adminConfirmOverlay').cl
 function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
 function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; playBeep(); var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === dt.toString()) { p = productsDB[i]; break; } } if (!p) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ခု', 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); }
 
-// PREVIEW
 function updateScannedPreview() { var c = document.getElementById('scannedPreviewList'), cart = carts[activeCartIndex] || []; if (cart.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">စကန်ဖတ်မိသော ပစ္စည်းမရှိသေးပါ</div>'; return; } var h = '', cnt = 0; for (var i = cart.length - 1; i >= 0 && cnt < 8; i--) { var it = cart[i]; h += '<div class="preview-item"><span class="preview-name">' + it.name + '</span><span class="preview-price">' + Number(it.price).toLocaleString() + ' Ks</span><span class="preview-qty">×' + it.qty + '</span></div>'; cnt++; } if (cart.length > 8) h += '<div style="text-align:center;font-size:11px;">+ ' + (cart.length - 8) + ' ခု</div>'; c.innerHTML = h; }
 
-// SEARCH
 function filterProductNames() { var inp = document.getElementById('name-search-input').value.toLowerCase().trim(), box = document.getElementById('search-suggestions'), cb = document.getElementById('close-search-btn'); if (!inp) { box.style.display = 'none'; if (cb) cb.style.display = 'none'; return; } if (cb) cb.style.display = 'block'; var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; if (!f.length) { box.innerHTML = '<div class="text-center text-muted py-3 small">မတွေ့ပါ</div>'; box.style.display = 'block'; return; } f.forEach(function(prod) { var bStr = prod.barcode.toString(), cart = carts[activeCartIndex], ci = null; for (var j = 0; j < cart.length; j++) { if (cart[j].barcode.toString() === bStr) { ci = cart[j]; break; } } var cq = ci ? ci.qty : 0, st = getStockNumber(prod), ms = Number(prod.minStock) || 5, sTxt = '', sCls = ''; if (st <= 0) { sTxt = '🔴 ကုန်'; sCls = 'out-of-stock'; } else if (st <= ms) { sTxt = '🟡 နည်း(' + st + ')'; sCls = 'low-stock'; } else { sTxt = '🟢 ' + st; sCls = 'in-stock'; } var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center'; var info = document.createElement('div'); info.style.flex = "1"; info.style.minWidth = "0"; info.style.marginRight = "8px"; info.innerHTML = '<div class="fw-bold text-truncate" style="font-size:14px;">' + prod.name + '</div><div style="color:var(--accent-gold);font-size:13px;" class="fw-bold">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '" style="font-size:10px;">' + sTxt + '</div>'; var act = document.createElement('div'); act.className = "d-flex align-items-center gap-1"; if (cq > 0) { var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === cq ? ' selected' : '') + '>' + k + '</option>'; act.innerHTML = '<button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',-1)">-</button><select class="suggestion-qty-select" onchange="changeQtySelectFromSuggestion(\'' + bStr + '\',this.value)">' + opts + '</select><button class="suggestion-counter-btn" onmousedown="event.preventDefault();changeQtyFromSuggestion(\'' + bStr + '\',1)">+</button>'; } else { var ab = document.createElement('button'); ab.className = "suggestion-add-btn"; ab.innerText = "+ ထည့်မည်"; ab.onmousedown = (function(b, p) { return function(e) { e.preventDefault(); if (getStockNumber(p) <= 0) { showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false); return; } playBeep(); addByBarcodeDirectly(b); filterProductNames(); }; })(bStr, prod); act.appendChild(ab); } div.appendChild(info); div.appendChild(act); box.appendChild(div); }); box.style.display = 'block'; }
 function clearSearchInputAndBox() { document.getElementById('name-search-input').value = ''; document.getElementById('search-suggestions').style.display = 'none'; document.getElementById('close-search-btn').style.display = 'none'; }
 function addByBarcodeDirectly(bc) { var p = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode.toString() === bc.toString()) { p = productsDB[i]; break; } } if (!p) return; var st = getStockNumber(p), cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bc.toString()) { item = cart[i]; break; } } if (item) { if (item.qty + 1 > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty++; showBigToast('✅ ' + p.name + ' +1', '', 'success', false); } else { if (st <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); showBigToast('✅ ' + p.name + ' ထည့်ပြီး', '', 'success', false); } renderCart(); updateScannedPreview(); updatePopCartContent(); }
 
-// CART
 function switchCartTab(idx) { activeCartIndex = idx; document.querySelectorAll('.cart-tab-btn').forEach(function(b, i) { b.classList.toggle('active', i === idx); }); renderCart(); updateScannedPreview(); updatePopCartContent(); document.getElementById('name-search-input').focus(); }
 function updateCartBadges() { for (var i = 0; i < carts.length; i++) { var b = document.getElementById('cart-badge-' + i); if (b) { var t = 0; for (var j = 0; j < carts[i].length; j++) t += carts[i][j].qty; b.textContent = t; } } }
 function renderCart() { var cart = carts[activeCartIndex] || [], list = document.getElementById('cart-list'), badge = document.getElementById('cart-count-badge'), total = 0, ti = 0; if (!cart.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">ခြင်းတောင်းထဲတွင် ပစ္စည်းမရှိပါ</div>'; document.getElementById('cart-total').innerText = '0'; if (badge) badge.innerText = "0 items"; updateCartBadges(); updateInlineCartPreview(); return; } list.innerHTML = ''; cart.forEach(function(item, i) { total += item.price * item.qty; ti += item.qty; var opts = ''; for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === item.qty ? ' selected' : '') + '>' + k + '</option>'; list.innerHTML += '<div class="cart-item d-flex justify-content-between align-items-center"><div style="flex:1;min-width:0;" class="pe-2"><h6 class="fw-bold mb-1 text-truncate" style="font-size:14px;">' + item.name + '</h6><small class="font-monospace small fw-bold" style="color:var(--accent-gold);">' + Number(item.price).toLocaleString() + ' Ks</small></div><div class="d-flex align-items-center gap-2"><div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',-1)">-</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',1)">+</button></div><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')">❌</button></div></div>'; }); var dIn = document.getElementById('cart-discount-input').value.trim(), dAmt = 0; if (dIn.includes('%')) dAmt = total * (parseFloat(dIn.replace('%', '')) / 100); else dAmt = Number(dIn) || 0; document.getElementById('cart-total').innerText = Math.max(0, total - dAmt).toLocaleString(); if (badge) badge.innerText = ti + (ti > 1 ? " items" : " item"); updateCartBadges(); updateInlineCartPreview(); }
@@ -670,7 +672,6 @@ function removeCartItemCompletely(i) { playBeep(); carts[activeCartIndex].splice
 function changeQtyFromSuggestion(bc, c) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1 && c > 0) { var p = productsDB.find(function(x) { return x.barcode.toString() === bStr; }); if (p) { var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); return; } cart.push({ barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); } } else if (idx !== -1) { var st = getStockNumber(cart[idx]), nq = cart[idx].qty + c; if (nq <= 0) cart.splice(idx, 1); else if (nq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } else cart[idx].qty = nq; } renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
 function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1) return; var st = getStockNumber(cart[idx]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } cart[idx].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); filterProductNames(); }
 
-// PRINT VOUCHER
 function printVoucher(sale) {
     if (typeof sale === 'string') {
         var found = null;
@@ -697,15 +698,12 @@ function printVoucher(sale) {
     setTimeout(function() { try { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); setTimeout(function() { if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); } }, 1000); } catch(e) {} }, 500);
 }
 
-// HISTORY
 function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = ''; var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); } var vid = sale.voucherId || sale.voucher_id || ''; var cn = sale.customerName || sale.customer_name || ''; var dt = sale.date || ''; var pm = sale.paymentMode || sale.payment_mode || 'Cash'; var disc = sale.discount || '0'; var total = sale.total || sale.total_amount || '0'; var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + total + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
 function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { var vid = (s.voucherId || s.voucher_id || '').toLowerCase(); var cn = (s.customerName || s.customer_name || '').toLowerCase(); return vid.includes(t) || cn.includes(t); })); }
 
-// DASHBOARD
 function calculateTodaySales() { var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y; document.getElementById('today-date-string').innerText = fs ? fs : "ယနေ့ထိ"; var ts = 0, tp = 0, cs = 0, ks = 0, ws = 0; salesHistory.forEach(function(sale) { var dt = sale.date || ''; var sd = new Date(dt), inside = true; if (sts && sd.getTime() < sts) inside = false; if (ets && sd.getTime() > ets) inside = false; if (!fs && !fe) { var so = dt ? dt.split(',')[0].trim() : ''; if (!(so.includes(tf1) || so.includes(tf2) || sd.toLocaleDateString() === now.toLocaleDateString())) inside = false; } if (!inside) return; var total = sale.total || sale.total_amount || '0'; var ct = Number(total.toString().replace(/,/g, '')) || 0; ts += ct; var pm = sale.paymentMode || sale.payment_mode || "Cash"; if (pm === "Cash") cs += ct; else if (pm === "KPay") ks += ct; else if (pm === "Wave") ws += ct; var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } var sc = 0; if (items && Array.isArray(items)) { items.forEach(function(item) { var match = productsDB.find(function(p) { return p.barcode.toString() === item.barcode.toString(); }); sc += (match ? Number(match.extra1 || match.cost || 0) : 0) * Number(item.qty); }); } var gross = 0; if (items && Array.isArray(items)) { items.forEach(function(item) { gross += Number(item.price) * Number(item.qty); }); } var disc = sale.discount || "0", da = disc.toString().includes('%') ? gross * (parseFloat(disc.replace('%','')) / 100) : Number(disc) || 0; tp += ((gross - da) - sc); }); document.getElementById('today-sales-summary').innerText = ts.toLocaleString() + " Ks"; document.getElementById('payment-split-summary').innerHTML = '💵 Cash: ' + cs.toLocaleString() + ' | 📱 KPay: ' + ks.toLocaleString() + ' | 🌊 Wave: ' + ws.toLocaleString(); document.getElementById('today-profit-summary').innerText = tp.toLocaleString() + " Ks"; }
 function updateSalesChartLogic() { try { var sm = {}; for (var i = 6; i >= 0; i--) { var d = new Date(); d.setDate(d.getDate() - i); sm[d.toLocaleDateString('en-GB')] = 0; } var adm = {}, pcm = {}; salesHistory.forEach(function(sale) { var dt = sale.date || ''; if (dt) { var raw = dt.split(',')[0].trim(), fmt = raw; if (raw.includes('/')) { var parts = raw.split('/'); if (parts[0].length < 2) parts[0] = '0' + parts[0]; if (parts[1].length < 2) parts[1] = '0' + parts[1]; fmt = parts[0] + '/' + parts[1] + '/' + parts[2]; } else { fmt = new Date(dt).toLocaleDateString('en-GB'); } var total = sale.total || sale.total_amount || '0'; var totalNum = Number(total.toString().replace(/,/g, '')) || 0; if (sm[fmt] !== undefined) sm[fmt] += totalNum; if (!adm[fmt]) adm[fmt] = 0; adm[fmt] += totalNum; } var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } if (items && Array.isArray(items)) { items.forEach(function(item) { if (!pcm[item.name]) pcm[item.name] = 0; pcm[item.name] += Number(item.qty); }); } }); var ctx = document.getElementById('salesChart'); if (ctx && typeof Chart !== 'undefined') { var isDark = document.documentElement.getAttribute('data-theme') === 'dark', gold = isDark ? '#fbbf24' : '#b45309', fill = isDark ? 'rgba(251,191,36,0.08)' : 'rgba(180,83,9,0.05)', grid = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim(), text = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim(); if (mySalesChart) mySalesChart.destroy(); mySalesChart = new Chart(ctx, { type: 'line', data: { labels: Object.keys(sm), datasets: [{ label: 'Sales', data: Object.values(sm), borderColor: gold, backgroundColor: fill, borderWidth: 3, fill: true, tension: 0.3, pointBackgroundColor: gold, pointRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: grid }, ticks: { color: text, font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: text, font: { size: 10 } } } } } }); } var topCtx = document.getElementById('topProductsChart'); if (topCtx && typeof Chart !== 'undefined') { var sorted = Object.keys(pcm).sort(function(a, b) { return pcm[b] - pcm[a]; }), tl = sorted.slice(0, 5), td = tl.map(function(l) { return pcm[l]; }); if (myTopProductsChart) myTopProductsChart.destroy(); var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; myTopProductsChart = new Chart(topCtx, { type: 'bar', data: { labels: tl, datasets: [{ data: td, backgroundColor: isDark ? '#fbbf24' : '#b45309', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); } var tbody = document.getElementById('date-sales-table-body'); if (tbody) { var keys = Object.keys(adm).sort(function(a,b){ var p1=a.split('/'),p2=b.split('/'); return new Date(p2[2],p2[1]-1,p2[0])-new Date(p1[2],p1[1]-1,p1[0]); }); tbody.innerHTML = keys.length ? keys.map(function(dt){ return '<tr><td class="fw-bold">'+dt+'</td><td class="text-danger fw-bold">'+adm[dt].toLocaleString()+' Ks</td></tr>'; }).join('') : '<tr><td colspan="2" class="text-muted">မရှိပါ</td></tr>'; } } catch(e) {} }
 
-// ADMIN
 function filterAdminProductNames() { var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions'); if (!inp) { box.style.display = 'none'; renderAdminProducts(productsDB); return; } var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }); box.innerHTML = ''; f.slice(0, 15).forEach(function(p) { var d = document.createElement('div'); d.className = 'search-item d-flex justify-content-between'; d.innerHTML = '<div><strong>' + p.name + '</strong></div>'; d.onclick = function() { box.style.display = 'none'; renderAdminProducts([p]); }; box.appendChild(d); }); box.style.display = 'block'; }
 function renderAdminProducts(arr) { var list = document.getElementById('admin-product-list'); list.innerHTML = ''; arr.forEach(function(prod, idx) { var limit = Number(prod.minStock) || 5, cost = prod.extra1 || prod.cost || 0, sd = getStockNumber(prod), sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + '</span>'; if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + '</span>'; list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2"><div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div><div class="text-muted small">Barcode: ' + prod.barcode + '</div><div class="row g-2"><div class="col-4"><small>အရင်း</small><input type="number" id="p-cost-' + idx + '" class="form-control form-control-sm" value="' + cost + '"></div><div class="col-4"><small>ရောင်း</small><input type="number" id="p-price-' + idx + '" class="form-control form-control-sm" value="' + prod.price + '"></div><div class="col-4"><small>စတော့</small><input type="number" id="p-stock-' + idx + '" class="form-control form-control-sm" value="' + sd + '"></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + idx + '" onclick="uploadProductToSheet(' + idx + ')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + idx + ')">🗑️</button></div></div></div>'; }); }
 
