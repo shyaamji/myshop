@@ -755,6 +755,20 @@ window.onload = function() {
             navigator.serviceWorker.register('./service-worker.js').then(function(registration) { console.log('✅ Service Worker registered'); }).catch(function(err) { console.log('❌ Service Worker registration failed:', err); });
         });
     }
+    // ========== SUPABASE REALTIME ==========
+supabase
+    .channel('products-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(payload) {
+        loadProductsFromSheet();
+    })
+    .subscribe();
+
+supabase
+    .channel('sales-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(payload) {
+        loadSalesHistoryFromSheet();
+    })
+    .subscribe();
 };
 function dismissKeyboard() { if (document.activeElement) document.activeElement.blur(); }
 </script>
