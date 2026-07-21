@@ -54,12 +54,12 @@
         .toast-big.success{border-color:var(--accent-success)}
         .toast-big.danger{border-color:var(--accent-danger)}
         .toast-big .toast-sub{font-size:12px;font-weight:400;color:var(--text-muted);margin-top:4px}
-        .toast-big .toast-actions{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap;align-items:center}
+        .toast-big .toast-actions{display:flex;flex-direction:column;gap:6px;justify-content:center;margin-top:12px;align-items:stretch;}
         .toast-big .toast-actions button{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;color:var(--text-main);transition:all 0.2s}
         .toast-big .toast-actions button:active{transform:scale(0.9)}
         .toast-big .toast-actions .btn-qty{background:var(--accent-gold);color:#fff;border:none}
         [data-theme=dark] .toast-big .toast-actions .btn-qty{background:#fbbf24;color:#000}
-        .toast-big .toast-actions select{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px;color:var(--text-main);cursor:pointer;min-width:65px}
+        .toast-big .toast-actions select{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px;color:var(--text-main);cursor:pointer;min-width:65px;width:100%;}
         @keyframes scaleInToast{from{opacity:0;transform:translateY(-50%) scale(0.85)}to{opacity:1;transform:translateY(-50%) scale(1)}}
         
         .admin-confirm-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999999;display:none;align-items:center;justify-content:center;animation:fadeInOverlay 0.3s ease}
@@ -143,7 +143,7 @@
         .scanner-full-mode.active{display:flex}
         .scanner-full-mode .scanner-box{width:98%;max-width:800px;background:var(--bg-card);border-radius:20px;padding:16px;border:2px solid var(--accent-gold);box-shadow:0 20px 60px rgba(0,0,0,0.3);margin-top:5px}
         .scanner-full-mode .scanner-box #full-reader{width:100%;min-height:400px;border-radius:14px;overflow:hidden;border:1px solid var(--border-color);background:var(--bg-input)}
-        .scanner-full-mode .scanner-close-btn{position:absolute;bottom:20px;left:20px;top:auto;right:auto;background:var(--bg-card);border:2px solid var(--border-color);border-radius:50%;width:48px;height:48px;font-size:22px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s;z-index:10}
+        .scanner-full-mode .scanner-close-btn{position:absolute;bottom:80px;left:20px;top:auto;right:auto;background:var(--bg-card);border:2px solid var(--border-color);border-radius:50%;width:48px;height:48px;font-size:22px;cursor:pointer;color:var(--text-main);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s;z-index:10}
         .scanner-full-mode .scanner-close-btn:active{transform:scale(0.85)}
         .scanner-full-mode .scanner-controls{display:flex;gap:12px;margin-top:10px;align-items:center;justify-content:center;flex-wrap:wrap}
         .scanner-full-mode .scanner-status-text{font-weight:600;color:var(--accent-gold);font-size:15px;text-align:center}
@@ -161,8 +161,6 @@
         .scanned-preview .preview-price{color:var(--accent-gold);font-weight:700;margin:0 12px}
         .scanned-preview .preview-qty{background:var(--bg-input);padding:0 10px;border-radius:8px;font-weight:600}
         
-        .scanner-checkout-area{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:2px solid var(--accent-gold);gap:10px;}
-        
         @keyframes fadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
         
         #main-scanner-card{display:none!important}
@@ -174,7 +172,7 @@
         
         @media (max-width:600px){
             .scanner-popup-toggle{width:54px;height:54px;font-size:24px;bottom:80px;left:12px;right:auto}
-            .scanner-full-mode .scanner-close-btn{bottom:15px;left:15px;width:40px;height:40px;font-size:18px}
+            .scanner-full-mode .scanner-close-btn{bottom:70px;left:15px;width:40px;height:40px;font-size:18px}
             .scanner-full-mode .scanner-box{padding:10px;max-width:100%;margin-top:40px}
             .scanner-full-mode .scanner-box #full-reader{min-height:280px}
             .scanned-preview{max-height:120px;padding:8px 12px}
@@ -231,13 +229,23 @@
             <button class="flashlight-btn" id="flashlightToggleBtn" onclick="toggleFlashlight()" title="ဓာတ်မီး ဖွင့်/ပိတ်">🔦</button>
             <span class="scanner-status-text" id="full-scanner-status-text">🔍 စကန်ဖတ်နေပါသည်...</span>
         </div>
-        <div class="scanner-checkout-area">
-            <div style="flex:1;">
-                <small style="font-size:11px;color:var(--text-muted);">TOTAL</small>
-                <h3 class="fw-bold mb-0" style="font-size:22px;color:var(--accent-gold);" id="scanner-cart-total">0 Ks</h3>
-                <small style="font-size:10px;color:var(--text-muted);" id="scanner-cart-count">0 items</small>
+        <div class="scanner-checkout-area" style="display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:2px solid var(--accent-gold);">
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;">
+                <div style="flex:1;">
+                    <small style="font-size:11px;color:var(--text-muted);">TOTAL</small>
+                    <h3 class="fw-bold mb-0" style="font-size:22px;color:var(--accent-gold);" id="scanner-cart-total">0 Ks</h3>
+                    <small style="font-size:10px;color:var(--text-muted);" id="scanner-cart-count">0 items</small>
+                </div>
+                <button class="btn btn-premium-gold py-2 px-4 fw-bold" style="font-size:14px;white-space:nowrap;" onclick="scannerCheckout()">Voucher ထုတ်မည် ➡️</button>
             </div>
-            <button class="btn btn-premium-gold py-2 px-4 fw-bold" style="font-size:14px;white-space:nowrap;" onclick="scannerCheckout()">Voucher ထုတ်မည် ➡️</button>
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+                <label style="font-size:12px;font-weight:700;color:var(--text-muted);white-space:nowrap;">ငွေချေမှု:</label>
+                <select id="scanner-payment-mode" style="flex:1;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:6px 10px;font-weight:700;font-size:13px;color:var(--text-main);">
+                    <option value="Cash">💵 Cash</option>
+                    <option value="KPay">📱 KPay</option>
+                    <option value="Wave">🌊 Wave</option>
+                </select>
+            </div>
         </div>
     </div>
 </div>
@@ -401,7 +409,7 @@ function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext 
 window.addEventListener('click', initAudio, { once: true }); window.addEventListener('touchstart', initAudio, { once: true });
 function playBeep() { try { initAudio(); if (!audioCtx) return; var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.08); } catch(e) {} }
 
-function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100); var selectHTML = ''; for (var i = 1; i <= mq; i++) { selectHTML += '<option value="' + i + '">' + i + '</option>'; } act.innerHTML = '<button onclick="toastQtyChange(-1)">−</button><select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + selectHTML + '</select><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
+function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100); var selectHTML = ''; for (var i = 1; i <= mq; i++) { selectHTML += '<option value="' + i + '">' + i + '</option>'; } act.innerHTML = '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)" style="width:100%;margin-bottom:8px;">' + selectHTML + '</select><div style="display:flex;gap:6px;justify-content:center;"><button onclick="toastQtyChange(-1)">−</button><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button></div>'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
 function toastQtyChange(c) { playBeep(); var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct); if (nv < 1) nv = 1; if (nv > st) nv = st; if (nv > 100) nv = 100; s.value = nv; toastQty = nv; }
 function toastQtySelectChange(v) { playBeep(); toastQty = parseInt(v) || 1; }
 function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), pid = toastProduct.id, st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (pid && cart[i].id && cart[i].id === pid) { item = cart[i]; break; } else if (!pid && cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ id: pid, barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal(); showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false); }
@@ -426,7 +434,13 @@ function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading
 function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('Products').select('*').then(function(r) { if (r.data) productsDB = r.data; b.disabled = false; b.innerText = "🔄 Sync"; renderAdminProducts(productsDB); showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
 function reloadOnlineHistoryTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('SalesHistory').select('*').order('id', { ascending: false }).then(function(r) { if (r.data && r.data.length > 0) { salesHistory = r.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } b.disabled = false; b.innerText = "🔄 Sync"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
 
-function scannerCheckout() { closeFullScanner(); setTimeout(function() { checkout(); }, 300); }
+function scannerCheckout() {
+    var scannerPayment = document.getElementById('scanner-payment-mode');
+    var mainPayment = document.getElementById('cart-payment-mode');
+    if (scannerPayment && mainPayment) { mainPayment.value = scannerPayment.value; }
+    closeFullScanner();
+    setTimeout(function() { checkout(); }, 300);
+}
 function updateScannerTotal() { var scTotal = document.getElementById('scanner-cart-total'); var scCount = document.getElementById('scanner-cart-count'); if (scTotal && scCount) { var cart = carts[activeCartIndex] || []; var ti = 0, total = 0; for (var i = 0; i < cart.length; i++) { ti += cart[i].qty; total += cart[i].price * cart[i].qty; } scTotal.textContent = total.toLocaleString() + ' Ks'; scCount.textContent = ti + (ti > 1 ? ' items' : ' item'); } }
 
 function checkout() {
@@ -449,7 +463,22 @@ function toggleFlashlight() { var btn = document.getElementById('flashlightToggl
 function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {} } isFlashlightOn = false; currentVideoTrack = null; var btn = document.getElementById('flashlightToggleBtn'); if (btn) { btn.classList.remove('active'); btn.innerHTML = '🔦'; } }
 
 function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
-function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannedPreview').classList.add('active'); isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); updateScannerTotal(); setTimeout(function() { startScanner(); }, 500); }
+function openFullScanner() { 
+    isScannerClosed = false; 
+    if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
+    var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } 
+    document.getElementById('scannerFullMode').classList.add('active'); 
+    document.getElementById('scannedPreview').classList.add('active'); 
+    isFullScannerActive = true; 
+    document.getElementById('scanBadge').style.display = 'none'; 
+    isScanPaused = false; 
+    resetFlashlight(); 
+    updateScannerTotal(); 
+    var scannerPayment = document.getElementById('scanner-payment-mode');
+    var mainPayment = document.getElementById('cart-payment-mode');
+    if (scannerPayment && mainPayment) { scannerPayment.value = mainPayment.value; }
+    setTimeout(function() { startScanner(); }, 500); 
+}
 function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 400, height: 300 }, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ] }); html5QrcodeScannerFull.render(onScanSuccessFull); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); }
 function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
 function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { openFullScanner(); } }
@@ -483,7 +512,7 @@ function selectScanVariant(productId, barcode, name, price, stock) {
     document.getElementById('toastBigMsg').textContent = '📦 ' + name; document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock + ' ခု'; toastEl.className = 'toast-big show success';
     var maxQty = Math.min(stock, 100), selHTML = '';
     for (var i = 1; i <= maxQty; i++) { selHTML += '<option value="' + i + '">' + i + '</option>'; }
-    actEl.innerHTML = '<button onclick="toastQtyChange(-1)">−</button><select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + selHTML + '</select><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>';
+    actEl.innerHTML = '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)" style="width:100%;margin-bottom:8px;">' + selHTML + '</select><div style="display:flex;gap:6px;justify-content:center;"><button onclick="toastQtyChange(-1)">−</button><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button></div>';
     actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false);
     clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000);
     clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000);
@@ -510,7 +539,7 @@ function printVoucher(sale) {
     if (!sale || !sale.items) return; var itemsArr = sale.items; if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } } if (!Array.isArray(itemsArr)) return;
     var itemsHTML = '', subtotal = 0; for (var i = 0; i < itemsArr.length; i++) { var it = itemsArr[i]; subtotal += Number(it.price) * Number(it.qty); itemsHTML += '<tr><td style="padding:5px 0;text-align:left;">' + it.name + '</td><td style="padding:5px 0;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="padding:5px 0;text-align:center;">' + it.qty + '</td><td style="padding:5px 0;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
-    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:Arial,sans-serif;margin:0;padding:15px;color:#000;font-size:13px;}h2{text-align:center;margin:0 0 2px 0;font-size:22px;}.shop-address{text-align:center;font-size:11px;color:#555;margin:0 0 10px 0;line-height:1.4;}.dashed{border-top:2px dashed #000;margin:10px 0;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:4px 0;font-size:13px;}.items-table{margin-top:8px;}.items-table th{border-top:2px dashed #000;border-bottom:2px dashed #000;padding:6px 0;font-size:12px;}.items-table td{padding:5px 0;border-bottom:1px dashed #ccc;font-size:13px;}.total-row td{font-weight:bold;font-size:15px;padding-top:8px;}.thanks{text-align:center;font-size:12px;margin-top:12px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + vid + '</b></td></tr><tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + cn + '</td></tr><tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + dt + '</td></tr><tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
+    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:Arial,sans-serif;margin:0;padding:15px;color:#000;font-size:13px;}h2{text-align:center;margin:0 0 2px 0;font-size:22px;}.shop-address{text-align:center;font-size:11px;color:#555;margin:0 0 10px 0;line-height:1.4;}.dashed{border-top:2px dashed #000;margin:10px 0;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:4px 0;font-size:13px;}.items-table{margin-top:8px;}.items-table th{border-top:2px dashed #000;border-bottom:2px dashed #000;padding:6px 0;font-size:12px;}.items-table td{padding:5px 0;border-bottom:none;font-size:13px;}.total-row td{font-weight:bold;font-size:15px;padding-top:8px;}.thanks{text-align:center;font-size:12px;margin-top:12px;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + vid + '</b></td></tr><tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + cn + '</td></tr><tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + dt + '</td></tr><tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + pm + '</td></tr></table><table class="items-table"><thead><tr><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
     var pf = document.createElement('iframe'); pf.style.position = 'fixed'; pf.style.right = '0'; pf.style.bottom = '0'; pf.style.width = '0'; pf.style.height = '0'; pf.style.border = 'none'; document.body.appendChild(pf);
     var fd = pf.contentWindow.document; fd.open(); fd.write(pc); fd.close();
     pf.onload = function() { pf.contentWindow.focus(); pf.contentWindow.print(); setTimeout(function() { if(pf && pf.parentNode) document.body.removeChild(pf); }, 1000); };
