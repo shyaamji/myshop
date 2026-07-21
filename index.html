@@ -653,6 +653,7 @@ function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { o
 function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; } }
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
 function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
+
 function onScanSuccessFull(dt) {
     if (!canScan || isScanPaused) return;
     playBeep();
@@ -719,25 +720,51 @@ function onScanSuccessFull(dt) {
 function selectScanVariant(barcode, name, price, stock) {
     var toastEl = document.getElementById('toastBig');
     var actEl = document.getElementById('toastBigActions');
-    actEl.style.display = 'none';
-    clearTimeout(toastEl._hideTimer);
     
-    var cart = carts[activeCartIndex];
-    var item = null;
-    for (var i = 0; i < cart.length; i++) {
-        if (cart[i].barcode.toString() === barcode && cart[i].name === name) {
-            item = cart[i]; break;
-        }
+    // ရွေးထားတဲ့ Product ကို toastProduct အဖြစ် သတ်မှတ်မယ်
+    var selectedProduct = {
+        barcode: barcode,
+        name: name,
+        price: price,
+        stock: stock
+    };
+    toastProduct = selectedProduct;
+    toastQty = 1;
+    
+    // Toast Message တွေ ပြောင်းမယ်
+    document.getElementById('toastBigMsg').textContent = '📦 ' + name;
+    document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock + ' ခု';
+    toastEl.className = 'toast-big show success';
+    
+    // Qty Select ပြင်ဆင်မယ်
+    var maxQty = Math.min(stock, 100);
+    var sel = document.getElementById('toastQtySelect');
+    sel.innerHTML = '';
+    for (var i = 1; i <= maxQty; i++) {
+        var o = document.createElement('option');
+        o.value = i;
+        o.textContent = i;
+        sel.appendChild(o);
     }
-    if (item) {
-        if (item.qty + 1 > stock) { showBigToast('⚠️ ' + stock + ' ခုသာ', '', 'danger', false); }
-        else { item.qty++; showBigToast('✅ ' + name + ' +1', '', 'success', false); }
-    } else {
-        if (stock <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); }
-        else { cart.push({ barcode: barcode, name: name, price: price, stock: stock, qty: 1 }); showBigToast('✅ ' + name + ' ထည့်ပြီး', '', 'success', false); }
-    }
-    renderCart(); updateScannedPreview(); updatePopCartContent();
-    isScanPaused = false; canScan = true; updateFullScannerStatus(true);
+    sel.value = '1';
+    
+    // Actions ကို မူရင်း -/+ နဲ့ အတည်ပြု ခလုတ်တွေ ပြန်ပြမယ်
+    actEl.innerHTML = '<button onclick="toastQtyChange(-1)">−</button>' +
+        '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + sel.innerHTML + '</select>' +
+        '<button onclick="toastQtyChange(1)">+</button>' +
+        '<button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>';
+    actEl.style.display = 'flex';
+    
+    // scan ကို ခဏရပ်ထားမယ်
+    isScanPaused = true; 
+    canScan = false; 
+    updateFullScannerStatus(false);
+    
+    // 30 စက္ကန့်ကြာရင် အလိုလိုပျောက်မယ်
+    clearTimeout(toastEl._hideTimer);
+    toastEl._hideTimer = setTimeout(function() { 
+        cancelScanVariant(); 
+    }, 30000);
 }
 
 // Scanner Variant မရွေးတော့ရင်
@@ -745,9 +772,13 @@ function cancelScanVariant() {
     var toastEl = document.getElementById('toastBig');
     var actEl = document.getElementById('toastBigActions');
     actEl.style.display = 'none';
+    actEl.innerHTML = '';
     clearTimeout(toastEl._hideTimer);
     toastEl.classList.remove('show');
-    isScanPaused = false; canScan = true; updateFullScannerStatus(true);
+    toastProduct = null;
+    isScanPaused = false; 
+    canScan = true; 
+    updateFullScannerStatus(true);
 }
 
 function updateScannedPreview() { var c = document.getElementById('scannedPreviewList'), cart = carts[activeCartIndex] || []; if (cart.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">စကန်ဖတ်မိသော ပစ္စည်းမရှိသေးပါ</div>'; return; } var h = '', cnt = 0; for (var i = cart.length - 1; i >= 0 && cnt < 8; i--) { var it = cart[i]; h += '<div class="preview-item"><span class="preview-name">' + it.name + '</span><span class="preview-price">' + Number(it.price).toLocaleString() + ' Ks</span><span class="preview-qty">×' + it.qty + '</span></div>'; cnt++; } if (cart.length > 8) h += '<div style="text-align:center;font-size:11px;">+ ' + (cart.length - 8) + ' ခု</div>'; c.innerHTML = h; }
