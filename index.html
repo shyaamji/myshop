@@ -475,7 +475,7 @@ function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext 
 window.addEventListener('click', initAudio, { once: true }); window.addEventListener('touchstart', initAudio, { once: true });
 function playBeep() { try { initAudio(); if (!audioCtx) return; var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.08); } catch(e) {} }
 
-function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100), sel = document.getElementById('toastQtySelect'); sel.innerHTML = ''; for (var i = 1; i <= mq; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); } sel.value = '1'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
+function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100), sel = document.getElementById('toastQtySelect'); sel.innerHTML = ''; for (var i = 1; i <= mq; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); } sel.value = '1'; act.innerHTML = '<button onclick="toastQtyChange(-1)">−</button><select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + sel.innerHTML + '</select><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
 function toastQtyChange(c) { playBeep(); var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct); if (nv < 1) nv = 1; if (nv > st) nv = st; if (nv > 100) nv = 100; s.value = nv; toastQty = nv; }
 function toastQtySelectChange(v) { playBeep(); toastQty = parseInt(v) || 1; }
 function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false); }
@@ -738,19 +738,14 @@ function selectScanVariant(barcode, name, price, stock) {
     
     // Qty Select ပြင်ဆင်မယ်
     var maxQty = Math.min(stock, 100);
-    var sel = document.getElementById('toastQtySelect');
-    sel.innerHTML = '';
+    var selectHTML = '';
     for (var i = 1; i <= maxQty; i++) {
-        var o = document.createElement('option');
-        o.value = i;
-        o.textContent = i;
-        sel.appendChild(o);
+        selectHTML += '<option value="' + i + '">' + i + '</option>';
     }
-    sel.value = '1';
     
-    // Actions ကို မူရင်း -/+ နဲ့ အတည်ပြု ခလုတ်တွေ ပြန်ပြမယ်
+    // Actions ကို မူရင်း -/+ နဲ့ အတည်ပြု ခလုတ်တွေ ပြန်ပြမယ် - select id ကို toastQtySelect လို့ပဲထားမယ်
     actEl.innerHTML = '<button onclick="toastQtyChange(-1)">−</button>' +
-        '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + sel.innerHTML + '</select>' +
+        '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + selectHTML + '</select>' +
         '<button onclick="toastQtyChange(1)">+</button>' +
         '<button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>';
     actEl.style.display = 'flex';
