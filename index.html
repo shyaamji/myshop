@@ -323,7 +323,7 @@ var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
 var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var adminPassword = '', homePassword = '', passwordsLoaded = false;
-var lastKnownUpdate = ''; // ✅ Settings update ကို စောင့်ကြည့်ဖို့
+var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
 var mySalesChart = null, myTopProductsChart = null;
@@ -339,11 +339,17 @@ function loadPasswordsFromSupabase(callback) {
                 adminPassword = response.data.admin_password || ''; 
                 homePassword = response.data.staff_password || ''; 
                 passwordsLoaded = true; 
-                lastKnownUpdate = response.data.updated_at || ''; // ✅ လက်ရှိ update အချိန်ကို မှတ်ထား
+                lastKnownUpdate = response.data.updated_at || '';
+            } else {
+                passwordsLoaded = true;
             }
             if (callback) callback();
         })
-        .catch(function(error) { console.log('Password load failed:', error.message); if (callback) callback(); });
+        .catch(function(error) { 
+            console.log('Password load failed:', error.message); 
+            passwordsLoaded = true;
+            if (callback) callback(); 
+        });
 }
 
 function updatePasswords() {
@@ -360,7 +366,6 @@ function updatePasswords() {
                 if (newStaff) homePassword = newStaff;
                 showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = '';
-                // ✅ ဒီဖုန်းကိုလည်း logout လုပ်
                 setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000);
             } else { showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false); }
         })
@@ -386,7 +391,26 @@ function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toas
 
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
 
-function checkUniversalLogin() { if (!passwordsLoaded) { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '⏳ စနစ် အဆင်သင့်မဖြစ်သေးပါ။ ခဏစောင့်ပါ...'; return; } var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword) { sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user'); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '❌ Password မှားယွင်းနေပါသည်။'; } }
+function checkUniversalLogin() { 
+    if (!passwordsLoaded) { 
+        document.getElementById('lock-error').style.display = 'block'; 
+        document.getElementById('lock-error').textContent = '⏳ စနစ် အဆင်သင့်မဖြစ်သေးပါ။ ခဏစောင့်ပါ...'; 
+        return; 
+    } 
+    var i = document.getElementById('home-pass-input').value.trim(); 
+    if (i === adminPassword || i === homePassword) { 
+        sessionStorage.setItem('isAppUnlocked', 'true'); 
+        localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user'); 
+        document.getElementById('app-lock-screen').style.display = 'none'; 
+        document.getElementById('app-main-content').style.display = 'block'; 
+        document.getElementById('lock-error').style.display = 'none'; 
+        setupRolePrivilegesUi(); 
+        initAudio();
+    } else { 
+        document.getElementById('lock-error').style.display = 'block'; 
+        document.getElementById('lock-error').textContent = '❌ Password မှားယွင်းနေပါသည်။'; 
+    } 
+}
 function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else { if (b) { b.innerText = ""; b.style.display = "none"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
 function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }
 
@@ -503,10 +527,6 @@ window.onload = function() {
             document.getElementById('app-lock-screen').style.display = 'none'; 
             document.getElementById('app-main-content').style.display = 'block'; 
         }
-        // ✅ Login ပြီးမှ Polling စတင်မယ်
-        if (sessionStorage.getItem('isAppUnlocked') === 'true') {
-            startSettingsPolling();
-        }
     });
     loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
     var pw = document.getElementById('home-pass-input'); if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
@@ -516,49 +536,10 @@ window.onload = function() {
     if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); }); }); }
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
-};
-
-// ✅ Polling Function - ၁၀ စက္ကန့်တစ်ခါ Supabase ကို စစ်မယ်
-var settingsPollingInterval = null;
-
-function startSettingsPolling() {
-    // ရှိပြီးသား interval ရှိရင် ဖျက်မယ်
-    if (settingsPollingInterval) { clearInterval(settingsPollingInterval); }
     
-    settingsPollingInterval = setInterval(function() {
-        // လော့ဂ်အင်လုပ်ထားမှ စစ်မယ်
-        if (sessionStorage.getItem('isAppUnlocked') !== 'true') return;
-        
-        supabase.from('settings').select('updated_at').eq('id', 1).single()
-            .then(function(response) {
-                if (response.data) {
-                    var serverUpdateTime = response.data.updated_at || '';
-                    if (lastKnownUpdate && serverUpdateTime !== lastKnownUpdate) {
-                        // Password ပြောင်းသွားပြီ
-                        showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
-                        clearInterval(settingsPollingInterval);
-                        setTimeout(function() {
-                            sessionStorage.removeItem('isAppUnlocked');
-                            localStorage.removeItem('currentUserRole');
-                            window.location.reload();
-                        }, 3000);
-                    }
-                }
-            })
-            .catch(function(error) {
-                console.log('Settings polling error:', error.message);
-            });
-    }, 10000); // 10 စက္ကန့်တစ်ခါ
-}
-
-// ✅ App ပိတ်ရင် polling ရပ်မယ်
-window.addEventListener('beforeunload', function() {
-    if (settingsPollingInterval) { clearInterval(settingsPollingInterval); }
-});
-    
-    // ✅ Settings table UPDATE ကို စောင့်ကြည့်ပြီး password ပြောင်းရင် တခြားဖုန်းတွေကို auto logout လုပ်
+    // ✅ Realtime - settings UPDATE ကို စောင့်ကြည့် (filter မပါ)
     supabase.channel('settings-changes')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings', filter: 'id=eq.1' }, function(payload) {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, function(payload) {
             var newUpdateTime = payload.new.updated_at || '';
             if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) {
                 showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
