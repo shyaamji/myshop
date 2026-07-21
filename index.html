@@ -49,26 +49,7 @@
         [data-theme=dark] .btn-premium-gold{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .btn-premium-gold:hover{opacity:.9;transform:translateY(-1px)}
         
-        .toast-big{
-            position:fixed;
-            top:50%;
-            left:50%;
-            transform:translate(-50%, -50%);
-            z-index:999999;
-            background:var(--bg-card);
-            border:2px solid var(--accent-gold);
-            border-radius:20px;
-            padding:16px 24px;
-            box-shadow:0 20px 60px rgba(0,0,0,0.3);
-            color:var(--text-main);
-            font-size:15px;
-            font-weight:700;
-            display:none;
-            text-align:center;
-            max-width:90%;
-            min-width:300px;
-            animation:scaleInToast 0.3s ease;
-        }
+        .toast-big{position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);z-index:999999;background:var(--bg-card);border:2px solid var(--accent-gold);border-radius:20px;padding:16px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);color:var(--text-main);font-size:15px;font-weight:700;display:none;text-align:center;max-width:90%;min-width:300px;animation:scaleInToast 0.3s ease}
         .toast-big.show{display:block}
         .toast-big.success{border-color:var(--accent-success)}
         .toast-big.danger{border-color:var(--accent-danger)}
@@ -151,13 +132,7 @@
         [data-theme=dark] .suggestion-add-btn{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .theme-toggle-btn{background:var(--bg-input);border:1px solid var(--border-color);color:var(--text-main);height:42px;width:42px;border-radius:12px;cursor:pointer}
         #print-receipt-zone{display:block;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999999;background:white;overflow-y:auto;visibility:hidden}
-        @media print{
-            body{visibility:hidden}
-            #app-main-content{display:none!important}
-            #print-receipt-zone{visibility:visible!important;display:block!important;position:fixed;top:0;left:0;width:100%;height:auto;z-index:9999999;background:white}
-            #print-receipt-zone *{visibility:visible}
-            @page{margin:0;size:auto}
-        }
+        @media print{body{visibility:hidden}#app-main-content{display:none!important}#print-receipt-zone{visibility:visible!important;display:block!important;position:fixed;top:0;left:0;width:100%;height:auto;z-index:9999999;background:white}#print-receipt-zone *{visibility:visible}@page{margin:0;size:auto}}
         
         .scanner-popup-toggle{position:fixed;bottom:100px;right:20px;z-index:9998;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;font-size:28px;box-shadow:0 8px 25px rgba(180,83,9,0.4);cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center}
         [data-theme=dark] .scanner-popup-toggle{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000}
@@ -195,19 +170,7 @@
         .history-item-total{width:95px;text-align:right;font-weight:600}
         .admin-only-feature{display:none}
         
-        @media (max-width:600px){
-            .scanner-popup-toggle{width:54px;height:54px;font-size:24px;bottom:80px;right:12px}
-            .scanner-full-mode .scanner-close-btn{top:8px;right:8px;width:40px;height:40px;font-size:18px}
-            .scanner-full-mode .scanner-box{padding:10px;max-width:100%;margin-top:40px}
-            .scanner-full-mode .scanner-box #full-reader{min-height:280px}
-            .scanned-preview{max-height:120px;padding:8px 12px}
-            .scanned-preview .preview-item{font-size:12px}
-            .toast-big{min-width:280px;padding:14px 18px}
-            .toast-big .toast-actions button{font-size:13px;padding:6px 12px}
-            .toast-big .toast-actions select{font-size:14px;padding:6px 10px;min-width:55px}
-            .admin-confirm-box{padding:20px}
-            .admin-confirm-box .btn-group button{padding:10px 16px;font-size:14px}
-        }
+        @media (max-width:600px){.scanner-popup-toggle{width:54px;height:54px;font-size:24px;bottom:80px;right:12px}.scanner-full-mode .scanner-close-btn{top:8px;right:8px;width:40px;height:40px;font-size:18px}.scanner-full-mode .scanner-box{padding:10px;max-width:100%;margin-top:40px}.scanner-full-mode .scanner-box #full-reader{min-height:280px}.scanned-preview{max-height:120px;padding:8px 12px}.scanned-preview .preview-item{font-size:12px}.toast-big{min-width:280px;padding:14px 18px}.toast-big .toast-actions button{font-size:13px;padding:6px 12px}.toast-big .toast-actions select{font-size:14px;padding:6px 10px;min-width:55px}.admin-confirm-box{padding:20px}.admin-confirm-box .btn-group button{padding:10px 16px;font-size:14px}}
     </style>
 </head>
 <body>
@@ -360,6 +323,7 @@ var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
 var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var adminPassword = '', homePassword = '', passwordsLoaded = false;
+var lastKnownUpdate = ''; // ✅ Settings update ကို စောင့်ကြည့်ဖို့
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
 var mySalesChart = null, myTopProductsChart = null;
@@ -371,7 +335,12 @@ var isFlashlightOn = false, currentVideoTrack = null;
 function loadPasswordsFromSupabase(callback) {
     supabase.from('settings').select('*').eq('id', 1).single()
         .then(function(response) {
-            if (response.data) { adminPassword = response.data.admin_password || ''; homePassword = response.data.staff_password || ''; passwordsLoaded = true; }
+            if (response.data) { 
+                adminPassword = response.data.admin_password || ''; 
+                homePassword = response.data.staff_password || ''; 
+                passwordsLoaded = true; 
+                lastKnownUpdate = response.data.updated_at || ''; // ✅ လက်ရှိ update အချိန်ကို မှတ်ထား
+            }
             if (callback) callback();
         })
         .catch(function(error) { console.log('Password load failed:', error.message); if (callback) callback(); });
@@ -389,8 +358,9 @@ function updatePasswords() {
             if (!response.error) {
                 if (newAdmin) adminPassword = newAdmin;
                 if (newStaff) homePassword = newStaff;
-                showBigToast('✅ Password ပြောင်းပြီးပါပြီ', '3 စက္ကန့်အတွင်း auto log out ဖြစ်ပါမည်', 'success', false);
+                showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = '';
+                // ✅ ဒီဖုန်းကိုလည်း logout လုပ်
                 setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000);
             } else { showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false); }
         })
@@ -538,6 +508,22 @@ window.onload = function() {
     if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); }); }); }
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
+    
+    // ✅ Settings table UPDATE ကို စောင့်ကြည့်ပြီး password ပြောင်းရင် တခြားဖုန်းတွေကို auto logout လုပ်
+    supabase.channel('settings-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings', filter: 'id=eq.1' }, function(payload) {
+            var newUpdateTime = payload.new.updated_at || '';
+            if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) {
+                showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
+                setTimeout(function() {
+                    sessionStorage.removeItem('isAppUnlocked');
+                    localStorage.removeItem('currentUserRole');
+                    window.location.reload();
+                }, 3000);
+            }
+            lastKnownUpdate = newUpdateTime;
+        })
+        .subscribe();
 };
 function dismissKeyboard() { if (document.activeElement) document.activeElement.blur(); }
 </script>
