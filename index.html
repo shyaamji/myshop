@@ -498,7 +498,15 @@ window.onload = function() {
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
     loadPasswordsFromSupabase(function() {
-        if (sessionStorage.getItem('isAppUnlocked') === 'true') { setupRolePrivilegesUi(); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; }
+        if (sessionStorage.getItem('isAppUnlocked') === 'true') { 
+            setupRolePrivilegesUi(); 
+            document.getElementById('app-lock-screen').style.display = 'none'; 
+            document.getElementById('app-main-content').style.display = 'block'; 
+        }
+        // ✅ Login ပြီးမှ Polling စတင်မယ်
+        if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+            startSettingsPolling();
+        }
     });
     loadProductsFromSheet(); loadSalesHistoryFromSheet(); displayHistory(salesHistory);
     var pw = document.getElementById('home-pass-input'); if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
@@ -508,6 +516,45 @@ window.onload = function() {
     if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); }); }); }
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
+};
+
+// ✅ Polling Function - ၁၀ စက္ကန့်တစ်ခါ Supabase ကို စစ်မယ်
+var settingsPollingInterval = null;
+
+function startSettingsPolling() {
+    // ရှိပြီးသား interval ရှိရင် ဖျက်မယ်
+    if (settingsPollingInterval) { clearInterval(settingsPollingInterval); }
+    
+    settingsPollingInterval = setInterval(function() {
+        // လော့ဂ်အင်လုပ်ထားမှ စစ်မယ်
+        if (sessionStorage.getItem('isAppUnlocked') !== 'true') return;
+        
+        supabase.from('settings').select('updated_at').eq('id', 1).single()
+            .then(function(response) {
+                if (response.data) {
+                    var serverUpdateTime = response.data.updated_at || '';
+                    if (lastKnownUpdate && serverUpdateTime !== lastKnownUpdate) {
+                        // Password ပြောင်းသွားပြီ
+                        showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
+                        clearInterval(settingsPollingInterval);
+                        setTimeout(function() {
+                            sessionStorage.removeItem('isAppUnlocked');
+                            localStorage.removeItem('currentUserRole');
+                            window.location.reload();
+                        }, 3000);
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.log('Settings polling error:', error.message);
+            });
+    }, 10000); // 10 စက္ကန့်တစ်ခါ
+}
+
+// ✅ App ပိတ်ရင် polling ရပ်မယ်
+window.addEventListener('beforeunload', function() {
+    if (settingsPollingInterval) { clearInterval(settingsPollingInterval); }
+});
     
     // ✅ Settings table UPDATE ကို စောင့်ကြည့်ပြီး password ပြောင်းရင် တခြားဖုန်းတွေကို auto logout လုပ်
     supabase.channel('settings-changes')
