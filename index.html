@@ -51,39 +51,35 @@
         
         .toast-big{
             position:fixed;
-            top:0;
-            left:0;
-            right:0;
-            transform:none;
+            top:50%;
+            left:50%;
+            transform:translate(-50%, -50%);
             z-index:999999;
             background:var(--bg-card);
-            border-bottom:4px solid var(--accent-gold);
-            border-left:none;
-            border-radius:0;
-            padding:12px 20px;
-            box-shadow:0 4px 20px rgba(0,0,0,0.2);
+            border:2px solid var(--accent-gold);
+            border-radius:20px;
+            padding:16px 24px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.3);
             color:var(--text-main);
             font-size:15px;
             font-weight:700;
             display:none;
-            border:1px solid var(--border-color);
-            border-top:none;
             text-align:center;
-            max-width:100%;
-            min-width:auto;
-            animation:slideDownNav 0.3s ease;
+            max-width:90%;
+            min-width:300px;
+            animation:scaleInToast 0.3s ease;
         }
         .toast-big.show{display:block}
-        .toast-big.success{border-bottom-color:var(--accent-success)}
-        .toast-big.danger{border-bottom-color:var(--accent-danger)}
-        .toast-big .toast-sub{font-size:12px;font-weight:400;color:var(--text-muted);margin-top:2px}
-        .toast-big .toast-actions{display:flex;gap:4px;justify-content:center;margin-top:8px;flex-wrap:wrap;align-items:center}
-        .toast-big .toast-actions button{background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:5px 12px;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-main);transition:all 0.2s}
+        .toast-big.success{border-color:var(--accent-success)}
+        .toast-big.danger{border-color:var(--accent-danger)}
+        .toast-big .toast-sub{font-size:12px;font-weight:400;color:var(--text-muted);margin-top:4px}
+        .toast-big .toast-actions{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap;align-items:center}
+        .toast-big .toast-actions button{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;color:var(--text-main);transition:all 0.2s}
         .toast-big .toast-actions button:active{transform:scale(0.9)}
         .toast-big .toast-actions .btn-qty{background:var(--accent-gold);color:#fff;border:none}
         [data-theme=dark] .toast-big .toast-actions .btn-qty{background:#fbbf24;color:#000}
-        .toast-big .toast-actions select{background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;padding:5px 8px;font-weight:700;font-size:14px;color:var(--text-main);cursor:pointer;min-width:60px}
-        @keyframes slideDownNav{from{opacity:0;transform:translateY(-60px)}to{opacity:1;transform:translateY(0)}}
+        .toast-big .toast-actions select{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:8px 12px;font-weight:700;font-size:15px;color:var(--text-main);cursor:pointer;min-width:65px}
+        @keyframes scaleInToast{from{opacity:0;transform:translate(-50%, -50%) scale(0.85)}to{opacity:1;transform:translate(-50%, -50%) scale(1)}}
         
         .admin-confirm-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999999;display:none;align-items:center;justify-content:center;animation:fadeInOverlay 0.3s ease}
         .admin-confirm-overlay.active{display:flex}
@@ -220,8 +216,9 @@
             .scanner-full-mode .scanner-box #full-reader{min-height:280px}
             .scanned-preview{max-height:120px;padding:8px 12px}
             .scanned-preview .preview-item{font-size:12px}
-            .toast-big .toast-actions button{font-size:12px;padding:4px 12px}
-            .toast-big .toast-actions select{font-size:14px;padding:4px 8px;min-width:60px}
+            .toast-big{min-width:280px;padding:14px 18px}
+            .toast-big .toast-actions button{font-size:13px;padding:6px 12px}
+            .toast-big .toast-actions select{font-size:14px;padding:6px 10px;min-width:55px}
             .admin-confirm-box{padding:20px}
             .admin-confirm-box .btn-group button{padding:10px 16px;font-size:14px}
         }
@@ -475,7 +472,7 @@ function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext 
 window.addEventListener('click', initAudio, { once: true }); window.addEventListener('touchstart', initAudio, { once: true });
 function playBeep() { try { initAudio(); if (!audioCtx) return; var o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime); g.gain.setValueAtTime(0.15, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.08); } catch(e) {} }
 
-function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100), sel = document.getElementById('toastQtySelect'); sel.innerHTML = ''; for (var i = 1; i <= mq; i++) { var o = document.createElement('option'); o.value = i; o.textContent = i; sel.appendChild(o); } sel.value = '1'; act.innerHTML = '<button onclick="toastQtyChange(-1)">−</button><select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + sel.innerHTML + '</select><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
+function showBigToast(m, s, t, sa, p) { t = t || 'success'; var el = document.getElementById('toastBig'); document.getElementById('toastBigMsg').textContent = m; document.getElementById('toastBigSub').textContent = s || ''; el.className = 'toast-big show ' + t; var act = document.getElementById('toastBigActions'); if (sa && p) { toastProduct = p; toastQty = 1; var st = getStockNumber(p), mq = Math.min(st, 100); var selectHTML = ''; for (var i = 1; i <= mq; i++) { selectHTML += '<option value="' + i + '">' + i + '</option>'; } act.innerHTML = '<button onclick="toastQtyChange(-1)">−</button><select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + selectHTML + '</select><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button>'; act.style.display = 'flex'; } else { act.style.display = 'none'; toastProduct = null; } clearTimeout(el._hideTimer); if (!sa) { el._hideTimer = setTimeout(function() { el.classList.remove('show'); }, 3500); } }
 function toastQtyChange(c) { playBeep(); var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct); if (nv < 1) nv = 1; if (nv > st) nv = st; if (nv > 100) nv = 100; s.value = nv; toastQty = nv; }
 function toastQtySelectChange(v) { playBeep(); toastQty = parseInt(v) || 1; }
 function toastQtyConfirm() { if (!toastProduct) return; playBeep(); var b = toastProduct.barcode.toString(), st = getStockNumber(toastProduct), q = toastQty; if (q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } var cart = carts[activeCartIndex], item = null; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === b) { item = cart[i]; break; } } if (item) { if (item.qty + q > st) { showBigToast('⚠️ လက်ကျန် ' + st + ' ခုသာ', '', 'danger', false); return; } item.qty += q; } else { cart.push({ barcode: toastProduct.barcode, name: toastProduct.name, price: toastProduct.price, stock: toastProduct.stock, qty: q }); } renderCart(); updateScannedPreview(); updatePopCartContent(); showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false); }
@@ -680,11 +677,26 @@ function onScanSuccessFull(dt) {
         // Product တစ်ခုပဲတွေ့ရင် ခါတိုင်းအတိုင်း အလုပ်လုပ်မယ်
         var p = matchedProducts[0];
         var st = getStockNumber(p);
-        if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); return; }
+        if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); 
+            // Stock ကုန်ရင်လည်း 5 စက္ကန့်နေရင် ပြန် scan လုပ်မယ်
+            isScanPaused = true; canScan = false; updateFullScannerStatus(false);
+            clearTimeout(scanPauseTimer);
+            scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000);
+            return; 
+        }
         showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ခု', 'success', true, p);
         isScanPaused = true; canScan = false; updateFullScannerStatus(false);
         clearTimeout(scanPauseTimer);
-        scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000);
+        // toastQtyConfirm လုပ်ရင် timeout ပျက်မယ်၊ မလုပ်ရင် 5 စက္ကန့်နေရင် ပြန် scan
+        scanPauseTimer = setTimeout(function() { 
+            if (isScanPaused) {
+                isScanPaused = false; canScan = true; updateFullScannerStatus(true);
+                var el = document.getElementById('toastBig');
+                if (el.classList.contains('show')) {
+                    el.classList.remove('show');
+                }
+            }
+        }, 5000);
         return;
     }
     
@@ -743,7 +755,7 @@ function selectScanVariant(barcode, name, price, stock) {
         selectHTML += '<option value="' + i + '">' + i + '</option>';
     }
     
-    // Actions ကို မူရင်း -/+ နဲ့ အတည်ပြု ခလုတ်တွေ ပြန်ပြမယ် - select id ကို toastQtySelect လို့ပဲထားမယ်
+    // Actions ကို မူရင်း -/+ နဲ့ အတည်ပြု ခလုတ်တွေ ပြန်ပြမယ်
     actEl.innerHTML = '<button onclick="toastQtyChange(-1)">−</button>' +
         '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)">' + selectHTML + '</select>' +
         '<button onclick="toastQtyChange(1)">+</button>' +
@@ -754,6 +766,18 @@ function selectScanVariant(barcode, name, price, stock) {
     isScanPaused = true; 
     canScan = false; 
     updateFullScannerStatus(false);
+    
+    // 5 စက္ကန့်ကြာရင် ပြန် scan လုပ်မယ်
+    clearTimeout(scanPauseTimer);
+    scanPauseTimer = setTimeout(function() { 
+        if (isScanPaused) {
+            isScanPaused = false; canScan = true; updateFullScannerStatus(true);
+            var el = document.getElementById('toastBig');
+            if (el.classList.contains('show')) {
+                el.classList.remove('show');
+            }
+        }
+    }, 5000);
     
     // 30 စက္ကန့်ကြာရင် အလိုလိုပျောက်မယ်
     clearTimeout(toastEl._hideTimer);
@@ -769,6 +793,7 @@ function cancelScanVariant() {
     actEl.style.display = 'none';
     actEl.innerHTML = '';
     clearTimeout(toastEl._hideTimer);
+    clearTimeout(scanPauseTimer);
     toastEl.classList.remove('show');
     toastProduct = null;
     isScanPaused = false; 
