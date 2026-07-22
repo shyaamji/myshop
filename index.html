@@ -491,7 +491,7 @@ function openFullScanner() {
     setTimeout(function() { startScanner(); }, 500); 
 }
 function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 400, height: 300 }, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128 ] }); html5QrcodeScannerFull.render(onScanSuccessFull); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); }
-function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
+function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
 function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { openFullScanner(); } }
 function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; } }
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
@@ -550,7 +550,6 @@ function removeCartItemCompletely(i) { playBeep(); carts[activeCartIndex].splice
 function changeQtyFromSuggestion(bc, c) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1 && c > 0) { var p = productsDB.find(function(x) { return x.barcode.toString() === bStr; }); if (p) { var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 ကုန်', '', 'danger', false); return; } cart.push({ id: p.id, barcode: p.barcode, name: p.name, price: p.price, stock: p.stock, qty: 1 }); } } else if (idx !== -1) { var st = getStockNumber(cart[idx]), nq = cart[idx].qty + c; if (nq <= 0) cart.splice(idx, 1); else if (nq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } else cart[idx].qty = nq; } renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal(); filterProductNames(); }
 function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1) return; var st = getStockNumber(cart[idx]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } cart[idx].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal(); filterProductNames(); }
 
-// 🔥 ပြင်ဆင်ထားသော printVoucher function (စာမျက်နှာအလယ်တည့်တည့်နှင့် ဘေးမဆန့်အောင်)
 function printVoucher(sale) {
     if (typeof sale === 'string') { 
         var found = null; 
@@ -573,68 +572,11 @@ function printVoucher(sale) {
         itemsHTML += '<tr><td style="padding:5px 0;text-align:left;">' + it.name + '</td><td style="padding:5px 0;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="padding:5px 0;text-align:center;">' + it.qty + '</td><td style="padding:5px 0;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; 
     }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
-    
-    // CSS ပြင်ထားသော HTML
-    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; font-size: 13px; display: flex; justify-content: center; background: #fff; }
-        .receipt-container { width: 100%; max-width: 300px; padding: 15px; box-sizing: border-box; }
-        h2 { text-align: center; margin: 0 0 2px 0; font-size: 20px; }
-        .shop-address { text-align: center; font-size: 11px; color: #555; margin: 0 0 10px 0; line-height: 1.4; }
-        .dashed { border-top: 2px dashed #000; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-        td { padding: 4px 0; font-size: 12px; }
-        .items-table { margin-top: 8px; }
-        .items-table th { border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 6px 0; font-size: 11px; }
-        .items-table td { padding: 5px 0; border-bottom: none; font-size: 12px; }
-        .total-row td { font-weight: bold; font-size: 14px; padding-top: 8px; }
-        .thanks { text-align: center; font-size: 11px; margin-top: 12px; }
-        #print-receipt-zone { display: none !important; }
-        @media print {
-            body * { visibility: hidden !important; }
-            #print-receipt-zone, #print-receipt-zone * { visibility: visible !important; }
-            #print-receipt-zone {
-                display: flex !important;
-                justify-content: center !important;
-                align-items: flex-start !important;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: white;
-            }
-            @page { margin: 0; size: auto; }
-        }
-    </style></head><body>
-        <div class="receipt-container">
-            <h2>ဝင်းသီရိ</h2>
-            <div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div>
-            <div class="dashed"></div>
-            <table>
-                <tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + vid + '</b></td></tr>
-                <tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + cn + '</td></tr>
-                <tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + dt + '</td></tr>
-                <tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + pm + '</td></tr>
-            </table>
-            <table class="items-table">
-                <thead>
-                    <tr><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr>
-                </thead>
-                <tbody>' + itemsHTML + '</tbody>
-            </table>
-            <div class="dashed"></div>
-            <table>
-                <tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr>
-                <tr><td>Discount:</td><td style="text-align:right;">-' + disc + '</td></tr>
-                <tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + total + ' Ks</td></tr>
-            </table>
-            <div class="dashed"></div>
-            <div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div>
-        </div>
-    </body></html>';
+    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:Arial,sans-serif;margin:0;padding:15px;color:#000;font-size:13px;width:100%;max-width:100%;}h2{text-align:center;margin:0 0 2px 0;font-size:20px;}.shop-address{text-align:center;font-size:11px;color:#555;margin:0 0 10px 0;line-height:1.4;}.dashed{border-top:2px dashed #000;margin:10px 0;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:4px 0;font-size:12px;}.items-table{margin-top:8px;}.items-table th{border-top:2px dashed #000;border-bottom:2px dashed #000;padding:6px 0;font-size:11px;}.items-table td{padding:5px 0;border-bottom:none;font-size:12px;}.total-row td{font-weight:bold;font-size:14px;padding-top:8px;}.thanks{text-align:center;font-size:11px;margin-top:12px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့် ခိုင်ရွှေဝါလမ်းကြား၊ ရေကန်လမ်း၊ လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td><b>Voucher:</b></td><td style="text-align:right;"><b>' + vid + '</b></td></tr><tr><td><b>ဝယ်သူ:</b></td><td style="text-align:right;">' + cn + '</td></tr><tr><td><b>နေ့ရက်:</b></td><td style="text-align:right;">' + dt + '</td></tr><tr><td><b>ငွေချေမှု:</b></td><td style="text-align:right;">' + pm + '</td></tr></table><table class="items-table"><thead><tr><th style="text-align:left;">ပစ္စည်း</th><th style="text-align:right;">ဈေး</th><th style="text-align:center;">ခု</th><th style="text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td>ကျသင့်ငွေ:</td><td style="text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td>Discount:</td><td style="text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td>စုစုပေါင်း:</td><td style="text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
     
     var printZone = document.getElementById('print-receipt-zone');
     printZone.innerHTML = pc;
+    printZone.style.display = 'block';
     
     setTimeout(function() {
         window.print();
