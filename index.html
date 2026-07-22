@@ -131,8 +131,8 @@
         .suggestion-add-btn{background:linear-gradient(135deg,#d97706,#b45309);color:#fff!important;border:none;font-weight:700;font-size:13px;padding:6px 14px;border-radius:8px;cursor:pointer}
         [data-theme=dark] .suggestion-add-btn{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000!important}
         .theme-toggle-btn{background:var(--bg-input);border:1px solid var(--border-color);color:var(--text-main);height:42px;width:42px;border-radius:12px;cursor:pointer}
-        #print-receipt-zone{display:block;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999999;background:white;overflow-y:auto;visibility:hidden}
-        @media print{body{visibility:hidden}#app-main-content{display:none!important}#print-receipt-zone{visibility:visible!important;display:block!important;position:fixed;top:0;left:0;width:100%;height:auto;z-index:9999999;background:white;font-size:12px;}#print-receipt-zone *{visibility:visible}@page{margin:0;size:auto}}
+        #print-receipt-zone{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999999;background:white;overflow-y:auto;display:none;}
+        @media print{body{visibility:hidden}#app-main-content{display:none!important}#print-receipt-zone{display:block!important;position:fixed;top:0;left:0;width:100%;height:auto;z-index:9999999;background:white;font-size:12px;}#print-receipt-zone *{visibility:visible}@page{margin:0;size:auto}}
         
         .scanner-popup-toggle{position:fixed;bottom:100px;left:20px;right:auto;z-index:9998;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;font-size:28px;box-shadow:0 8px 25px rgba(180,83,9,0.4);cursor:pointer;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center}
         [data-theme=dark] .scanner-popup-toggle{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000}
@@ -571,21 +571,12 @@ function printVoucher(sale) {
     
     var printZone = document.getElementById('print-receipt-zone');
     printZone.innerHTML = pc;
-    printZone.style.visibility = 'visible';
-    printZone.style.position = 'fixed';
-    printZone.style.top = '0';
-    printZone.style.left = '0';
-    printZone.style.width = '100%';
-    printZone.style.height = 'auto';
-    printZone.style.zIndex = '9999999';
-    printZone.style.background = 'white';
-    printZone.style.padding = '15px';
-    printZone.style.overflowY = 'auto';
+    printZone.style.display = 'block';
     
     setTimeout(function() {
         window.print();
         setTimeout(function() {
-            printZone.style.visibility = 'hidden';
+            printZone.style.display = 'none';
             printZone.innerHTML = '';
         }, 500);
     }, 300);
