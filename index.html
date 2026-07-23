@@ -373,48 +373,20 @@ var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
 var isFlashlightOn = false, currentVideoTrack = null;
 
-// ✅ Debounce function
-function debounce(func, delay) {
-    var timeout;
-    return function() {
-        var context = this, args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(function() { func.apply(context, args); }, delay);
-    };
-}
+// ✅ Scanner performance variables
+var barcodeIndex = {};
+var lastScannedBarcode = '';
+var lastScannedTime = 0;
 
-// ✅ Cache helpers
-function shouldRefreshCache() {
-    var cacheTime = localStorage.getItem('productsCacheTime');
-    if (!cacheTime) return true;
-    var oneHour = 60 * 60 * 1000;
-    return (Date.now() - Number(cacheTime)) > oneHour;
-}
-
-function loadProductsFromSheet() { 
-    supabase.from('Products').select('*')
-        .then(function(r) { 
-            if (r.data && r.data.length > 0) {
-                productsDB = r.data; 
-                localStorage.setItem('productsCache', JSON.stringify(r.data));
-                localStorage.setItem('productsCacheTime', Date.now());
-            }
-        })
-        .catch(function(e) { 
-            console.log(e); 
-            var cached = localStorage.getItem('productsCache');
-            if (cached) { productsDB = JSON.parse(cached); }
-        }); 
-}
-
-function loadProductsFast() {
-    var cached = localStorage.getItem('productsCache');
-    if (cached) { 
-        productsDB = JSON.parse(cached); 
-        renderCart();
-        updateScannerTotal();
+function buildBarcodeIndex() {
+    barcodeIndex = {};
+    for (var i = 0; i < productsDB.length; i++) {
+        var bc = productsDB[i].barcode ? productsDB[i].barcode.toString() : '';
+        if (bc) {
+            if (!barcodeIndex[bc]) barcodeIndex[bc] = [];
+            barcodeIndex[bc].push(productsDB[i]);
+        }
     }
-    loadProductsFromSheet();
 }
 
 function loadPasswordsFromSupabase(callback) {
@@ -483,6 +455,26 @@ function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localS
 
 function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
 
+function loadProductsFromSheet() { 
+    supabase.from('Products').select('*')
+        .then(function(r) { 
+            if (r.data && r.data.length > 0) {
+                productsDB = r.data; 
+                buildBarcodeIndex(); // ✅ Index တည်ဆောက်မယ်
+                localStorage.setItem('productsCache', JSON.stringify(r.data));
+                localStorage.setItem('productsCacheTime', Date.now());
+            }
+        })
+        .catch(function(e) { 
+            console.log(e); 
+            var cached = localStorage.getItem('productsCache');
+            if (cached) { 
+                productsDB = JSON.parse(cached); 
+                buildBarcodeIndex(); // ✅ Cache ကနေလည်း index တည်ဆောက်မယ်
+            }
+        }); 
+}
+
 function loadSalesHistoryFromSheet() { supabase.from('SalesHistory').select('*').order('id', { ascending: false }).then(function(r) { if (r.data && r.data.length > 0) { salesHistory = r.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } else { var l = localStorage.getItem('salesHistory'); if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); } } }).catch(function(e) { var l = localStorage.getItem('salesHistory'); if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); } }); }
 
 function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('Products').select('*').then(function(r) { if (r.data) productsDB = r.data; b.disabled = false; b.innerText = "🔄 Sync"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
@@ -532,21 +524,43 @@ function openFullScanner() {
     var scannerPayment = document.getElementById('scanner-payment-mode');
     var mainPayment = document.getElementById('cart-payment-mode');
     if (scannerPayment && mainPayment) { scannerPayment.value = mainPayment.value; }
-    setTimeout(function() { startScanner(); }, 500); 
+    // ✅ Camera focus optimization
+    setTimeout(function() { 
+        startScanner();
+        setTimeout(function() {
+            var videos = document.querySelectorAll('#full-reader video');
+            for (var i = 0; i < videos.length; i++) {
+                if (videos[i] && videos[i].srcObject) {
+                    var tracks = videos[i].srcObject.getVideoTracks();
+                    for (var j = 0; j < tracks.length; j++) {
+                        try { tracks[j].applyConstraints({ advanced: [{ focusMode: 'continuous', zoom: 1.5 }] }); } catch(e) {}
+                    }
+                }
+            }
+        }, 800);
+    }, 300); 
 }
 function startScanner() { 
     if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
     html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-        fps: 5,
-        qrbox: { width: 300, height: 200 },
+        fps: 10,
+        qrbox: { width: 250, height: 180 },
+        aspectRatio: 1.0,
+        disableFlip: false,
         formatsToSupport: [ 
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
             Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.CODE_128 
-        ] 
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA, Html5QrcodeScanType.SCAN_TYPE_FILE]
     }); 
-    html5QrcodeScannerFull.render(onScanSuccessFull); 
+    html5QrcodeScannerFull.render(onScanSuccessFull, onScanFailure); 
     canScan = true; isScannerClosed = false; updateFullScannerStatus(true); 
 }
 function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
@@ -555,11 +569,23 @@ function updateFullScannerStatus(s) { var b = document.getElementById('full-scan
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
 function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
 
+// ✅ Silent scan failure
+function onScanFailure(error) { /* Do nothing */ }
+
 function onScanSuccessFull(dt) {
     if (!canScan || isScanPaused) return;
+    
+    // ✅ Duplicate scan ကာကွယ် (၂ စက္ကန့်အတွင်း barcode တူရင် skip)
+    var now = Date.now();
+    if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return;
+    lastScannedBarcode = dt;
+    lastScannedTime = now;
+    
     playBeep();
-    var matchedProducts = [];
-    for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].barcode && productsDB[i].barcode.toString() === dt.toString()) { matchedProducts.push(productsDB[i]); } }
+    
+    // ✅ Index ကနေ အမြန်ရှာမယ်
+    var matchedProducts = barcodeIndex[dt.toString()] || [];
+    
     if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; }
     if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ခု', 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); return; }
     if (matchedProducts.length > 1) {
@@ -679,7 +705,14 @@ window.onload = function() {
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
     
     // ✅ Cache ကနေ အရင်ပြမယ်
-    loadProductsFast();
+    var cached = localStorage.getItem('productsCache');
+    if (cached) { 
+        productsDB = JSON.parse(cached); 
+        buildBarcodeIndex();
+        renderCart();
+        updateScannerTotal();
+    }
+    loadProductsFromSheet();
     loadSalesHistoryFromSheet();
     
     loadPasswordsFromSupabase(function() {
@@ -692,12 +725,7 @@ window.onload = function() {
     
     displayHistory(salesHistory);
     var pw = document.getElementById('home-pass-input'); if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
-    // ✅ Debounce search
-    var si = document.getElementById('name-search-input'); 
-    if (si) { 
-        si.addEventListener('input', debounce(filterProductNames, 300)); 
-        si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); 
-    }
+    var si = document.getElementById('name-search-input'); if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); }
     if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); }); }); }
