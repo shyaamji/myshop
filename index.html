@@ -118,6 +118,15 @@
             background: linear-gradient(135deg, #fbbf24, #d97706);
             color: #000;
         }
+        .nav-tabs-custom .theme-toggle-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            height: 42px;
+            width: 42px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
         
         /* ===== CARDS ===== */
         .custom-card {
@@ -522,6 +531,12 @@
             padding: 24px 0;
             font-size: 13px;
         }
+        /* Popup Cart Voucher Row */
+        #popCartVoucherRow {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--accent-gold);
+        }
         
         /* ===== INLINE CART ===== */
         .inline-cart-preview-row {
@@ -563,6 +578,12 @@
             background: linear-gradient(135deg, #fbbf24, #d97706);
             color: #000 !important;
             box-shadow: 0 2px 6px rgba(251,191,36,0.4);
+        }
+        .inline-voucher-btn {
+            font-size: 12px;
+            border-radius: 10px;
+            white-space: nowrap;
+            padding: 6px 14px;
         }
         
         /* ===== SEARCH ===== */
@@ -1019,10 +1040,39 @@
                 font-size: 11px;
                 padding: 3px 8px;
             }
+            .inline-voucher-btn {
+                font-size: 10px !important;
+                padding: 4px 10px !important;
+            }
         }
     </style>
 </head>
 <body>
+
+<!-- ===== BROWSER BLOCK ===== -->
+<script>
+(function() {
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'app:';
+    if (isStandalone) { return; }
+    var isAndroid = /android/i.test(navigator.userAgent);
+    var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
+    if (isAndroid && isChrome) {
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f1f5f9;font-family:\'Plus Jakarta Sans\',system-ui,sans-serif;padding:20px;text-align:center;"><div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);"><div style="font-size:64px;margin-bottom:16px;">📱</div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">📲 အက်ပ်ထည့်သွင်းမည်</button></div></div>';
+        document.documentElement.style.background = '#f1f5f9';
+    }
+})();
+function installApp() {
+    if (window.deferredPrompt) {
+        window.deferredPrompt.prompt();
+    } else {
+        alert('📲 အက်ပ်ထည့်သွင်းရန်:\n\n1. အပေါ်ဆုံး ⋮ (အစက်သုံးစက်) ကိုနှိပ်ပါ\n2. "Install App" ကိုရွေးပါ\n3. Install ကိုနှိပ်ပါ');
+    }
+}
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.deferredPrompt = e;
+});
+</script>
 
 <!-- ===== ADMIN CONFIRM OVERLAY ===== -->
 <div class="admin-confirm-overlay" id="adminConfirmOverlay">
@@ -1076,6 +1126,12 @@
         <div class="pop-cart-total-row" id="popCartTotalRow" style="display:none;">
             <span class="pop-total-label">စုစုပေါင်း</span>
             <span class="pop-total-value" id="popCartTotalValue">Ks - 0</span>
+        </div>
+        <!-- 👇 Popup Cart Voucher Button -->
+        <div id="popCartVoucherRow" style="display:none;">
+            <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">
+                🧾 Voucher ထုတ်မည် ➡️
+            </button>
         </div>
     </div>
 </div>
@@ -1166,13 +1222,18 @@
     <div class="container mt-4 pb-5">
         <!-- ===== SALES TAB ===== -->
         <div id="sales" class="tab-content active">
+            <!-- 👇 INLINE CART WITH VOUCHER BUTTON -->
             <div class="inline-cart-preview-row">
-                <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn">
+                <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn" style="flex:1;">
                     <span class="inline-cart-icon">🛒</span>
                     <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
                     <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
+                <button class="btn btn-premium-gold inline-voucher-btn fw-bold" onclick="checkoutFromInline()">
+                    🧾 Voucher
+                </button>
             </div>
+            
             <div class="sales-grid-layout">
                 <!-- SEARCH -->
                 <div class="custom-card search-container-box search-card-box" id="main-search-card">
@@ -1387,8 +1448,6 @@ var isFlashlightOn = false, currentVideoTrack = null;
 var barcodeIndex = {};
 var lastScannedBarcode = '';
 var lastScannedTime = 0;
-
-// ===== MODAL VARIABLES =====
 var modalProduct = null;
 var modalQty = 1;
 
@@ -1511,18 +1570,16 @@ function toastQtyConfirm() {
 }
 
 // =====================================================================
-// MODAL FUNCTIONS (NEW)
+// MODAL FUNCTIONS
 // =====================================================================
 function openQtyModal(product) {
     modalProduct = product;
     modalQty = 1;
-    
     var st = getStockNumber(product);
     if (st <= 0) {
         showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false);
         return;
     }
-    
     document.getElementById('modal-product-name').textContent = product.name;
     document.getElementById('modal-product-price').textContent = Number(product.price).toLocaleString() + ' Ks';
     document.getElementById('modal-product-stock').textContent = 'လက်ကျန်: ' + st + ' ' + (product.unit || 'ခု');
@@ -1553,11 +1610,8 @@ function modalQtyChange(delta) {
 function confirmQtyModal() {
     if (!modalProduct) return;
     playBeep();
-    
     var cart = carts[activeCartIndex];
     var st = getStockNumber(modalProduct);
-    
-    // Check if product already exists in cart
     var existingIdx = -1;
     for (var i = 0; i < cart.length; i++) {
         if (cart[i].id && modalProduct.id && cart[i].id === modalProduct.id) {
@@ -1568,7 +1622,6 @@ function confirmQtyModal() {
             break;
         }
     }
-    
     if (existingIdx !== -1) {
         if (cart[existingIdx].qty + modalQty > st) {
             showBigToast('⚠️ လက်ကျန် ' + st + ' ' + (modalProduct.unit || 'ခု') + ' သာ', '', 'danger', false);
@@ -1586,30 +1639,45 @@ function confirmQtyModal() {
             unit: modalProduct.unit || 'ခု'
         });
     }
-    
-    // Close modal
     closeQtyModal();
-    
-    // Update UI
     renderCart();
     updateScannedPreview();
     updatePopCartContent();
     updateScannerTotal();
-    
-    // 🔥 Clear search box but keep keyboard visible
     var searchInput = document.getElementById('name-search-input');
     searchInput.value = '';
-    searchInput.focus();  // Keyboard stays open
-    
-    // Clear search suggestions
+    searchInput.focus();
     document.getElementById('search-suggestions').style.display = 'none';
     document.getElementById('close-search-btn').style.display = 'none';
-    
     showBigToast('✅ ' + modalProduct.name + ' ×' + modalQty + ' ထည့်ပြီး', '', 'success', false);
 }
 
 // =====================================================================
-// SEARCH FUNCTIONS (UPDATED)
+// CHECKOUT FROM INLINE / POP CART
+// =====================================================================
+function checkoutFromInline() {
+    var cart = carts[activeCartIndex];
+    if (!cart.length) {
+        showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
+        return;
+    }
+    checkout();
+}
+
+function checkoutFromPopCart() {
+    var cart = carts[activeCartIndex];
+    if (!cart.length) {
+        showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
+        return;
+    }
+    closePopCartDirect();
+    setTimeout(function() {
+        checkout();
+    }, 300);
+}
+
+// =====================================================================
+// SEARCH FUNCTIONS
 // =====================================================================
 function filterProductNames() {
     var inp = document.getElementById('name-search-input').value.toLowerCase().trim();
@@ -1665,7 +1733,6 @@ function filterProductNames() {
         var div = document.createElement('div');
         div.className = 'search-item d-flex justify-content-between align-items-center';
         
-        // Product info - clicking this opens the modal
         var info = document.createElement('div');
         info.className = 'item-info';
         info.innerHTML = '<div class="item-name">' + prod.name + '</div>' +
@@ -1677,14 +1744,12 @@ function filterProductNames() {
             };
         })(prod);
         
-        // Actions: - / + / Confirm buttons
         var act = document.createElement('div');
         act.className = 'item-actions';
         
         if (st <= 0) {
             act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>';
         } else {
-            // Minus button
             var btnMinus = document.createElement('button');
             btnMinus.className = 'qty-btn-sm';
             btnMinus.innerText = '−';
@@ -1697,13 +1762,11 @@ function filterProductNames() {
                 };
             })(bStr);
             
-            // Qty display
             var qtySpan = document.createElement('span');
             qtySpan.className = 'qty-display-sm';
             qtySpan.id = 'search-qty-' + bStr;
             qtySpan.innerText = cq > 0 ? cq : 0;
             
-            // Plus button
             var btnPlus = document.createElement('button');
             btnPlus.className = 'qty-btn-sm';
             btnPlus.innerText = '+';
@@ -1716,7 +1779,6 @@ function filterProductNames() {
                 };
             })(bStr);
             
-            // Confirm button (✅)
             var btnConfirm = document.createElement('button');
             btnConfirm.className = 'confirm-btn-sm';
             btnConfirm.innerText = '✅';
@@ -1746,13 +1808,9 @@ function clearSearchInputAndBox() {
     document.getElementById('name-search-input').value = '';
     document.getElementById('search-suggestions').style.display = 'none';
     document.getElementById('close-search-btn').style.display = 'none';
-    // Keep keyboard visible
     document.getElementById('name-search-input').focus();
 }
 
-// =====================================================================
-// SEARCH QTY FUNCTIONS
-// =====================================================================
 function changeQtyFromSearch(bc, delta) {
     var bStr = bc.toString();
     var cart = carts[activeCartIndex];
@@ -1862,12 +1920,9 @@ function confirmFromSearch(barcode, product) {
     updatePopCartContent();
     updateScannerTotal();
     
-    // 🔥 Clear search box but keep keyboard visible
     var searchInput = document.getElementById('name-search-input');
     searchInput.value = '';
-    searchInput.focus();  // Keyboard stays open
-    
-    // Clear search suggestions
+    searchInput.focus();
     document.getElementById('search-suggestions').style.display = 'none';
     document.getElementById('close-search-btn').style.display = 'none';
 }
@@ -1998,10 +2053,12 @@ function closePopCartDirect() {
 }
 
 function updatePopCartContent() {
-    var cart = carts[activeCartIndex] || [], content = document.getElementById('popCartContent'), totalRow = document.getElementById('popCartTotalRow'), totalValue = document.getElementById('popCartTotalValue');
+    var cart = carts[activeCartIndex] || [], content = document.getElementById('popCartContent'), totalRow = document.getElementById('popCartTotalRow'), totalValue = document.getElementById('popCartTotalValue'), voucherRow = document.getElementById('popCartVoucherRow');
+    
     if (cart.length === 0) {
         content.innerHTML = '<div class="pop-cart-empty">ပစ္စည်းများ မရှိသေးပါ</div>';
         totalRow.style.display = 'none';
+        if (voucherRow) voucherRow.style.display = 'none';
     } else {
         var html = '', total = 0;
         for (var i = 0; i < cart.length; i++) {
@@ -2012,6 +2069,7 @@ function updatePopCartContent() {
         content.innerHTML = html;
         totalRow.style.display = 'flex';
         totalValue.textContent = 'Ks - ' + total.toLocaleString();
+        if (voucherRow) voucherRow.style.display = 'block';
     }
     updateInlineCartPreview();
 }
