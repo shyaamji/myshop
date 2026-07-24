@@ -196,6 +196,11 @@
             min-width: 280px;
             animation: scaleInToast 0.3s ease;
         }
+        /* Special Role - Toast on right side */
+        [data-role="special"] .toast-big {
+            left: auto !important;
+            right: 20px !important;
+        }
         .toast-big.show { display: block; }
         .toast-big.success { border-color: var(--accent-success); }
         .toast-big.danger { border-color: var(--accent-danger); }
@@ -822,6 +827,11 @@
             align-items: center;
             justify-content: center;
         }
+        /* Special Role - Scanner on right side */
+        [data-role="special"] .scanner-popup-toggle {
+            left: auto !important;
+            right: 20px !important;
+        }
         [data-theme=dark] .scanner-popup-toggle {
             background: linear-gradient(135deg, #fbbf24, #d97706);
             color: #000;
@@ -897,6 +907,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: all 0.2s;
             z-index: 10;
+        }
+        /* Special Role - Scanner close button on right side */
+        [data-role="special"] .scanner-full-mode .scanner-close-btn {
+            left: auto !important;
+            right: 20px !important;
         }
         .scanner-full-mode .scanner-close-btn:active { transform: scale(0.85); }
         .scanner-full-mode .scanner-controls {
@@ -1023,12 +1038,20 @@
                 left: 12px;
                 right: auto;
             }
+            [data-role="special"] .scanner-popup-toggle {
+                left: auto !important;
+                right: 12px !important;
+            }
             .scanner-full-mode .scanner-close-btn {
                 bottom: 70px;
                 left: 15px;
                 width: 40px;
                 height: 40px;
                 font-size: 18px;
+            }
+            [data-role="special"] .scanner-full-mode .scanner-close-btn {
+                left: auto !important;
+                right: 15px !important;
             }
             .scanner-full-mode .scanner-box {
                 padding: 10px;
@@ -1042,6 +1065,10 @@
                 min-width: 250px;
                 padding: 14px 18px;
                 left: 10px;
+            }
+            [data-role="special"] .toast-big {
+                left: auto !important;
+                right: 10px !important;
             }
             .toast-big .toast-actions button { font-size: 13px; padding: 6px 12px; }
             .toast-big .toast-actions select {
@@ -1084,18 +1111,15 @@
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     if (isAndroid && isChrome) {
-        // Overlay အနေနဲ့ ထည့်မယ် (body ကို မဖျက်ဘူး)
         var overlay = document.createElement('div');
         overlay.id = 'browser-block-overlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#f1f5f9;z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;padding:20px;';
         overlay.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);text-align:center;"><div style="font-size:64px;margin-bottom:16px;">📱</div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">📲 အက်ပ်ထည့်သွင်းမည်</button></div>';
         document.body.appendChild(overlay);
-        // Lock Screen နဲ့ Main Content ကို ဖျောက်မယ် (ဒါပေမယ့် မဖျက်ဘူး)
         var lockScreen = document.getElementById('app-lock-screen');
         if (lockScreen) lockScreen.style.display = 'none';
         var mainContent = document.getElementById('app-main-content');
         if (mainContent) mainContent.style.display = 'none';
-        // Scanner Pop-up မပေါ်အောင် Scanner ကို ပိတ်မယ်
         var scannerToggle = document.getElementById('scannerToggleBtn');
         if (scannerToggle) scannerToggle.style.display = 'none';
         var scannerFullMode = document.getElementById('scannerFullMode');
@@ -1110,7 +1134,6 @@ function installApp() {
         if (window.deferredPrompt.userChoice) {
             window.deferredPrompt.userChoice.then(function(choiceResult) {
                 if (choiceResult.outcome === 'accepted') {
-                    // Install လုပ်ပြီးရင် Reload လုပ်မယ် (Browser ထဲမှာ ဆက်သုံးလို့မရအောင်)
                     window.location.reload();
                 }
             });
@@ -1178,7 +1201,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <span class="pop-total-label">စုစုပေါင်း</span>
             <span class="pop-total-value" id="popCartTotalValue">Ks - 0</span>
         </div>
-        <!-- Popup Cart Voucher Button -->
         <div id="popCartVoucherRow" style="display:none;">
             <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">
                 🧾 Voucher ထုတ်မည် ➡️
@@ -1273,29 +1295,24 @@ window.addEventListener('beforeinstallprompt', function(e) {
     <div class="container mt-4 pb-5">
         <!-- ===== SALES TAB ===== -->
         <div id="sales" class="tab-content active">
-            <!-- INLINE CART WITH DISCOUNT, PAYMENT & VOUCHER -->
             <div class="inline-cart-preview-row">
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn" style="flex:2;min-width:120px;">
                     <span class="inline-cart-icon">🛒</span>
                     <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
                     <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
-                <!-- Discount Input -->
                 <input type="text" id="inline-discount-input" class="form-control form-control-sm inline-cart-input" placeholder="Disc" oninput="syncDiscountToMain()">
-                <!-- Payment Dropdown -->
                 <select id="inline-payment-mode" class="form-control form-control-sm inline-cart-select" onchange="syncPaymentToMain()">
                     <option value="Cash">💵 Cash</option>
                     <option value="KPay">📱 KPay</option>
                     <option value="Wave">🌊 Wave</option>
                 </select>
-                <!-- Voucher Button -->
                 <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">
                     🧾
                 </button>
             </div>
             
             <div class="sales-grid-layout">
-                <!-- SEARCH -->
                 <div class="custom-card search-container-box search-card-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
@@ -1307,7 +1324,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <div id="search-suggestions" class="search-results"></div>
                 </div>
 
-                <!-- CART -->
                 <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
                         <h6 class="fw-bold mb-0">🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
@@ -1467,9 +1483,10 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <span class="badge rounded-pill bg-light text-dark border" style="font-size:10px;">Admin Only</span>
                 </div>
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin Password</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div>
-                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff Password</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div>
-                    <div class="col-md-2 col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div>
+                    <div class="col-md-4 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div>
+                    <div class="col-md-4 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div>
+                    <div class="col-md-4 col-12"><label class="text-secondary small fw-bold mb-1">⭐ Special</label><input type="text" id="new-special-password" class="form-control" placeholder="Special အသစ်"></div>
+                    <div class="col-12 mt-2"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div>
                 </div>
             </div>
             <div class="custom-card">
@@ -1478,7 +1495,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <li class="mb-2">Password ပြောင်းလိုက်ပါက <b>စနစ်သုံးနေသော ဖုန်းအားလုံး</b> အလိုအလျောက် Logout ဖြစ်ပါမည်။</li>
                     <li class="mb-2">Password အသစ်ကို ဝန်ထမ်းများအား ပြန်လည်မျှဝေပေးပါ။</li>
                     <li class="mb-2">Admin Password မေ့သွားပါက Supabase Dashboard မှတဆင့် ပြန်လည်ပြင်ဆင်နိုင်ပါသည်။</li>
-                    <li>Password နှစ်ခုလုံး မတူညီစေရန် သတ်မှတ်ပေးပါ။</li>
+                    <li>Password အားလုံး မတူညီစေရန် သတ်မှတ်ပေးပါ။</li>
                 </ul>
             </div>
         </div>
@@ -1496,7 +1513,7 @@ var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // =====================================================================
 // GLOBAL VARIABLES
 // =====================================================================
-var adminPassword = '', homePassword = '', passwordsLoaded = false;
+var adminPassword = '', homePassword = '', specialPassword = '', passwordsLoaded = false;
 var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
@@ -2050,7 +2067,6 @@ function renderCart() {
     updateInlineCartPreview();
     updateScannerTotal();
     
-    // Sync inline discount with main
     var mainDiscount = document.getElementById('cart-discount-input').value;
     var inlineDiscount = document.getElementById('inline-discount-input');
     if (inlineDiscount && inlineDiscount.value !== mainDiscount) {
@@ -3027,6 +3043,7 @@ function loadPasswordsFromSupabase(callback) {
             if (response.data) {
                 adminPassword = response.data.admin_password || '';
                 homePassword = response.data.staff_password || '';
+                specialPassword = response.data.special_password || '';
                 passwordsLoaded = true;
                 lastKnownUpdate = response.data.updated_at || '';
             } else {
@@ -3044,21 +3061,25 @@ function loadPasswordsFromSupabase(callback) {
 function updatePasswords() {
     var newAdmin = document.getElementById('new-admin-password').value.trim();
     var newStaff = document.getElementById('new-staff-password').value.trim();
-    if (!newAdmin && !newStaff) {
+    var newSpecial = document.getElementById('new-special-password').value.trim();
+    if (!newAdmin && !newStaff && !newSpecial) {
         showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false);
         return;
     }
     var updateData = { updated_at: new Date().toISOString() };
     if (newAdmin) updateData.admin_password = newAdmin;
     if (newStaff) updateData.staff_password = newStaff;
+    if (newSpecial) updateData.special_password = newSpecial;
     supabase.from('settings').update(updateData).eq('id', 1)
         .then(function(response) {
             if (!response.error) {
                 if (newAdmin) adminPassword = newAdmin;
                 if (newStaff) homePassword = newStaff;
+                if (newSpecial) specialPassword = newSpecial;
                 showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = '';
                 document.getElementById('new-staff-password').value = '';
+                document.getElementById('new-special-password').value = '';
                 setTimeout(function() {
                     sessionStorage.removeItem('isAppUnlocked');
                     localStorage.removeItem('currentUserRole');
@@ -3073,6 +3094,18 @@ function updatePasswords() {
         });
 }
 
+// =====================================================================
+// SPECIAL ROLE SETUP FUNCTION
+// =====================================================================
+function setupSpecialRoleUI() {
+    // Set data-role attribute on html element for CSS targeting
+    document.documentElement.setAttribute('data-role', 'special');
+    // No other special UI changes needed - CSS handles toast/scanner position
+}
+
+// =====================================================================
+// LOGIN & ROLE MANAGEMENT
+// =====================================================================
 function checkUniversalLogin() {
     if (!passwordsLoaded) {
         document.getElementById('lock-error').style.display = 'block';
@@ -3080,13 +3113,26 @@ function checkUniversalLogin() {
         return;
     }
     var i = document.getElementById('home-pass-input').value.trim();
-    if (i === adminPassword || i === homePassword) {
+    if (i === adminPassword || i === homePassword || i === specialPassword) {
+        var role = 'user';
+        if (i === adminPassword) role = 'admin';
+        else if (i === specialPassword) role = 'special';
+        else role = 'staff';
+        
         sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user');
+        localStorage.setItem('currentUserRole', role);
         document.getElementById('app-lock-screen').style.display = 'none';
         document.getElementById('app-main-content').style.display = 'block';
         document.getElementById('lock-error').style.display = 'none';
+        
+        // Setup role-specific UI
         setupRolePrivilegesUi();
+        
+        // Special role specific setup
+        if (role === 'special') {
+            setupSpecialRoleUI();
+        }
+        
         initAudio();
     } else {
         document.getElementById('lock-error').style.display = 'block';
@@ -3095,14 +3141,21 @@ function checkUniversalLogin() {
 }
 
 function setupRolePrivilegesUi() {
-    var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge');
+    var r = localStorage.getItem('currentUserRole') || 'staff', b = document.getElementById('role-badge');
     if (r === 'admin') {
         if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'block';
         });
+    } else if (r === 'special') {
+        if (b) { b.innerText = "Special"; b.style.display = "inline-block"; b.style.background = "#8b5cf6"; }
+        document.querySelectorAll('.admin-only-feature').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        // Special has same access as staff but with different UI
+        switchTab('sales');
     } else {
-        if (b) { b.innerText = ""; b.style.display = "none"; }
+        if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'none';
         });
@@ -3113,6 +3166,8 @@ function setupRolePrivilegesUi() {
 function lockAppImmediate() {
     sessionStorage.removeItem('isAppUnlocked');
     localStorage.removeItem('currentUserRole');
+    // Remove data-role attribute
+    document.documentElement.removeAttribute('data-role');
     window.location.reload();
 }
 
@@ -3190,7 +3245,11 @@ window.onload = function() {
     
     loadPasswordsFromSupabase(function() {
         if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+            var role = localStorage.getItem('currentUserRole') || 'staff';
             setupRolePrivilegesUi();
+            if (role === 'special') {
+                setupSpecialRoleUI();
+            }
             document.getElementById('app-lock-screen').style.display = 'none';
             document.getElementById('app-main-content').style.display = 'block';
         }
@@ -3257,6 +3316,7 @@ window.onload = function() {
                 setTimeout(function() {
                     sessionStorage.removeItem('isAppUnlocked');
                     localStorage.removeItem('currentUserRole');
+                    document.documentElement.removeAttribute('data-role');
                     window.location.reload();
                 }, 3000);
             }
