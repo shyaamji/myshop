@@ -1110,15 +1110,8 @@ function installApp() {
         if (window.deferredPrompt.userChoice) {
             window.deferredPrompt.userChoice.then(function(choiceResult) {
                 if (choiceResult.outcome === 'accepted') {
-                    // Install လုပ်ပြီးရင် Overlay ဖျက်
-                    var overlay = document.getElementById('browser-block-overlay');
-                    if (overlay) overlay.remove();
-                    // Lock Screen ပြန်ပြမယ်
-                    var lockScreen = document.getElementById('app-lock-screen');
-                    if (lockScreen) lockScreen.style.display = 'flex';
-                    // Scanner ပြန်ပြမယ်
-                    var scannerToggle = document.getElementById('scannerToggleBtn');
-                    if (scannerToggle) scannerToggle.style.display = 'flex';
+                    // Install လုပ်ပြီးရင် Reload လုပ်မယ် (Browser ထဲမှာ ဆက်သုံးလို့မရအောင်)
+                    window.location.reload();
                 }
             });
         }
@@ -1291,9 +1284,9 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <input type="text" id="inline-discount-input" class="form-control form-control-sm inline-cart-input" placeholder="Disc" oninput="syncDiscountToMain()">
                 <!-- Payment Dropdown -->
                 <select id="inline-payment-mode" class="form-control form-control-sm inline-cart-select" onchange="syncPaymentToMain()">
-                    <option value="Cash">💵</option>
-                    <option value="KPay">📱</option>
-                    <option value="Wave">🌊</option>
+                    <option value="Cash">💵 Cash</option>
+                    <option value="KPay">📱 KPay</option>
+                    <option value="Wave">🌊 Wave</option>
                 </select>
                 <!-- Voucher Button -->
                 <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">
