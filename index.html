@@ -38,7 +38,7 @@
         .tab-content{display:none}
         .tab-content.active{display:block}
         .premium-nav{background:var(--bg-card)!important;border-bottom:1px solid var(--border-color);position:relative;z-index:9999}
-        .nav-tabs-custom{background:var(--bg-card);border-radius:16px;padding:6px;border:1px solid var(--border-color);display:flex;gap:4px}
+        .nav-tabs-custom{background:var(--bg-card);border-radius:16px;padding:6px;border:1px solid var(--border-color);display:flex;gap:4px;flex-wrap:wrap;}
         .nav-tabs-custom .btn{border:none;border-radius:12px;font-weight:600;font-size:13px;color:var(--text-muted);padding:10px 4px;flex:1;transition:all .3s}
         .nav-tabs-custom .btn.active{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;box-shadow:0 4px 12px rgba(217,119,6,0.2)}
         [data-theme=dark] .nav-tabs-custom .btn.active{background:linear-gradient(135deg,#fbbf24,#d97706);color:#000}
@@ -287,6 +287,7 @@
             <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
+            <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
             <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
@@ -295,7 +296,6 @@
     <div class="container mt-4 pb-5">
         <div id="sales" class="tab-content active">
             <div class="inline-cart-preview-row">
-                <button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineSalesTab(this)">🔄 Sync</button>
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn"><span class="inline-cart-icon">🛒</span><span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span><span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span></div>
             </div>
             <div class="sales-grid-layout">
@@ -319,7 +319,6 @@
         </div>
 
         <div id="history" class="tab-content">
-            <div class="d-flex justify-content-end mb-3"><button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineHistoryTab(this)">🔄 Sync</button></div>
             <div class="custom-card d-flex flex-column gap-3"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="search-input" class="form-control form-control-lg" placeholder="🔍 Voucher ID သို့မဟုတ် ဝယ်သူအမည်ဖြင့် ရှာရန်..." onkeyup="searchHistory()" enterkeyhint="search"></form><button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button></div>
             <div id="history-list"><div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div></div>
         </div>
@@ -333,14 +332,25 @@
         </div>
 
         <div id="admin" class="tab-content">
-            <div class="d-flex justify-content-end mb-3"><button class="btn btn-sm btn-outline-secondary fw-bold px-3 py-1.5" style="border-radius:10px;" onclick="reloadOnlineAdminTab(this)">🔄 Sync</button></div>
+            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6><button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button></div>
+            <div class="row g-3"><div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div><div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div><div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 ပစ္စည်းအသစ်သိမ်းမည်</button></div></div></div>
+            <div class="custom-card"><h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6><div class="position-relative mb-4"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search"></form><div id="admin-search-suggestions" class="search-results"></div></div><div id="admin-product-list" class="d-flex flex-column gap-2"></div></div>
+        </div>
+
+        <div id="password" class="tab-content">
             <div class="custom-card" style="border-top:4px solid #6366f1!important;">
                 <div class="d-flex justify-content-between align-items-center mb-3"><h6 class="fw-bold mb-0" style="color:#6366f1;">🔐 Password စီမံခန့်ခွဲရန်</h6><span class="badge rounded-pill bg-light text-dark border" style="font-size:10px;">Admin Only</span></div>
                 <div class="row g-3 align-items-end"><div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin Password</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div><div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff Password</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div><div class="col-md-2 col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div></div>
             </div>
-            <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;"><div class="d-flex justify-content-between align-items-center mb-4"><h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6><button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" style="font-size:12px;border-radius:8px;" onclick="lockAppImmediate()">🔒 App ပိတ်မည်</button></div>
-            <div class="row g-3"><div class="col-12"><label class="text-secondary small fw-bold mb-1">Barcode</label><input type="text" id="new-barcode" class="form-control" placeholder="Barcode"></div><div class="col-12"><label class="text-secondary small fw-bold mb-1">ပစ္စည်းအမည်</label><input type="text" id="new-name" class="form-control" placeholder="အမည်ရိုက်ထည့်ပါ" required></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အရင်းဈေး (Ks)</label><input type="number" id="new-cost" class="form-control" placeholder="အရင်းဈေး" value="0"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">ရောင်းဈေး (Ks)</label><input type="number" id="new-price" class="form-control" placeholder="ရောင်းဈေး"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">စတော့</label><input type="number" id="new-stock" class="form-control" placeholder="စတော့"></div><div class="col-6"><label class="text-secondary small fw-bold mb-1">အနိမ့်ဆုံးသတိပေးစတော့</label><input type="number" id="new-min-stock" class="form-control" placeholder="Min Stock Alert" value="5"></div><div class="col-12 mt-4"><button type="button" class="btn btn-success w-100 fw-bold py-3" style="background-color:var(--accent-success);border:none;border-radius:12px;" id="add-prod-btn" onclick="addNewProduct()">💾 ပစ္စည်းအသစ်သိမ်းမည်</button></div></div></div>
-            <div class="custom-card"><h6 class="fw-bold mb-3 text-secondary">📝 ရှိပြီးသား ပစ္စည်းစာရင်း/ဈေးနှုန်း ပြင်ရန်</h6><div class="position-relative mb-4"><form action="javascript:void(0);" onsubmit="dismissKeyboard(this)"><input type="search" id="admin-search-input" class="form-control" placeholder="🔍 ပြင်လိုသော ပစ္စည်းအမည်ကို ရိုက်ရှာပါ..." onkeyup="filterAdminProductNames()" enterkeyhint="search"></form><div id="admin-search-suggestions" class="search-results"></div></div><div id="admin-product-list" class="d-flex flex-column gap-2"></div></div>
+            <div class="custom-card">
+                <h6 class="fw-bold text-secondary mb-3">📋 Password ဆိုင်ရာ သတိပြုရန်များ</h6>
+                <ul class="small text-muted mb-0" style="padding-left:18px;">
+                    <li class="mb-2">Password ပြောင်းလိုက်ပါက <b>စနစ်သုံးနေသော ဖုန်းအားလုံး</b> အလိုအလျောက် Logout ဖြစ်ပါမည်။</li>
+                    <li class="mb-2">Password အသစ်ကို ဝန်ထမ်းများအား ပြန်လည်မျှဝေပေးပါ။</li>
+                    <li class="mb-2">Admin Password မေ့သွားပါက Supabase Dashboard မှတဆင့် ပြန်လည်ပြင်ဆင်နိုင်ပါသည်။</li>
+                    <li>Password နှစ်ခုလုံး မတူညီစေရန် သတ်မှတ်ပေးပါ။</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -373,7 +383,6 @@ var carts = [[], [], [], []], activeCartIndex = 0;
 var toastProduct = null, toastQty = 1;
 var isFlashlightOn = false, currentVideoTrack = null;
 
-// ✅ Scanner performance variables
 var barcodeIndex = {};
 var lastScannedBarcode = '';
 var lastScannedTime = 0;
@@ -382,10 +391,7 @@ function buildBarcodeIndex() {
     barcodeIndex = {};
     for (var i = 0; i < productsDB.length; i++) {
         var bc = productsDB[i].barcode ? productsDB[i].barcode.toString() : '';
-        if (bc) {
-            if (!barcodeIndex[bc]) barcodeIndex[bc] = [];
-            barcodeIndex[bc].push(productsDB[i]);
-        }
+        if (bc) { if (!barcodeIndex[bc]) barcodeIndex[bc] = []; barcodeIndex[bc].push(productsDB[i]); }
     }
 }
 
@@ -409,8 +415,7 @@ function updatePasswords() {
     supabase.from('settings').update(updateData).eq('id', 1)
         .then(function(response) {
             if (!response.error) {
-                if (newAdmin) adminPassword = newAdmin;
-                if (newStaff) homePassword = newStaff;
+                if (newAdmin) adminPassword = newAdmin; if (newStaff) homePassword = newStaff;
                 showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = '';
                 setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000);
@@ -421,13 +426,7 @@ function updatePasswords() {
 
 function getStockNumber(p) { if (!p) return 0; var v = p.stock; if (v === undefined || v === null || v === '') return 0; var n = Number(v); return isNaN(n) ? 0 : n; }
 
-function openPopCart() { 
-    updatePopCartContent(); 
-    var overlay = document.getElementById('popCartOverlay');
-    overlay.classList.add('active'); 
-    if (isFullScannerActive) { overlay.style.zIndex = '100000'; }
-    else { overlay.style.zIndex = '99990'; }
-}
+function openPopCart() { updatePopCartContent(); var overlay = document.getElementById('popCartOverlay'); overlay.classList.add('active'); if (isFullScannerActive) { overlay.style.zIndex = '100000'; } else { overlay.style.zIndex = '99990'; } }
 function closePopCart(e) { if (e.target === document.getElementById('popCartOverlay')) { document.getElementById('popCartOverlay').classList.remove('active'); } }
 function closePopCartDirect() { var overlay = document.getElementById('popCartOverlay'); overlay.classList.remove('active'); overlay.style.zIndex = '99990'; }
 function updatePopCartContent() { var cart = carts[activeCartIndex] || [], content = document.getElementById('popCartContent'), totalRow = document.getElementById('popCartTotalRow'), totalValue = document.getElementById('popCartTotalValue'); if (cart.length === 0) { content.innerHTML = '<div class="pop-cart-empty">ပစ္စည်းများ မရှိသေးပါ</div>'; totalRow.style.display = 'none'; } else { var html = '', total = 0; for (var i = 0; i < cart.length; i++) { var item = cart[i]; total += item.price * item.qty; html += '<div class="pop-cart-item"><span class="pop-item-name">' + item.name + '</span><span class="pop-item-price">' + Number(item.price).toLocaleString() + ' Ks</span><span class="pop-item-qty">×' + item.qty + '</span></div>'; } content.innerHTML = html; totalRow.style.display = 'flex'; totalValue.textContent = 'Ks - ' + total.toLocaleString(); } updateInlineCartPreview(); }
@@ -453,41 +452,27 @@ function checkUniversalLogin() {
 function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else { if (b) { b.innerText = ""; b.style.display = "none"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
 function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }
 
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard') && r !== 'admin') { showBigToast('🔒 လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') renderAdminProducts(productsDB); if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
-
-function loadProductsFromSheet() { 
-    supabase.from('Products').select('*')
-        .then(function(r) { 
-            if (r.data && r.data.length > 0) {
-                productsDB = r.data; 
-                buildBarcodeIndex(); // ✅ Index တည်ဆောက်မယ်
-                localStorage.setItem('productsCache', JSON.stringify(r.data));
-                localStorage.setItem('productsCacheTime', Date.now());
-            }
-        })
-        .catch(function(e) { 
-            console.log(e); 
-            var cached = localStorage.getItem('productsCache');
-            if (cached) { 
-                productsDB = JSON.parse(cached); 
-                buildBarcodeIndex(); // ✅ Cache ကနေလည်း index တည်ဆောက်မယ်
-            }
-        }); 
+function switchTab(id) { 
+    var r = localStorage.getItem('currentUserRole') || 'user'; 
+    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } 
+    document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); 
+    document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); 
+    document.getElementById(id).classList.add('active'); 
+    document.getElementById('btn-' + id).classList.add('active'); 
+    if (id === 'admin') renderAdminProducts(productsDB); 
+    if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } 
 }
 
+function loadProductsFromSheet() { 
+    supabase.from('Products').select('*').then(function(r) { if (r.data && r.data.length > 0) { productsDB = r.data; buildBarcodeIndex(); localStorage.setItem('productsCache', JSON.stringify(r.data)); localStorage.setItem('productsCacheTime', Date.now()); } }).catch(function(e) { console.log(e); var cached = localStorage.getItem('productsCache'); if (cached) { productsDB = JSON.parse(cached); buildBarcodeIndex(); } }); 
+}
 function loadSalesHistoryFromSheet() { supabase.from('SalesHistory').select('*').order('id', { ascending: false }).then(function(r) { if (r.data && r.data.length > 0) { salesHistory = r.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } else { var l = localStorage.getItem('salesHistory'); if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); } } }).catch(function(e) { var l = localStorage.getItem('salesHistory'); if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); } }); }
 
 function reloadOnlineSalesTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('Products').select('*').then(function(r) { if (r.data) productsDB = r.data; b.disabled = false; b.innerText = "🔄 Sync"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
 function reloadOnlineAdminTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('Products').select('*').then(function(r) { if (r.data) productsDB = r.data; b.disabled = false; b.innerText = "🔄 Sync"; renderAdminProducts(productsDB); showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
 function reloadOnlineHistoryTab(b) { b.disabled = true; b.innerText = "⏳ Loading..."; supabase.from('SalesHistory').select('*').order('id', { ascending: false }).then(function(r) { if (r.data && r.data.length > 0) { salesHistory = r.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } b.disabled = false; b.innerText = "🔄 Sync"; showBigToast('✅ Update ပြီး', '', 'success', false); }).catch(function() { b.disabled = false; b.innerText = "🔄 Sync"; }); }
 
-function scannerCheckout() {
-    var scannerPayment = document.getElementById('scanner-payment-mode');
-    var mainPayment = document.getElementById('cart-payment-mode');
-    if (scannerPayment && mainPayment) { mainPayment.value = scannerPayment.value; }
-    closeFullScanner();
-    setTimeout(function() { checkout(); }, 300);
-}
+function scannerCheckout() { var scannerPayment = document.getElementById('scanner-payment-mode'); var mainPayment = document.getElementById('cart-payment-mode'); if (scannerPayment && mainPayment) { mainPayment.value = scannerPayment.value; } closeFullScanner(); setTimeout(function() { checkout(); }, 300); }
 function updateScannerTotal() { var scTotal = document.getElementById('scanner-cart-total'); var scCount = document.getElementById('scanner-cart-count'); if (scTotal && scCount) { var cart = carts[activeCartIndex] || []; var ti = 0, total = 0; for (var i = 0; i < cart.length; i++) { ti += cart[i].qty; total += cart[i].price * cart[i].qty; } scTotal.textContent = total.toLocaleString() + ' Ks'; scCount.textContent = ti + (ti > 1 ? ' items' : ' item'); } }
 
 function checkout() {
@@ -511,57 +496,18 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 
 function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
 function openFullScanner() { 
-    isScannerClosed = false; 
-    if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
+    isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
     var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } 
-    document.getElementById('scannerFullMode').classList.add('active'); 
-    document.getElementById('scannedPreview').classList.add('active'); 
-    isFullScannerActive = true; 
-    document.getElementById('scanBadge').style.display = 'none'; 
-    isScanPaused = false; 
-    resetFlashlight(); 
-    updateScannerTotal(); 
-    var scannerPayment = document.getElementById('scanner-payment-mode');
-    var mainPayment = document.getElementById('cart-payment-mode');
+    document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannedPreview').classList.add('active'); isFullScannerActive = true; 
+    document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); updateScannerTotal(); 
+    var scannerPayment = document.getElementById('scanner-payment-mode'), mainPayment = document.getElementById('cart-payment-mode');
     if (scannerPayment && mainPayment) { scannerPayment.value = mainPayment.value; }
-    // ✅ Camera focus optimization
-    setTimeout(function() { 
-        startScanner();
-        setTimeout(function() {
-            var videos = document.querySelectorAll('#full-reader video');
-            for (var i = 0; i < videos.length; i++) {
-                if (videos[i] && videos[i].srcObject) {
-                    var tracks = videos[i].srcObject.getVideoTracks();
-                    for (var j = 0; j < tracks.length; j++) {
-                        try { tracks[j].applyConstraints({ advanced: [{ focusMode: 'continuous', zoom: 1.5 }] }); } catch(e) {}
-                    }
-                }
-            }
-        }, 800);
-    }, 300); 
+    setTimeout(function() { startScanner(); setTimeout(function() { var videos = document.querySelectorAll('#full-reader video'); for (var i = 0; i < videos.length; i++) { if (videos[i] && videos[i].srcObject) { var tracks = videos[i].srcObject.getVideoTracks(); for (var j = 0; j < tracks.length; j++) { try { tracks[j].applyConstraints({ advanced: [{ focusMode: 'continuous', zoom: 1.5 }] }); } catch(e) {} } } } }, 800); }, 300); 
 }
 function startScanner() { 
     if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } 
-    html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { 
-        fps: 10,
-        qrbox: { width: 250, height: 180 },
-        aspectRatio: 1.0,
-        disableFlip: false,
-        formatsToSupport: [ 
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.ITF,
-            Html5QrcodeSupportedFormats.QR_CODE
-        ],
-        rememberLastUsedCamera: true,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA, Html5QrcodeScanType.SCAN_TYPE_FILE]
-    }); 
-    html5QrcodeScannerFull.render(onScanSuccessFull, onScanFailure); 
-    canScan = true; isScannerClosed = false; updateFullScannerStatus(true); 
+    html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 250, height: 180 }, aspectRatio: 1.0, disableFlip: false, formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39, Html5QrcodeSupportedFormats.ITF, Html5QrcodeSupportedFormats.QR_CODE ], rememberLastUsedCamera: true, supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA, Html5QrcodeScanType.SCAN_TYPE_FILE] }); 
+    html5QrcodeScannerFull.render(onScanSuccessFull, onScanFailure); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); 
 }
 function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); document.getElementById('scannerFullMode').classList.remove('active'); document.getElementById('scannedPreview').classList.remove('active'); isFullScannerActive = false; document.getElementById('scanBadge').style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
 function toggleFullScannerScan() { if (canScan) { closeFullScanner(); } else { openFullScanner(); } }
@@ -569,49 +515,32 @@ function updateFullScannerStatus(s) { var b = document.getElementById('full-scan
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
 function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
 
-// ✅ Silent scan failure
 function onScanFailure(error) { /* Do nothing */ }
 
 function onScanSuccessFull(dt) {
     if (!canScan || isScanPaused) return;
-    
-    // ✅ Duplicate scan ကာကွယ် (၂ စက္ကန့်အတွင်း barcode တူရင် skip)
-    var now = Date.now();
-    if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return;
-    lastScannedBarcode = dt;
-    lastScannedTime = now;
-    
+    var now = Date.now(); if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return;
+    lastScannedBarcode = dt; lastScannedTime = now;
     playBeep();
-    
-    // ✅ Index ကနေ အမြန်ရှာမယ်
     var matchedProducts = barcodeIndex[dt.toString()] || [];
-    
     if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; }
     if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ခု', 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); return; }
     if (matchedProducts.length > 1) {
         var toastEl = document.getElementById('toastBig'), msgEl = document.getElementById('toastBigMsg'), subEl = document.getElementById('toastBigSub'), actEl = document.getElementById('toastBigActions');
         msgEl.textContent = '📦 Barcode: ' + dt; subEl.textContent = 'ပစ္စည်းအမျိုးအစား ရွေးပါ-'; toastEl.className = 'toast-big show success';
         var html = '';
-        for (var i = 0; i < matchedProducts.length; i++) { 
-            var mp = matchedProducts[i]; 
-            var mpSt = getStockNumber(mp); 
-            var isOut = mpSt <= 0;
-            html += '<button onclick="' + (isOut ? 'showBigToast(\'🔴 ကုန်သွားပါပြီ\',\'\',\'danger\',false);' : 'selectScanVariant(\'' + mp.id + '\',\'' + mp.barcode + '\',\'' + mp.name.replace(/'/g, "\\'") + '\',' + mp.price + ',' + mpSt + ')') + '" style="background:var(--accent-gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;' + (isOut ? 'opacity:0.5;' : '') + '">' + mp.name + ' - ' + Number(mp.price).toLocaleString() + ' Ks ' + (isOut ? '🔴' : '') + '</button>'; 
-        }
+        for (var i = 0; i < matchedProducts.length; i++) { var mp = matchedProducts[i]; var mpSt = getStockNumber(mp); var isOut = mpSt <= 0; html += '<button onclick="' + (isOut ? 'showBigToast(\'🔴 ကုန်သွားပါပြီ\',\'\',\'danger\',false);' : 'selectScanVariant(\'' + mp.id + '\',\'' + mp.barcode + '\',\'' + mp.name.replace(/'/g, "\\'") + '\',' + mp.price + ',' + mpSt + ')') + '" style="background:var(--accent-gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;' + (isOut ? 'opacity:0.5;' : '') + '">' + mp.name + ' - ' + Number(mp.price).toLocaleString() + ' Ks ' + (isOut ? '🔴' : '') + '</button>'; }
         html += '<button onclick="cancelScanVariant()" style="background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-color);border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;">⏹️ မရွေးတော့ပါ</button>';
-        actEl.innerHTML = html; actEl.style.display = 'flex';
-        isScanPaused = true; canScan = false; updateFullScannerStatus(false);
+        actEl.innerHTML = html; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false);
         clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000);
     }
 }
 
 function selectScanVariant(productId, barcode, name, price, stock) {
     var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions');
-    var selectedProduct = { id: productId, barcode: barcode, name: name, price: price, stock: stock };
-    toastProduct = selectedProduct; toastQty = 1;
+    var selectedProduct = { id: productId, barcode: barcode, name: name, price: price, stock: stock }; toastProduct = selectedProduct; toastQty = 1;
     document.getElementById('toastBigMsg').textContent = '📦 ' + name; document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock + ' ခု'; toastEl.className = 'toast-big show success';
-    var maxQty = Math.min(stock, 100), selHTML = '';
-    for (var i = 1; i <= maxQty; i++) { selHTML += '<option value="' + i + '">' + i + '</option>'; }
+    var maxQty = Math.min(stock, 100), selHTML = ''; for (var i = 1; i <= maxQty; i++) { selHTML += '<option value="' + i + '">' + i + '</option>'; }
     actEl.innerHTML = '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)" style="width:100%;margin-bottom:8px;">' + selHTML + '</select><div style="display:flex;gap:6px;justify-content:center;"><button onclick="toastQtyChange(-1)">−</button><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button></div>';
     actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false);
     clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000);
@@ -635,61 +564,15 @@ function changeQtyFromSuggestion(bc, c) { playBeep(); var bStr = bc.toString(), 
 function changeQtySelectFromSuggestion(bc, nq) { playBeep(); var bStr = bc.toString(), cart = carts[activeCartIndex], idx = -1; for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } } if (idx === -1) return; var st = getStockNumber(cart[idx]), tq = parseInt(nq) || 1; if (tq > st) { showBigToast('⚠️ ' + st + ' ခုသာ', '', 'danger', false); return; } cart[idx].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal(); filterProductNames(); }
 
 function printVoucher(sale) {
-    if (typeof sale === 'string') { 
-        var found = null; 
-        for (var i = 0; i < salesHistory.length; i++) { 
-            var svid = salesHistory[i].voucher_id || ''; 
-            if (svid === sale || svid.toString() === sale.toString()) { found = salesHistory[i]; break; } 
-        } 
-        if (!found) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; } 
-        sale = found; 
-    }
-    if (!sale || !sale.items) return; 
-    var itemsArr = sale.items; 
-    if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } } 
-    if (!Array.isArray(itemsArr)) return;
-    
-    var itemsHTML = '', subtotal = 0; 
-    for (var i = 0; i < itemsArr.length; i++) { 
-        var it = itemsArr[i]; 
-        subtotal += Number(it.price) * Number(it.qty); 
-        itemsHTML += '<tr><td style="width:40%;padding:2px;text-align:left;">' + it.name + '</td><td style="width:20%;padding:2px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:12%;padding:2px;text-align:center;">' + it.qty + '</td><td style="width:28%;padding:2px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; 
-    }
+    if (typeof sale === 'string') { var found = null; for (var i = 0; i < salesHistory.length; i++) { var svid = salesHistory[i].voucher_id || ''; if (svid === sale || svid.toString() === sale.toString()) { found = salesHistory[i]; break; } } if (!found) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; } sale = found; }
+    if (!sale || !sale.items) return; var itemsArr = sale.items; if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } } if (!Array.isArray(itemsArr)) return;
+    var itemsHTML = '', subtotal = 0; for (var i = 0; i < itemsArr.length; i++) { var it = itemsArr[i]; subtotal += Number(it.price) * Number(it.qty); itemsHTML += '<tr><td style="width:40%;padding:2px;text-align:left;">' + it.name + '</td><td style="width:20%;padding:2px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:12%;padding:2px;text-align:center;">' + it.qty + '</td><td style="width:28%;padding:2px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>'; }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
-    
     var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:9px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:1px 2px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:2px;font-size:8px;}.items-table td{padding:2px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr><tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr><tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">' + dt.split(',')[0] + '</td></tr><tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:40%;text-align:left;">ပစ္စည်း</th><th style="width:20%;text-align:right;">ဈေး</th><th style="width:12%;text-align:center;">ခု</th><th style="width:28%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
-    
-    var printFrame = document.createElement('iframe');
-    printFrame.style.position = 'fixed';
-    printFrame.style.right = '0';
-    printFrame.style.bottom = '0';
-    printFrame.style.width = '0';
-    printFrame.style.height = '0';
-    printFrame.style.border = 'none';
-    document.body.appendChild(printFrame);
-    
-    var frameDoc = printFrame.contentWindow.document;
-    frameDoc.open();
-    frameDoc.write(pc);
-    frameDoc.close();
-    
-    printFrame.onload = function() {
-        printFrame.contentWindow.focus();
-        printFrame.contentWindow.print();
-        setTimeout(function() {
-            if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); }
-        }, 1000);
-    };
-    
-    setTimeout(function() {
-        try {
-            printFrame.contentWindow.focus();
-            printFrame.contentWindow.print();
-            setTimeout(function() {
-                if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); }
-            }, 1000);
-        } catch(e) {}
-    }, 800);
+    var printFrame = document.createElement('iframe'); printFrame.style.position = 'fixed'; printFrame.style.right = '0'; printFrame.style.bottom = '0'; printFrame.style.width = '0'; printFrame.style.height = '0'; printFrame.style.border = 'none'; document.body.appendChild(printFrame);
+    var frameDoc = printFrame.contentWindow.document; frameDoc.open(); frameDoc.write(pc); frameDoc.close();
+    printFrame.onload = function() { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); setTimeout(function() { if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); } }, 1000); };
+    setTimeout(function() { try { printFrame.contentWindow.focus(); printFrame.contentWindow.print(); setTimeout(function() { if(printFrame && printFrame.parentNode) { document.body.removeChild(printFrame); } }, 1000); } catch(e) {} }, 800);
 }
 
 function displayHistory(data) { var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user'; if (!data || !data.length) { list.innerHTML = '<div class="text-center text-muted py-4 small">မှတ်တမ်းမရှိပါ</div>'; return; } list.innerHTML = ''; data.forEach(function(sale) { var il = '', items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } } if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); } var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0'; if (typeof total === 'number') total = String(total); var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : ''; list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + (Number(total.replace(/,/g, '')) || 0).toLocaleString() + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>'; }); }
@@ -703,26 +586,10 @@ function renderAdminProducts(arr) { var list = document.getElementById('admin-pr
 window.onload = function() {
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
-    
-    // ✅ Cache ကနေ အရင်ပြမယ်
     var cached = localStorage.getItem('productsCache');
-    if (cached) { 
-        productsDB = JSON.parse(cached); 
-        buildBarcodeIndex();
-        renderCart();
-        updateScannerTotal();
-    }
-    loadProductsFromSheet();
-    loadSalesHistoryFromSheet();
-    
-    loadPasswordsFromSupabase(function() {
-        if (sessionStorage.getItem('isAppUnlocked') === 'true') { 
-            setupRolePrivilegesUi(); 
-            document.getElementById('app-lock-screen').style.display = 'none'; 
-            document.getElementById('app-main-content').style.display = 'block'; 
-        }
-    });
-    
+    if (cached) { productsDB = JSON.parse(cached); buildBarcodeIndex(); renderCart(); updateScannerTotal(); }
+    loadProductsFromSheet(); loadSalesHistoryFromSheet();
+    loadPasswordsFromSupabase(function() { if (sessionStorage.getItem('isAppUnlocked') === 'true') { setupRolePrivilegesUi(); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; } });
     displayHistory(salesHistory);
     var pw = document.getElementById('home-pass-input'); if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
     var si = document.getElementById('name-search-input'); if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
@@ -731,14 +598,7 @@ window.onload = function() {
     if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); }); }); }
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
-    supabase.channel('settings-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, function(payload) {
-        var newUpdateTime = payload.new.updated_at || '';
-        if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) {
-            showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
-            setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000);
-        }
-        lastKnownUpdate = newUpdateTime;
-    }).subscribe();
+    supabase.channel('settings-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, function(payload) { var newUpdateTime = payload.new.updated_at || ''; if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) { showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false); setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000); } lastKnownUpdate = newUpdateTime; }).subscribe();
 };
 function dismissKeyboard() { if (document.activeElement) document.activeElement.blur(); }
 </script>
