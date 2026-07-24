@@ -196,7 +196,6 @@
             min-width: 280px;
             animation: scaleInToast 0.3s ease;
         }
-        /* Special Role - Toast on right side */
         [data-role="special"] .toast-big {
             left: auto !important;
             right: 20px !important;
@@ -547,7 +546,6 @@
             padding: 24px 0;
             font-size: 13px;
         }
-        /* Popup Cart Voucher Row */
         #popCartVoucherRow {
             margin-top: 12px;
             padding-top: 12px;
@@ -827,7 +825,6 @@
             align-items: center;
             justify-content: center;
         }
-        /* Special Role - Scanner on right side */
         [data-role="special"] .scanner-popup-toggle {
             left: auto !important;
             right: 20px !important;
@@ -908,7 +905,6 @@
             transition: all 0.2s;
             z-index: 10;
         }
-        /* Special Role - Scanner close button on right side */
         [data-role="special"] .scanner-full-mode .scanner-close-btn {
             left: auto !important;
             right: 20px !important;
@@ -1527,6 +1523,14 @@ var lastScannedBarcode = '';
 var lastScannedTime = 0;
 var modalProduct = null;
 var modalQty = 1;
+
+// Lazy loading variables for admin products
+var adminProductsPage = 0;
+var adminProductsPerPage = 15;
+var adminProductsAll = [];
+var adminProductsLoading = false;
+var adminProductsHasMore = true;
+var adminProductsObserver = null;
 
 // =====================================================================
 // HELPER FUNCTIONS
@@ -2428,8 +2432,151 @@ function clearAllSalesHistoryOnline(btn) {
 }
 
 // =====================================================================
-// ADMIN PRODUCT FUNCTIONS
+// ADMIN PRODUCT FUNCTIONS (LAZY LOADING)
 // =====================================================================
+function resetAdminProductList() {
+    adminProductsPage = 0;
+    adminProductsAll = [];
+    adminProductsLoading = false;
+    adminProductsHasMore = true;
+    
+    if (adminProductsObserver) {
+        adminProductsObserver.disconnect();
+        adminProductsObserver = null;
+    }
+    
+    var list = document.getElementById('admin-product-list');
+    if (list) {
+        list.innerHTML = '';
+    }
+    
+    var oldSentinel = document.getElementById('admin-products-sentinel');
+    if (oldSentinel) oldSentinel.remove();
+}
+
+function renderAdminProducts(arr) {
+    adminProductsAll = arr || [];
+    adminProductsPage = 0;
+    adminProductsLoading = false;
+    adminProductsHasMore = true;
+    
+    var list = document.getElementById('admin-product-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    // Remove old observer
+    if (adminProductsObserver) {
+        adminProductsObserver.disconnect();
+        adminProductsObserver = null;
+    }
+    
+    var oldSentinel = document.getElementById('admin-products-sentinel');
+    if (oldSentinel) oldSentinel.remove();
+    
+    if (adminProductsAll.length === 0) {
+        list.innerHTML = '<div class="text-center text-muted py-4">ပစ္စည်းမရှိပါ</div>';
+        return;
+    }
+    
+    // Create sentinel element
+    var sentinel = document.createElement('div');
+    sentinel.id = 'admin-products-sentinel';
+    sentinel.style.cssText = 'height:10px;width:100%;';
+    
+    // Insert sentinel after the list
+    list.parentNode.insertBefore(sentinel, list.nextSibling);
+    
+    // Load first batch
+    loadMoreAdminProducts();
+    
+    // Set up Intersection Observer
+    if ('IntersectionObserver' in window) {
+        adminProductsObserver = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting && !adminProductsLoading && adminProductsHasMore) {
+                loadMoreAdminProducts();
+            }
+        }, { rootMargin: '200px' });
+        adminProductsObserver.observe(sentinel);
+    }
+}
+
+function loadMoreAdminProducts() {
+    if (adminProductsLoading || !adminProductsHasMore) return;
+    adminProductsLoading = true;
+    
+    setTimeout(function() {
+        var list = document.getElementById('admin-product-list');
+        if (!list) {
+            adminProductsLoading = false;
+            return;
+        }
+        
+        var start = adminProductsPage * adminProductsPerPage;
+        var end = Math.min(start + adminProductsPerPage, adminProductsAll.length);
+        var batch = adminProductsAll.slice(start, end);
+        
+        if (batch.length === 0) {
+            adminProductsHasMore = false;
+            adminProductsLoading = false;
+            return;
+        }
+        
+        var fragment = document.createDocumentFragment();
+        
+        batch.forEach(function(prod) {
+            var productId = prod.id, limit = Number(prod.extra2) || 5, cost = prod.extra1 || 0, sd = getStockNumber(prod), unit = prod.unit || 'ခု';
+            var sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + ' ' + unit + '</span>';
+            if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>';
+            else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + ' ' + unit + '</span>';
+            var unitOpts = '';
+            var units = ['ခု','ဘူး','ထုပ်','ကဒ်','လုံး','ချောင်း','တောင့်','ပုလင်း','အိတ်','စုံ'];
+            for (var u = 0; u < units.length; u++) {
+                unitOpts += '<option value="' + units[u] + '"' + (unit === units[u] ? ' selected' : '') + '>' + units[u] + '</option>';
+            }
+            
+            var div = document.createElement('div');
+            div.className = 'p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2';
+            div.innerHTML = '<div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div>' +
+                '<div class="text-muted small">Barcode: ' + prod.barcode + ' | ID: ' + productId + '</div>' +
+                '<div class="row g-2">' +
+                    '<div class="col-3"><small>အရင်း</small><input type="number" id="p-cost-' + productId + '" class="form-control form-control-sm" value="' + cost + '"></div>' +
+                    '<div class="col-3"><small>ရောင်း</small><input type="number" id="p-price-' + productId + '" class="form-control form-control-sm" value="' + prod.price + '"></div>' +
+                    '<div class="col-3"><small>စတော့</small><input type="number" id="p-stock-' + productId + '" class="form-control form-control-sm" value="' + sd + '"></div>' +
+                    '<div class="col-3"><small>ယူနစ်</small><select id="p-unit-' + productId + '" class="form-control form-control-sm">' + unitOpts + '</select></div>' +
+                '</div>' +
+                '<div class="row g-2">' +
+                    '<div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + productId + '" onclick="uploadProductToSheet(' + productId + ')">💾 ပြင်</button></div>' +
+                    '<div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + productId + ')">🗑️</button></div>' +
+                '</div>';
+            fragment.appendChild(div);
+        });
+        
+        list.appendChild(fragment);
+        adminProductsPage++;
+        adminProductsLoading = false;
+        
+        if (end >= adminProductsAll.length) {
+            adminProductsHasMore = false;
+            var sentinel = document.getElementById('admin-products-sentinel');
+            if (sentinel) sentinel.remove();
+            if (adminProductsObserver) {
+                adminProductsObserver.disconnect();
+                adminProductsObserver = null;
+            }
+        }
+    }, 10);
+}
+
+function cleanupAdminScroll() {
+    if (adminProductsObserver) {
+        adminProductsObserver.disconnect();
+        adminProductsObserver = null;
+    }
+    var sentinel = document.getElementById('admin-products-sentinel');
+    if (sentinel) sentinel.remove();
+    adminProductsLoading = false;
+}
+
 function addNewProduct() {
     var name = document.getElementById('new-name').value.trim(), price = document.getElementById('new-price').value.trim();
     if (!name || !price) {
@@ -2499,6 +2646,7 @@ function deleteProductFromSheet(productId) {
     if (!confirm(prod.name + ' (ID: ' + productId + ') ဖျက်မှာသေချာလား?')) return;
     supabase.from('Products').delete().eq('id', productId).then(function() {
         productsDB = productsDB.filter(function(p) { return p.id !== productId; });
+        resetAdminProductList();
         renderAdminProducts(productsDB);
         showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false);
         loadProductsFromSheet();
@@ -2507,39 +2655,11 @@ function deleteProductFromSheet(productId) {
     });
 }
 
-function renderAdminProducts(arr) {
-    var list = document.getElementById('admin-product-list');
-    list.innerHTML = '';
-    arr.forEach(function(prod) {
-        var productId = prod.id, limit = Number(prod.extra2) || 5, cost = prod.extra1 || 0, sd = getStockNumber(prod), unit = prod.unit || 'ခု';
-        var sb = '<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: ' + sd + ' ' + unit + '</span>';
-        if (sd <= 0) sb = '<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>';
-        else if (sd <= limit) sb = '<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:' + sd + ' ' + unit + '</span>';
-        var unitOpts = '';
-        var units = ['ခု','ဘူး','ထုပ်','ကဒ်','လုံး','ချောင်း','တောင့်','ပုလင်း','အိတ်','စုံ'];
-        for (var u = 0; u < units.length; u++) {
-            unitOpts += '<option value="' + units[u] + '"' + (unit === units[u] ? ' selected' : '') + '>' + units[u] + '</option>';
-        }
-        list.innerHTML += '<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2">' +
-            '<div class="d-flex justify-content-between"><div class="fw-bold fs-6">' + prod.name + '</div><div>' + sb + '</div></div>' +
-            '<div class="text-muted small">Barcode: ' + prod.barcode + ' | ID: ' + productId + '</div>' +
-            '<div class="row g-2">' +
-                '<div class="col-3"><small>အရင်း</small><input type="number" id="p-cost-' + productId + '" class="form-control form-control-sm" value="' + cost + '"></div>' +
-                '<div class="col-3"><small>ရောင်း</small><input type="number" id="p-price-' + productId + '" class="form-control form-control-sm" value="' + prod.price + '"></div>' +
-                '<div class="col-3"><small>စတော့</small><input type="number" id="p-stock-' + productId + '" class="form-control form-control-sm" value="' + sd + '"></div>' +
-                '<div class="col-3"><small>ယူနစ်</small><select id="p-unit-' + productId + '" class="form-control form-control-sm">' + unitOpts + '</select></div>' +
-            '</div>' +
-            '<div class="row g-2">' +
-                '<div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-' + productId + '" onclick="uploadProductToSheet(' + productId + ')">💾 ပြင်</button></div>' +
-                '<div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet(' + productId + ')">🗑️</button></div>' +
-            '</div></div>';
-    });
-}
-
 function filterAdminProductNames() {
     var inp = document.getElementById('admin-search-input').value.toLowerCase().trim(), box = document.getElementById('admin-search-suggestions');
     if (!inp) {
         box.style.display = 'none';
+        resetAdminProductList();
         renderAdminProducts(productsDB);
         return;
     }
@@ -2551,6 +2671,8 @@ function filterAdminProductNames() {
         d.innerHTML = '<div><strong>' + p.name + '</strong></div>';
         d.onclick = function() {
             box.style.display = 'none';
+            document.getElementById('admin-search-input').value = '';
+            resetAdminProductList();
             renderAdminProducts([p]);
         };
         box.appendChild(d);
@@ -3030,7 +3152,14 @@ function switchTab(id) {
     });
     document.getElementById(id).classList.add('active');
     document.getElementById('btn-' + id).classList.add('active');
-    if (id === 'admin') renderAdminProducts(productsDB);
+    if (id === 'admin') {
+        resetAdminProductList();
+        setTimeout(function() {
+            renderAdminProducts(productsDB);
+        }, 50);
+    } else {
+        cleanupAdminScroll();
+    }
     if (id === 'dashboard') {
         calculateTodaySales();
         updateSalesChartLogic();
@@ -3098,9 +3227,7 @@ function updatePasswords() {
 // SPECIAL ROLE SETUP FUNCTION
 // =====================================================================
 function setupSpecialRoleUI() {
-    // Set data-role attribute on html element for CSS targeting
     document.documentElement.setAttribute('data-role', 'special');
-    // No other special UI changes needed - CSS handles toast/scanner position
 }
 
 // =====================================================================
@@ -3114,10 +3241,9 @@ function checkUniversalLogin() {
     }
     var i = document.getElementById('home-pass-input').value.trim();
     if (i === adminPassword || i === homePassword || i === specialPassword) {
-        var role = 'user';
+        var role = 'staff';
         if (i === adminPassword) role = 'admin';
         else if (i === specialPassword) role = 'special';
-        else role = 'staff';
         
         sessionStorage.setItem('isAppUnlocked', 'true');
         localStorage.setItem('currentUserRole', role);
@@ -3125,10 +3251,8 @@ function checkUniversalLogin() {
         document.getElementById('app-main-content').style.display = 'block';
         document.getElementById('lock-error').style.display = 'none';
         
-        // Setup role-specific UI
         setupRolePrivilegesUi();
         
-        // Special role specific setup
         if (role === 'special') {
             setupSpecialRoleUI();
         }
@@ -3143,7 +3267,7 @@ function checkUniversalLogin() {
 function setupRolePrivilegesUi() {
     var r = localStorage.getItem('currentUserRole') || 'staff', b = document.getElementById('role-badge');
     if (r === 'admin') {
-        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; }
+        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#10b981"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'block';
         });
@@ -3152,10 +3276,9 @@ function setupRolePrivilegesUi() {
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'none';
         });
-        // Special has same access as staff but with different UI
         switchTab('sales');
     } else {
-        if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; }
+        if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; b.style.background = "#64748b"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'none';
         });
@@ -3166,7 +3289,6 @@ function setupRolePrivilegesUi() {
 function lockAppImmediate() {
     sessionStorage.removeItem('isAppUnlocked');
     localStorage.removeItem('currentUserRole');
-    // Remove data-role attribute
     document.documentElement.removeAttribute('data-role');
     window.location.reload();
 }
