@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ===== BASE STYLES ===== */
         html, body {
             overscroll-behavior: none !important;
             overscroll-behavior-y: none !important;
@@ -30,6 +31,7 @@
             overscroll-behavior-y: none !important;
         }
         
+        /* ===== THEMES ===== */
         :root,[data-theme=light] {
             --bg-main: #f1f5f9;
             --bg-card: #ffffff;
@@ -55,6 +57,7 @@
             --chart-grid: rgba(255,255,255,0.03);
         }
         
+        /* ===== LOCK SCREEN ===== */
         #app-lock-screen {
             position: fixed;
             top: 0;
@@ -80,6 +83,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
+        /* ===== NAVIGATION ===== */
         .premium-nav {
             background: var(--bg-card) !important;
             border-bottom: 1px solid var(--border-color);
@@ -125,6 +129,7 @@
             font-size: 18px;
         }
         
+        /* ===== CARDS ===== */
         .custom-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -170,6 +175,7 @@
             border-radius: 10px !important;
         }
         
+        /* ===== TOAST ===== */
         .toast-big {
             position: fixed;
             top: 50%;
@@ -189,7 +195,6 @@
             max-width: 85%;
             min-width: 280px;
             animation: scaleInToast 0.3s ease;
-            transition: all 0.3s ease;
         }
         .toast-big.show { display: block; }
         .toast-big.success { border-color: var(--accent-success); }
@@ -246,6 +251,7 @@
             to { opacity: 1; transform: translateY(-50%) scale(1); }
         }
         
+        /* ===== PRODUCT QUANTITY MODAL ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -362,6 +368,7 @@
             to { transform: scale(1); opacity: 1; }
         }
         
+        /* ===== ADMIN CONFIRM ===== */
         .admin-confirm-overlay {
             position: fixed;
             top: 0;
@@ -424,6 +431,7 @@
             border: 1px solid var(--border-color);
         }
         
+        /* ===== POP CART ===== */
         .pop-cart-overlay {
             position: fixed;
             top: 0;
@@ -534,12 +542,14 @@
             padding: 24px 0;
             font-size: 13px;
         }
+        /* Popup Cart Voucher Row */
         #popCartVoucherRow {
             margin-top: 12px;
             padding-top: 12px;
             border-top: 2px solid var(--accent-gold);
         }
         
+        /* ===== INLINE CART ===== */
         .inline-cart-preview-row {
             display: flex;
             align-items: center;
@@ -599,6 +609,7 @@
             text-align: center;
         }
         
+        /* ===== SEARCH ===== */
         .search-card-box h6 {
             font-size: 13px !important;
             margin-bottom: 6px !important;
@@ -694,6 +705,7 @@
         }
         .search-item .item-actions .confirm-btn-sm:active { transform: scale(0.9); }
         
+        /* ===== STOCK BADGE ===== */
         .stock-badge {
             font-size: 10px;
             padding: 2px 10px;
@@ -708,6 +720,7 @@
         [data-theme=dark] .stock-badge.low-stock { background: #78350f; color: #fcd34d; }
         [data-theme=dark] .stock-badge.out-of-stock { background: #7f1d1d; color: #fca5a5; }
         
+        /* ===== CART ===== */
         .cart-tab-container {
             display: flex;
             gap: 4px;
@@ -788,6 +801,7 @@
             color: var(--accent-gold) !important;
         }
         
+        /* ===== SCANNER ===== */
         .scanner-popup-toggle {
             position: fixed;
             bottom: 100px;
@@ -843,7 +857,6 @@
             padding-top: 10px;
             animation: fadeIn 0.3s ease;
             overflow-y: auto;
-            transition: all 0.3s ease;
         }
         .scanner-full-mode.active { display: flex; }
         .scanner-full-mode .scanner-box {
@@ -942,7 +955,6 @@
             overflow-y: auto;
             display: none;
             box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
         .scanned-preview.active { display: block; }
         .scanned-preview .preview-item {
@@ -975,6 +987,7 @@
             to { opacity: 1; transform: scale(1); }
         }
         
+        /* ===== HISTORY ===== */
         .history-item-row {
             display: flex;
             justify-content: space-between;
@@ -1000,27 +1013,7 @@
         }
         .admin-only-feature { display: none; }
         
-        body.special-mode .scanner-popup-toggle {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .toast-big {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .scanner-full-mode {
-            justify-content: flex-end !important;
-            align-items: flex-end !important;
-        }
-        body.special-mode .scanner-full-mode .scanner-close-btn {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .scanned-preview {
-            left: auto !important;
-            right: 0 !important;
-        }
-        
+        /* ===== RESPONSIVE ===== */
         @media (max-width:600px) {
             .scanner-popup-toggle {
                 width: 54px;
@@ -1030,20 +1023,12 @@
                 left: 12px;
                 right: auto;
             }
-            body.special-mode .scanner-popup-toggle {
-                left: auto !important;
-                right: 12px !important;
-            }
             .scanner-full-mode .scanner-close-btn {
                 bottom: 70px;
                 left: 15px;
                 width: 40px;
                 height: 40px;
                 font-size: 18px;
-            }
-            body.special-mode .scanner-full-mode .scanner-close-btn {
-                left: auto !important;
-                right: 15px !important;
             }
             .scanner-full-mode .scanner-box {
                 padding: 10px;
@@ -1057,10 +1042,6 @@
                 min-width: 250px;
                 padding: 14px 18px;
                 left: 10px;
-            }
-            body.special-mode .toast-big {
-                left: auto !important;
-                right: 10px !important;
             }
             .toast-big .toast-actions button { font-size: 13px; padding: 6px 12px; }
             .toast-big .toast-actions select {
@@ -1095,6 +1076,7 @@
 </head>
 <body>
 
+<!-- ===== BROWSER BLOCK (Overlay) ===== -->
 <script>
 (function() {
     var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'app:';
@@ -1102,15 +1084,18 @@
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     if (isAndroid && isChrome) {
+        // Overlay အနေနဲ့ ထည့်မယ် (body ကို မဖျက်ဘူး)
         var overlay = document.createElement('div');
         overlay.id = 'browser-block-overlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#f1f5f9;z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;padding:20px;';
         overlay.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);text-align:center;"><div style="font-size:64px;margin-bottom:16px;">📱</div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">📲 အက်ပ်ထည့်သွင်းမည်</button></div>';
         document.body.appendChild(overlay);
+        // Lock Screen နဲ့ Main Content ကို ဖျောက်မယ် (ဒါပေမယ့် မဖျက်ဘူး)
         var lockScreen = document.getElementById('app-lock-screen');
         if (lockScreen) lockScreen.style.display = 'none';
         var mainContent = document.getElementById('app-main-content');
         if (mainContent) mainContent.style.display = 'none';
+        // Scanner Pop-up မပေါ်အောင် Scanner ကို ပိတ်မယ်
         var scannerToggle = document.getElementById('scannerToggleBtn');
         if (scannerToggle) scannerToggle.style.display = 'none';
         var scannerFullMode = document.getElementById('scannerFullMode');
@@ -1125,10 +1110,13 @@ function installApp() {
         if (window.deferredPrompt.userChoice) {
             window.deferredPrompt.userChoice.then(function(choiceResult) {
                 if (choiceResult.outcome === 'accepted') {
+                    // Install လုပ်ပြီးရင် Overlay ဖျက်
                     var overlay = document.getElementById('browser-block-overlay');
                     if (overlay) overlay.remove();
+                    // Lock Screen ပြန်ပြမယ်
                     var lockScreen = document.getElementById('app-lock-screen');
                     if (lockScreen) lockScreen.style.display = 'flex';
+                    // Scanner ပြန်ပြမယ်
                     var scannerToggle = document.getElementById('scannerToggleBtn');
                     if (scannerToggle) scannerToggle.style.display = 'flex';
                 }
@@ -1144,6 +1132,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
 });
 </script>
 
+<!-- ===== ADMIN CONFIRM OVERLAY ===== -->
 <div class="admin-confirm-overlay" id="adminConfirmOverlay">
     <div class="admin-confirm-box">
         <div style="font-size:48px;margin-bottom:8px;">📦</div>
@@ -1156,23 +1145,27 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 </div>
 
+<!-- ===== TOAST ===== -->
 <div id="toastBig" class="toast-big">
     <div id="toastBigMsg">✅ ပစ္စည်းထည့်ပြီးပါပြီ</div>
     <div id="toastBigSub" class="toast-sub">လက်ကျန် ၅၀ ခု ကျန်ပါသည်</div>
     <div id="toastBigActions" class="toast-actions" style="display:none;"></div>
 </div>
 
+<!-- ===== PRODUCT QUANTITY MODAL ===== -->
 <div class="modal-overlay" id="productQtyModal">
     <div class="modal-box">
         <div class="modal-title">ပစ္စည်းရွေးချယ်ခြင်း</div>
         <div class="modal-product-name" id="modal-product-name">ကော်ဖီ</div>
         <div class="modal-product-price" id="modal-product-price">1,500 Ks</div>
         <div class="modal-product-stock" id="modal-product-stock">လက်ကျန်: 50 ခု</div>
+        
         <div class="modal-qty-controls">
             <button class="qty-btn" onclick="modalQtyChange(-1)">−</button>
             <span class="qty-display" id="modal-qty-display">1</span>
             <button class="qty-btn" onclick="modalQtyChange(1)">+</button>
         </div>
+        
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeQtyModal()">✕ မထည့်တော့</button>
             <button class="btn-confirm-qty" onclick="confirmQtyModal()">✅ အတည်ပြုထည့်မည်</button>
@@ -1180,6 +1173,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 </div>
 
+<!-- ===== POP CART ===== -->
 <div class="pop-cart-overlay" id="popCartOverlay" onclick="closePopCart(event)">
     <div class="pop-cart-sheet" id="popCartSheet" onclick="event.stopPropagation()">
         <div class="pop-cart-header">
@@ -1191,16 +1185,21 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <span class="pop-total-label">စုစုပေါင်း</span>
             <span class="pop-total-value" id="popCartTotalValue">Ks - 0</span>
         </div>
+        <!-- Popup Cart Voucher Button -->
         <div id="popCartVoucherRow" style="display:none;">
-            <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">🧾 Voucher ထုတ်မည် ➡️</button>
+            <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">
+                🧾 Voucher ထုတ်မည် ➡️
+            </button>
         </div>
     </div>
 </div>
 
+<!-- ===== SCANNER TOGGLE ===== -->
 <button class="scanner-popup-toggle" id="scannerToggleBtn" onclick="toggleFullScanner()">
     📷 <span class="badge-scan" id="scanBadge">●</span>
 </button>
 
+<!-- ===== SCANNER FULL MODE ===== -->
 <div class="scanner-full-mode" id="scannerFullMode">
     <button class="scanner-close-btn" onclick="closeFullScanner()">✕</button>
     <div class="scanner-box">
@@ -1234,11 +1233,13 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 </div>
 
+<!-- ===== SCANNED PREVIEW ===== -->
 <div class="scanned-preview" id="scannedPreview">
     <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">📦 စကန်ဖတ်မိသော ပစ္စည်းများ</div>
     <div id="scannedPreviewList"></div>
 </div>
 
+<!-- ===== LOCK SCREEN ===== -->
 <div id="app-lock-screen">
     <div class="lock-card text-center">
         <div class="mb-3"><span style="font-size:44px;">✨</span></div>
@@ -1250,8 +1251,10 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 </div>
 
+<!-- ===== PRINT ZONE ===== -->
 <div id="print-receipt-zone"></div>
 
+<!-- ===== MAIN APP ===== -->
 <div id="app-main-content">
     <nav class="navbar premium-nav sticky-top px-3 py-3 shadow-sm">
         <div class="container-fluid d-flex justify-content-between align-items-center">
@@ -1275,23 +1278,31 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 
     <div class="container mt-4 pb-5">
+        <!-- ===== SALES TAB ===== -->
         <div id="sales" class="tab-content active">
+            <!-- INLINE CART WITH DISCOUNT, PAYMENT & VOUCHER -->
             <div class="inline-cart-preview-row">
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn" style="flex:2;min-width:120px;">
                     <span class="inline-cart-icon">🛒</span>
                     <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
                     <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
+                <!-- Discount Input -->
                 <input type="text" id="inline-discount-input" class="form-control form-control-sm inline-cart-input" placeholder="Disc" oninput="syncDiscountToMain()">
+                <!-- Payment Dropdown -->
                 <select id="inline-payment-mode" class="form-control form-control-sm inline-cart-select" onchange="syncPaymentToMain()">
                     <option value="Cash">💵</option>
                     <option value="KPay">📱</option>
                     <option value="Wave">🌊</option>
                 </select>
-                <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">🧾</button>
+                <!-- Voucher Button -->
+                <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">
+                    🧾
+                </button>
             </div>
             
             <div class="sales-grid-layout">
+                <!-- SEARCH -->
                 <div class="custom-card search-container-box search-card-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
@@ -1303,6 +1314,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <div id="search-suggestions" class="search-results"></div>
                 </div>
 
+                <!-- CART -->
                 <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
                         <h6 class="fw-bold mb-0">🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
@@ -1355,6 +1367,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
             </div>
         </div>
 
+        <!-- ===== HISTORY TAB ===== -->
         <div id="history" class="tab-content">
             <div class="custom-card d-flex flex-column gap-3">
                 <form action="javascript:void(0);" onsubmit="dismissKeyboard(this)">
@@ -1365,7 +1378,8 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <div id="history-list"><div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div></div>
         </div>
 
-        <div id="dashboard" class="tab-content admin-only-feature">
+        <!-- ===== DASHBOARD TAB ===== -->
+        <div id="dashboard" class="tab-content">
             <div class="custom-card">
                 <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6>
                 <div class="row g-2">
@@ -1414,7 +1428,8 @@ window.addEventListener('beforeinstallprompt', function(e) {
             </div>
         </div>
 
-        <div id="admin" class="tab-content admin-only-feature">
+        <!-- ===== ADMIN TAB ===== -->
+        <div id="admin" class="tab-content">
             <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
@@ -1451,28 +1466,17 @@ window.addEventListener('beforeinstallprompt', function(e) {
             </div>
         </div>
 
-        <div id="password" class="tab-content admin-only-feature">
+        <!-- ===== PASSWORD TAB ===== -->
+        <div id="password" class="tab-content">
             <div class="custom-card" style="border-top:4px solid #6366f1!important;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold mb-0" style="color:#6366f1;">🔐 Password စီမံခန့်ခွဲရန်</h6>
                     <span class="badge rounded-pill bg-light text-dark border" style="font-size:10px;">Admin Only</span>
                 </div>
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">👑 Admin Password</label>
-                        <input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်">
-                    </div>
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">👤 Staff Password</label>
-                        <input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်">
-                    </div>
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">⭐ Special Password</label>
-                        <input type="text" id="new-special-password" class="form-control" placeholder="Special အသစ်">
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button>
-                    </div>
+                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin Password</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div>
+                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff Password</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div>
+                    <div class="col-md-2 col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div>
                 </div>
             </div>
             <div class="custom-card">
@@ -1489,12 +1493,17 @@ window.addEventListener('beforeinstallprompt', function(e) {
 </div>
 
 <script>
+// =====================================================================
+// SUPABASE CONFIG
+// =====================================================================
 var SUPABASE_URL = 'https://mqkvfcjhwhurdakozote.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
 var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-var adminPassword = '', staffPassword = '', specialPassword = '';
-var passwordsLoaded = false;
+// =====================================================================
+// GLOBAL VARIABLES
+// =====================================================================
+var adminPassword = '', homePassword = '', passwordsLoaded = false;
 var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
@@ -1509,6 +1518,9 @@ var lastScannedTime = 0;
 var modalProduct = null;
 var modalQty = 1;
 
+// =====================================================================
+// HELPER FUNCTIONS
+// =====================================================================
 function getStockNumber(p) {
     if (!p) return 0;
     var v = p.stock;
@@ -1548,17 +1560,9 @@ function dismissKeyboard() {
     if (document.activeElement) document.activeElement.blur();
 }
 
-function setUIPosition(position) {
-    var body = document.body;
-    if (position === 'right') {
-        body.classList.add('special-mode');
-        body.classList.remove('default-mode');
-    } else {
-        body.classList.remove('special-mode');
-        body.classList.add('default-mode');
-    }
-}
-
+// =====================================================================
+// SYNC FUNCTIONS FOR INLINE CART
+// =====================================================================
 function syncDiscountToMain() {
     var val = document.getElementById('inline-discount-input').value;
     document.getElementById('cart-discount-input').value = val;
@@ -1576,6 +1580,9 @@ function syncPaymentToInline() {
     if (inlinePay) inlinePay.value = val;
 }
 
+// =====================================================================
+// TOAST FUNCTIONS
+// =====================================================================
 function showBigToast(m, s, t, sa, p) {
     t = t || 'success';
     var el = document.getElementById('toastBig');
@@ -1649,6 +1656,9 @@ function toastQtyConfirm() {
     showBigToast('✅ ' + toastProduct.name + ' ×' + q + ' ထည့်ပြီး', '', 'success', false);
 }
 
+// =====================================================================
+// MODAL FUNCTIONS
+// =====================================================================
 function openQtyModal(product) {
     modalProduct = product;
     modalQty = 1;
@@ -1729,6 +1739,9 @@ function confirmQtyModal() {
     showBigToast('✅ ' + modalProduct.name + ' ×' + modalQty + ' ထည့်ပြီး', '', 'success', false);
 }
 
+// =====================================================================
+// CHECKOUT FROM INLINE / POP CART
+// =====================================================================
 function checkoutFromInline() {
     var cart = carts[activeCartIndex];
     if (!cart.length) {
@@ -1750,6 +1763,9 @@ function checkoutFromPopCart() {
     }, 300);
 }
 
+// =====================================================================
+// SEARCH FUNCTIONS
+// =====================================================================
 function filterProductNames() {
     var inp = document.getElementById('name-search-input').value.toLowerCase().trim();
     var box = document.getElementById('search-suggestions');
@@ -1998,6 +2014,9 @@ function confirmFromSearch(barcode, product) {
     document.getElementById('close-search-btn').style.display = 'none';
 }
 
+// =====================================================================
+// CART FUNCTIONS
+// =====================================================================
 function switchCartTab(idx) {
     activeCartIndex = idx;
     document.querySelectorAll('.cart-tab-btn').forEach(function(b, i) {
@@ -2038,6 +2057,7 @@ function renderCart() {
     updateInlineCartPreview();
     updateScannerTotal();
     
+    // Sync inline discount with main
     var mainDiscount = document.getElementById('cart-discount-input').value;
     var inlineDiscount = document.getElementById('inline-discount-input');
     if (inlineDiscount && inlineDiscount.value !== mainDiscount) {
@@ -2105,6 +2125,9 @@ function updateCartBadges() {
     }
 }
 
+// =====================================================================
+// POP CART FUNCTIONS
+// =====================================================================
 function openPopCart() {
     updatePopCartContent();
     var overlay = document.getElementById('popCartOverlay');
@@ -2165,6 +2188,9 @@ function updateInlineCartPreview() {
     }
 }
 
+// =====================================================================
+// SCANNER FUNCTIONS
+// =====================================================================
 function updateScannerTotal() {
     var scTotal = document.getElementById('scanner-cart-total');
     var scCount = document.getElementById('scanner-cart-count');
@@ -2196,6 +2222,9 @@ function updateScannedPreview() {
     c.innerHTML = h;
 }
 
+// =====================================================================
+// CHECKOUT
+// =====================================================================
 function checkout() {
     var cart = carts[activeCartIndex];
     if (!cart.length) {
@@ -2252,6 +2281,9 @@ function scannerCheckout() {
     }, 300);
 }
 
+// =====================================================================
+// PRINT VOUCHER
+// =====================================================================
 function printVoucher(sale) {
     if (typeof sale === 'string') {
         var found = null;
@@ -2319,6 +2351,9 @@ function printVoucher(sale) {
     }, 800);
 }
 
+// =====================================================================
+// HISTORY
+// =====================================================================
 function displayHistory(data) {
     var list = document.getElementById('history-list'), role = localStorage.getItem('currentUserRole') || 'user';
     if (!data || !data.length) {
@@ -2338,7 +2373,7 @@ function displayHistory(data) {
         }
         var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0';
         if (typeof total === 'number') total = String(total);
-        var db = (role === 'admin' || role === 'special') ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : '';
+        var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : '';
         list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + (Number(total.replace(/,/g, '')) || 0).toLocaleString() + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>';
     });
 }
@@ -2383,6 +2418,9 @@ function clearAllSalesHistoryOnline(btn) {
     });
 }
 
+// =====================================================================
+// ADMIN PRODUCT FUNCTIONS
+// =====================================================================
 function addNewProduct() {
     var name = document.getElementById('new-name').value.trim(), price = document.getElementById('new-price').value.trim();
     if (!name || !price) {
@@ -2511,6 +2549,9 @@ function filterAdminProductNames() {
     box.style.display = 'block';
 }
 
+// =====================================================================
+// DASHBOARD
+// =====================================================================
 function calculateTodaySales() {
     var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y;
     document.getElementById('today-date-string').innerText = fs ? fs : "ယနေ့ထိ";
@@ -2649,6 +2690,9 @@ function updateSalesChartLogic() {
     } catch(e) {}
 }
 
+// =====================================================================
+// SCANNER FULL MODE
+// =====================================================================
 function toggleFullScanner() {
     var m = document.getElementById('scannerFullMode');
     if (m.classList.contains('active')) {
@@ -2952,6 +2996,9 @@ function resetFlashlight() {
     }
 }
 
+// =====================================================================
+// THEME / TAB / PASSWORD / LOCK
+// =====================================================================
 function toggleTheme() {
     var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', n);
@@ -2962,7 +3009,7 @@ function toggleTheme() {
 
 function switchTab(id) {
     var r = localStorage.getItem('currentUserRole') || 'user';
-    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin' && r !== 'special') {
+    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') {
         showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false);
         return;
     }
@@ -2986,8 +3033,7 @@ function loadPasswordsFromSupabase(callback) {
         .then(function(response) {
             if (response.data) {
                 adminPassword = response.data.admin_password || '';
-                staffPassword = response.data.staff_password || '';
-                specialPassword = response.data.special_password || '';
+                homePassword = response.data.staff_password || '';
                 passwordsLoaded = true;
                 lastKnownUpdate = response.data.updated_at || '';
             } else {
@@ -3005,27 +3051,21 @@ function loadPasswordsFromSupabase(callback) {
 function updatePasswords() {
     var newAdmin = document.getElementById('new-admin-password').value.trim();
     var newStaff = document.getElementById('new-staff-password').value.trim();
-    var newSpecial = document.getElementById('new-special-password').value.trim();
-    
-    if (!newAdmin && !newStaff && !newSpecial) {
+    if (!newAdmin && !newStaff) {
         showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false);
         return;
     }
     var updateData = { updated_at: new Date().toISOString() };
     if (newAdmin) updateData.admin_password = newAdmin;
     if (newStaff) updateData.staff_password = newStaff;
-    if (newSpecial) updateData.special_password = newSpecial;
-    
     supabase.from('settings').update(updateData).eq('id', 1)
         .then(function(response) {
             if (!response.error) {
                 if (newAdmin) adminPassword = newAdmin;
-                if (newStaff) staffPassword = newStaff;
-                if (newSpecial) specialPassword = newSpecial;
+                if (newStaff) homePassword = newStaff;
                 showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = '';
                 document.getElementById('new-staff-password').value = '';
-                document.getElementById('new-special-password').value = '';
                 setTimeout(function() {
                     sessionStorage.removeItem('isAppUnlocked');
                     localStorage.removeItem('currentUserRole');
@@ -3047,26 +3087,9 @@ function checkUniversalLogin() {
         return;
     }
     var i = document.getElementById('home-pass-input').value.trim();
-    
-    if (i === adminPassword) {
+    if (i === adminPassword || i === homePassword) {
         sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'admin');
-        document.getElementById('app-lock-screen').style.display = 'none';
-        document.getElementById('app-main-content').style.display = 'block';
-        document.getElementById('lock-error').style.display = 'none';
-        setupRolePrivilegesUi();
-        initAudio();
-    } else if (i === specialPassword) {
-        sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'special');
-        document.getElementById('app-lock-screen').style.display = 'none';
-        document.getElementById('app-main-content').style.display = 'block';
-        document.getElementById('lock-error').style.display = 'none';
-        setupRolePrivilegesUi();
-        initAudio();
-    } else if (i === staffPassword) {
-        sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'user');
+        localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user');
         document.getElementById('app-lock-screen').style.display = 'none';
         document.getElementById('app-main-content').style.display = 'block';
         document.getElementById('lock-error').style.display = 'none';
@@ -3079,31 +3102,17 @@ function checkUniversalLogin() {
 }
 
 function setupRolePrivilegesUi() {
-    var r = localStorage.getItem('currentUserRole') || 'user';
-    var b = document.getElementById('role-badge');
-    
+    var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge');
     if (r === 'admin') {
-        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#ef4444"; }
+        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'block';
         });
-        setUIPosition('left');
-        switchTab('sales');
-        
-    } else if (r === 'special') {
-        if (b) { b.innerText = "⭐ Special"; b.style.display = "inline-block"; b.style.background = "#8b5cf6"; }
-        document.querySelectorAll('.admin-only-feature').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        setUIPosition('right');
-        switchTab('sales');
-        
     } else {
-        if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; b.style.background = "#6b7280"; }
+        if (b) { b.innerText = ""; b.style.display = "none"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'none';
         });
-        setUIPosition('left');
         switchTab('sales');
     }
 }
@@ -3121,6 +3130,9 @@ function initAudio() {
     } catch(e) {}
 }
 
+// =====================================================================
+// LOAD DATA
+// =====================================================================
 function loadProductsFromSheet() {
     supabase.from('Products').select('*')
         .then(function(r) {
@@ -3165,6 +3177,9 @@ function loadSalesHistoryFromSheet() {
         });
 }
 
+// =====================================================================
+// WINDOW ONLOAD
+// =====================================================================
 window.onload = function() {
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
