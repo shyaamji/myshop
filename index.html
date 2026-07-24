@@ -195,7 +195,6 @@
             max-width: 85%;
             min-width: 280px;
             animation: scaleInToast 0.3s ease;
-            transition: all 0.3s ease;
         }
         .toast-big.show { display: block; }
         .toast-big.success { border-color: var(--accent-success); }
@@ -858,7 +857,6 @@
             padding-top: 10px;
             animation: fadeIn 0.3s ease;
             overflow-y: auto;
-            transition: all 0.3s ease;
         }
         .scanner-full-mode.active { display: flex; }
         .scanner-full-mode .scanner-box {
@@ -957,7 +955,6 @@
             overflow-y: auto;
             display: none;
             box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
         }
         .scanned-preview.active { display: block; }
         .scanned-preview .preview-item {
@@ -1015,29 +1012,6 @@
             font-weight: 600;
         }
         .admin-only-feature { display: none; }
-        .special-only-feature { display: none; }
-        
-        /* ===== SPECIAL MODE - RIGHT SIDE ===== */
-        body.special-mode .scanner-popup-toggle {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .toast-big {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .scanner-full-mode {
-            justify-content: flex-end !important;
-            align-items: flex-end !important;
-        }
-        body.special-mode .scanner-full-mode .scanner-close-btn {
-            left: auto !important;
-            right: 20px !important;
-        }
-        body.special-mode .scanned-preview {
-            left: auto !important;
-            right: 0 !important;
-        }
         
         /* ===== RESPONSIVE ===== */
         @media (max-width:600px) {
@@ -1049,20 +1023,12 @@
                 left: 12px;
                 right: auto;
             }
-            body.special-mode .scanner-popup-toggle {
-                left: auto !important;
-                right: 12px !important;
-            }
             .scanner-full-mode .scanner-close-btn {
                 bottom: 70px;
                 left: 15px;
                 width: 40px;
                 height: 40px;
                 font-size: 18px;
-            }
-            body.special-mode .scanner-full-mode .scanner-close-btn {
-                left: auto !important;
-                right: 15px !important;
             }
             .scanner-full-mode .scanner-box {
                 padding: 10px;
@@ -1076,10 +1042,6 @@
                 min-width: 250px;
                 padding: 14px 18px;
                 left: 10px;
-            }
-            body.special-mode .toast-big {
-                left: auto !important;
-                right: 10px !important;
             }
             .toast-big .toast-actions button { font-size: 13px; padding: 6px 12px; }
             .toast-big .toast-actions select {
@@ -1122,15 +1084,18 @@
     var isAndroid = /android/i.test(navigator.userAgent);
     var isChrome = /chrome/i.test(navigator.userAgent) && !/edge/i.test(navigator.userAgent);
     if (isAndroid && isChrome) {
+        // Overlay အနေနဲ့ ထည့်မယ် (body ကို မဖျက်ဘူး)
         var overlay = document.createElement('div');
         overlay.id = 'browser-block-overlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#f1f5f9;z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;padding:20px;';
         overlay.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:40px 30px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1);border:1px solid rgba(15,23,42,0.08);text-align:center;"><div style="font-size:64px;margin-bottom:16px;">📱</div><h3 style="font-weight:700;color:#0f172a;margin-bottom:8px;">အက်ပ်ကို ထည့်သွင်းပါ</h3><p style="color:#64748b;font-size:14px;margin-bottom:24px;">ဤအက်ပ်ကို <b>Chrome Browser</b> မှ သုံး၍မရပါ။ ကျေးဇူးပြု၍ <b>Install App</b> လုပ်ပြီးမှ သုံးပါ။</p><button onclick="installApp()" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:14px;padding:14px 28px;font-weight:700;font-size:16px;cursor:pointer;width:100%;transition:all 0.2s;">📲 အက်ပ်ထည့်သွင်းမည်</button></div>';
         document.body.appendChild(overlay);
+        // Lock Screen နဲ့ Main Content ကို ဖျောက်မယ် (ဒါပေမယ့် မဖျက်ဘူး)
         var lockScreen = document.getElementById('app-lock-screen');
         if (lockScreen) lockScreen.style.display = 'none';
         var mainContent = document.getElementById('app-main-content');
         if (mainContent) mainContent.style.display = 'none';
+        // Scanner Pop-up မပေါ်အောင် Scanner ကို ပိတ်မယ်
         var scannerToggle = document.getElementById('scannerToggleBtn');
         if (scannerToggle) scannerToggle.style.display = 'none';
         var scannerFullMode = document.getElementById('scannerFullMode');
@@ -1145,10 +1110,13 @@ function installApp() {
         if (window.deferredPrompt.userChoice) {
             window.deferredPrompt.userChoice.then(function(choiceResult) {
                 if (choiceResult.outcome === 'accepted') {
+                    // Install လုပ်ပြီးရင် Overlay ဖျက်
                     var overlay = document.getElementById('browser-block-overlay');
                     if (overlay) overlay.remove();
+                    // Lock Screen ပြန်ပြမယ်
                     var lockScreen = document.getElementById('app-lock-screen');
                     if (lockScreen) lockScreen.style.display = 'flex';
+                    // Scanner ပြန်ပြမယ်
                     var scannerToggle = document.getElementById('scannerToggleBtn');
                     if (scannerToggle) scannerToggle.style.display = 'flex';
                 }
@@ -1217,6 +1185,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <span class="pop-total-label">စုစုပေါင်း</span>
             <span class="pop-total-value" id="popCartTotalValue">Ks - 0</span>
         </div>
+        <!-- Popup Cart Voucher Button -->
         <div id="popCartVoucherRow" style="display:none;">
             <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">
                 🧾 Voucher ထုတ်မည် ➡️
@@ -1303,7 +1272,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
             <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
-            <button id="btn-special" class="btn special-only-feature" onclick="switchTab('special')">⭐ Special</button>
             <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
@@ -1312,22 +1280,29 @@ window.addEventListener('beforeinstallprompt', function(e) {
     <div class="container mt-4 pb-5">
         <!-- ===== SALES TAB ===== -->
         <div id="sales" class="tab-content active">
+            <!-- INLINE CART WITH DISCOUNT, PAYMENT & VOUCHER -->
             <div class="inline-cart-preview-row">
                 <div class="inline-cart-btn" onclick="openPopCart()" id="inlineCartBtn" style="flex:2;min-width:120px;">
                     <span class="inline-cart-icon">🛒</span>
                     <span class="inline-cart-text" id="inlineCartText">ပစ္စည်းမရှိသေးပါ</span>
                     <span class="inline-cart-total" id="inlineCartTotal">Ks - 0</span>
                 </div>
+                <!-- Discount Input -->
                 <input type="text" id="inline-discount-input" class="form-control form-control-sm inline-cart-input" placeholder="Disc" oninput="syncDiscountToMain()">
+                <!-- Payment Dropdown -->
                 <select id="inline-payment-mode" class="form-control form-control-sm inline-cart-select" onchange="syncPaymentToMain()">
                     <option value="Cash">💵</option>
                     <option value="KPay">📱</option>
                     <option value="Wave">🌊</option>
                 </select>
-                <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">🧾</button>
+                <!-- Voucher Button -->
+                <button class="btn btn-premium-gold btn-premium-gold-sm fw-bold" onclick="checkoutFromInline()">
+                    🧾
+                </button>
             </div>
             
             <div class="sales-grid-layout">
+                <!-- SEARCH -->
                 <div class="custom-card search-container-box search-card-box" id="main-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
@@ -1339,6 +1314,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <div id="search-suggestions" class="search-results"></div>
                 </div>
 
+                <!-- CART -->
                 <div class="custom-card p-0 overflow-hidden border-0 cart-card-box" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
                     <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
                         <h6 class="fw-bold mb-0">🛒 ဝယ်ယူနေသော ပစ္စည်းစာရင်း</h6>
@@ -1403,7 +1379,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
         </div>
 
         <!-- ===== DASHBOARD TAB ===== -->
-        <div id="dashboard" class="tab-content admin-only-feature">
+        <div id="dashboard" class="tab-content">
             <div class="custom-card">
                 <h6 class="fw-bold text-secondary mb-2">📅 ရက်စွဲအလိုက် စစ်ထုတ်ခြင်း</h6>
                 <div class="row g-2">
@@ -1453,7 +1429,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
         </div>
 
         <!-- ===== ADMIN TAB ===== -->
-        <div id="admin" class="tab-content admin-only-feature">
+        <div id="admin" class="tab-content">
             <div class="custom-card" style="border-top:4px solid var(--accent-success)!important;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h6 class="fw-bold text-success mb-0">➕ ပစ္စည်းအသစ် ထည့်သွင်းရန်</h6>
@@ -1491,28 +1467,16 @@ window.addEventListener('beforeinstallprompt', function(e) {
         </div>
 
         <!-- ===== PASSWORD TAB ===== -->
-        <div id="password" class="tab-content admin-only-feature">
+        <div id="password" class="tab-content">
             <div class="custom-card" style="border-top:4px solid #6366f1!important;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-bold mb-0" style="color:#6366f1;">🔐 Password စီမံခန့်ခွဲရန်</h6>
                     <span class="badge rounded-pill bg-light text-dark border" style="font-size:10px;">Admin Only</span>
                 </div>
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">👑 Admin Password</label>
-                        <input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်">
-                    </div>
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">👤 Staff Password</label>
-                        <input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်">
-                    </div>
-                    <div class="col-md-4 col-6">
-                        <label class="text-secondary small fw-bold mb-1">⭐ Special Password</label>
-                        <input type="text" id="new-special-password" class="form-control" placeholder="Special အသစ်">
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button>
-                    </div>
+                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin Password</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div>
+                    <div class="col-md-5 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff Password</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div>
+                    <div class="col-md-2 col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div>
                 </div>
             </div>
             <div class="custom-card">
@@ -1523,28 +1487,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <li class="mb-2">Admin Password မေ့သွားပါက Supabase Dashboard မှတဆင့် ပြန်လည်ပြင်ဆင်နိုင်ပါသည်။</li>
                     <li>Password နှစ်ခုလုံး မတူညီစေရန် သတ်မှတ်ပေးပါ။</li>
                 </ul>
-            </div>
-        </div>
-
-        <!-- ===== SPECIAL TAB ===== -->
-        <div id="special" class="tab-content special-only-feature">
-            <div class="custom-card" style="border-top:4px solid #8b5cf6!important;">
-                <h6 class="fw-bold mb-3" style="color:#8b5cf6;">⭐ Special Dashboard</h6>
-                <p class="text-muted small">ဒီနေရာမှာ Special အတွက် သီးသန့် အကြောင်းအရာတွေ ထည့်နိုင်ပါတယ်။</p>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="p-3 rounded-3" style="background:var(--bg-input);border:1px solid var(--border-color);">
-                            <small class="text-muted">စုစုပေါင်းရောင်းအား</small>
-                            <h4 class="fw-bold" style="color:#8b5cf6;" id="special-total-sales">0 Ks</h4>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 rounded-3" style="background:var(--bg-input);border:1px solid var(--border-color);">
-                            <small class="text-muted">ယနေ့အရောင်း</small>
-                            <h4 class="fw-bold" style="color:#8b5cf6;" id="special-today-sales">0 Ks</h4>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1561,8 +1503,7 @@ var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // =====================================================================
 // GLOBAL VARIABLES
 // =====================================================================
-var adminPassword = '', staffPassword = '', specialPassword = '';
-var passwordsLoaded = false;
+var adminPassword = '', homePassword = '', passwordsLoaded = false;
 var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
@@ -1617,20 +1558,6 @@ function playBeep() {
 
 function dismissKeyboard() {
     if (document.activeElement) document.activeElement.blur();
-}
-
-// =====================================================================
-// UI POSITION - SPECIAL MODE (RIGHT SIDE)
-// =====================================================================
-function setUIPosition(position) {
-    var body = document.body;
-    if (position === 'right') {
-        body.classList.add('special-mode');
-        body.classList.remove('default-mode');
-    } else {
-        body.classList.remove('special-mode');
-        body.classList.add('default-mode');
-    }
 }
 
 // =====================================================================
@@ -2130,6 +2057,7 @@ function renderCart() {
     updateInlineCartPreview();
     updateScannerTotal();
     
+    // Sync inline discount with main
     var mainDiscount = document.getElementById('cart-discount-input').value;
     var inlineDiscount = document.getElementById('inline-discount-input');
     if (inlineDiscount && inlineDiscount.value !== mainDiscount) {
@@ -2445,7 +2373,7 @@ function displayHistory(data) {
         }
         var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0';
         if (typeof total === 'number') total = String(total);
-        var db = role === 'admin' || role === 'special' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : '';
+        var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : '';
         list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted font-monospace">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><div class="small mb-2 text-danger">Discount: <b>' + disc + '</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">' + (Number(total.replace(/,/g, '')) || 0).toLocaleString() + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>';
     });
 }
@@ -2670,23 +2598,6 @@ function calculateTodaySales() {
     document.getElementById('today-sales-summary').innerText = ts.toLocaleString() + " Ks";
     document.getElementById('payment-split-summary').innerHTML = '💵 Cash: ' + cs.toLocaleString() + ' | 📱 KPay: ' + ks.toLocaleString() + ' | 🌊 Wave: ' + ws.toLocaleString();
     document.getElementById('today-profit-summary').innerText = tp.toLocaleString() + " Ks";
-    
-    // Update Special Dashboard
-    var specialTotal = document.getElementById('special-total-sales');
-    if (specialTotal) specialTotal.innerText = ts.toLocaleString() + ' Ks';
-    var specialToday = document.getElementById('special-today-sales');
-    if (specialToday) {
-        var todayTotal = 0;
-        var todayStr = now.toLocaleDateString();
-        salesHistory.forEach(function(sale) {
-            var dt = sale.date || '';
-            if (dt && dt.includes(todayStr)) {
-                var total = sale.total_amount || '0';
-                todayTotal += Number(total.toString().replace(/,/g, '')) || 0;
-            }
-        });
-        specialToday.innerText = todayTotal.toLocaleString() + ' Ks';
-    }
 }
 
 function updateSalesChartLogic() {
@@ -3098,12 +3009,8 @@ function toggleTheme() {
 
 function switchTab(id) {
     var r = localStorage.getItem('currentUserRole') || 'user';
-    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin' && r !== 'special') {
+    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') {
         showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false);
-        return;
-    }
-    if (id === 'special' && r !== 'special') {
-        showBigToast('🔒 Special လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false);
         return;
     }
     document.querySelectorAll('.tab-content').forEach(function(el) {
@@ -3119,9 +3026,6 @@ function switchTab(id) {
         calculateTodaySales();
         updateSalesChartLogic();
     }
-    if (id === 'special') {
-        calculateTodaySales();
-    }
 }
 
 function loadPasswordsFromSupabase(callback) {
@@ -3129,8 +3033,7 @@ function loadPasswordsFromSupabase(callback) {
         .then(function(response) {
             if (response.data) {
                 adminPassword = response.data.admin_password || '';
-                staffPassword = response.data.staff_password || '';
-                specialPassword = response.data.special_password || '';
+                homePassword = response.data.staff_password || '';
                 passwordsLoaded = true;
                 lastKnownUpdate = response.data.updated_at || '';
             } else {
@@ -3148,27 +3051,21 @@ function loadPasswordsFromSupabase(callback) {
 function updatePasswords() {
     var newAdmin = document.getElementById('new-admin-password').value.trim();
     var newStaff = document.getElementById('new-staff-password').value.trim();
-    var newSpecial = document.getElementById('new-special-password').value.trim();
-    
-    if (!newAdmin && !newStaff && !newSpecial) {
+    if (!newAdmin && !newStaff) {
         showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false);
         return;
     }
     var updateData = { updated_at: new Date().toISOString() };
     if (newAdmin) updateData.admin_password = newAdmin;
     if (newStaff) updateData.staff_password = newStaff;
-    if (newSpecial) updateData.special_password = newSpecial;
-    
     supabase.from('settings').update(updateData).eq('id', 1)
         .then(function(response) {
             if (!response.error) {
                 if (newAdmin) adminPassword = newAdmin;
-                if (newStaff) staffPassword = newStaff;
-                if (newSpecial) specialPassword = newSpecial;
+                if (newStaff) homePassword = newStaff;
                 showBigToast('✅ Password ပြောင်းပြီးပါပြီ', 'စနစ်အားလုံး log out ဖြစ်ပါမည်', 'success', false);
                 document.getElementById('new-admin-password').value = '';
                 document.getElementById('new-staff-password').value = '';
-                document.getElementById('new-special-password').value = '';
                 setTimeout(function() {
                     sessionStorage.removeItem('isAppUnlocked');
                     localStorage.removeItem('currentUserRole');
@@ -3190,26 +3087,9 @@ function checkUniversalLogin() {
         return;
     }
     var i = document.getElementById('home-pass-input').value.trim();
-    
-    if (i === adminPassword) {
+    if (i === adminPassword || i === homePassword) {
         sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'admin');
-        document.getElementById('app-lock-screen').style.display = 'none';
-        document.getElementById('app-main-content').style.display = 'block';
-        document.getElementById('lock-error').style.display = 'none';
-        setupRolePrivilegesUi();
-        initAudio();
-    } else if (i === specialPassword) {
-        sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'special');
-        document.getElementById('app-lock-screen').style.display = 'none';
-        document.getElementById('app-main-content').style.display = 'block';
-        document.getElementById('lock-error').style.display = 'none';
-        setupRolePrivilegesUi();
-        initAudio();
-    } else if (i === staffPassword) {
-        sessionStorage.setItem('isAppUnlocked', 'true');
-        localStorage.setItem('currentUserRole', 'user');
+        localStorage.setItem('currentUserRole', i === adminPassword ? 'admin' : 'user');
         document.getElementById('app-lock-screen').style.display = 'none';
         document.getElementById('app-main-content').style.display = 'block';
         document.getElementById('lock-error').style.display = 'none';
@@ -3222,40 +3102,17 @@ function checkUniversalLogin() {
 }
 
 function setupRolePrivilegesUi() {
-    var r = localStorage.getItem('currentUserRole') || 'user';
-    var b = document.getElementById('role-badge');
-    
+    var r = localStorage.getItem('currentUserRole') || 'user', b = document.getElementById('role-badge');
     if (r === 'admin') {
-        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#ef4444"; }
+        if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'block';
         });
-        document.querySelectorAll('.special-only-feature').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        setUIPosition('left');
-        switchTab('sales');
-        
-    } else if (r === 'special') {
-        if (b) { b.innerText = "⭐ Special"; b.style.display = "inline-block"; b.style.background = "#8b5cf6"; }
-        document.querySelectorAll('.admin-only-feature').forEach(function(el) {
-            el.style.display = 'block';
-        });
-        document.querySelectorAll('.special-only-feature').forEach(function(el) {
-            el.style.display = 'block';
-        });
-        setUIPosition('right');
-        switchTab('special');
-        
     } else {
-        if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; b.style.background = "#6b7280"; }
+        if (b) { b.innerText = ""; b.style.display = "none"; }
         document.querySelectorAll('.admin-only-feature').forEach(function(el) {
             el.style.display = 'none';
         });
-        document.querySelectorAll('.special-only-feature').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        setUIPosition('left');
         switchTab('sales');
     }
 }
