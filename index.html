@@ -2848,7 +2848,9 @@ function openFullScanner() {
         rd.innerHTML = '';
     }
     document.getElementById('scannerFullMode').classList.add('active');
+    document.getElementById('scannerFullMode').style.display = 'flex';
     document.getElementById('scannedPreview').classList.add('active');
+    document.getElementById('scannedPreview').style.display = 'block';
     isFullScannerActive = true;
     document.getElementById('scanBadge').style.display = 'none';
     isScanPaused = false;
@@ -2914,13 +2916,33 @@ function closeFullScanner() {
     isScanPaused = false;
     isScannerClosed = true;
     clearTimeout(scanPauseTimer);
-    document.getElementById('scannerFullMode').classList.remove('active');
-    document.getElementById('scannedPreview').classList.remove('active');
+    
+    // Force remove active class and hide scanner
+    var scannerMode = document.getElementById('scannerFullMode');
+    if (scannerMode) {
+        scannerMode.classList.remove('active');
+        scannerMode.style.display = 'none';
+    }
+    
+    var scannedPreview = document.getElementById('scannedPreview');
+    if (scannedPreview) {
+        scannedPreview.classList.remove('active');
+        scannedPreview.style.display = 'none';
+    }
+    
     isFullScannerActive = false;
-    document.getElementById('scanBadge').style.display = 'block';
+    
+    var scanBadge = document.getElementById('scanBadge');
+    if (scanBadge) {
+        scanBadge.style.display = 'block';
+    }
+    
     updateFullScannerStatus(false);
     resetFlashlight();
     updateScannerTotal();
+    
+    // Ensure body overflow is restored
+    document.body.style.overflow = '';
 }
 
 function toggleFullScannerScan() {
