@@ -2167,7 +2167,7 @@ function renderCart() {
         ti += item.qty;
         var opts = '';
         for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === item.qty ? ' selected' : '') + '>' + k + '</option>';
-        list.innerHTML += '<div class="cart-item d-flex justify-content-between align-items-center"><div style="flex:1;min-width:0;" class="pe-2"><h6 class="fw-bold mb-1 text-truncate" style="font-size:14px;">' + item.name + '</h6><small class="font-monospace small fw-bold" style="color:var(--accent-gold);">' + Number(item.price).toLocaleString() + ' Ks</small></div><div class="d-flex align-items-center gap-2"><div class="d-flex align-items-center bg-body-secondary rounded-3 p-1" style="border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',-1)">-</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:16px;" onclick="changeQty(' + i + ',1)">+</button></div><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')">❌</button></div></div>';
+        list.innerHTML += '<div class="cart-item" style="padding:8px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:700;font-size:14px;flex:1;min-width:0;padding-right:8px;">' + item.name + '</span><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')" style="flex-shrink:0;">❌</button></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><div style="display:flex;align-items:center;background:var(--bg-card);border-radius:8px;padding:2px;border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',-1)">−</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',1)">+</button></div><div style="display:flex;align-items:center;gap:3px;"><span style="font-size:10px;color:var(--text-muted);">ဈေး:</span><input type="number" value="' + item.price + '" onchange="changeCartItemPrice(' + i + ', this.value)" onfocus="this.select()" style="width:65px;padding:3px 4px;font-size:11px;text-align:center;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-main);"></div><span style="font-weight:700;font-size:12px;color:var(--accent-gold);white-space:nowrap;">= ' + Number(item.price * item.qty).toLocaleString() + ' Ks</span></div></div>';
     });
     var dIn = document.getElementById('cart-discount-input').value.trim(), dAmt = 0;
     if (dIn.includes('%')) dAmt = total * (parseFloat(dIn.replace('%', '')) / 100);
@@ -2188,6 +2188,31 @@ function renderCart() {
     if (inlinePayment && inlinePayment.value !== mainPayment) {
         inlinePayment.value = mainPayment;
     }
+    function changeCartItemPrice(index, newPrice) {
+    playBeep();
+    var cart = carts[activeCartIndex];
+    if (!cart[index]) return;
+    
+    var price = parseFloat(newPrice);
+    if (isNaN(price) || price < 0) {
+        showBigToast('⚠️ ဈေးနှုန်းမှန်ကန်စွာထည့်ပါ', '', 'danger', false);
+        renderCart();
+        return;
+    }
+    
+    price = Math.round(price);
+    
+    if (cart[index].originalPrice === undefined) {
+        cart[index].originalPrice = cart[index].price;
+    }
+    
+    cart[index].price = price;
+    renderCart();
+    updateScannedPreview();
+    updatePopCartContent();
+    updateScannerTotal();
+    showBigToast('✅ ' + cart[index].name + ' ဈေး ' + price.toLocaleString() + ' Ks', '', 'success', false);
+}
 }
 
 function changeQty(i, c) {
@@ -2222,6 +2247,31 @@ function changeQtySelectFromCart(i, nq) {
     updatePopCartContent();
     updateScannerTotal();
     filterProductNames();
+}
+function changeCartItemPrice(index, newPrice) {
+    playBeep();
+    var cart = carts[activeCartIndex];
+    if (!cart[index]) return;
+    
+    var price = parseFloat(newPrice);
+    if (isNaN(price) || price < 1) {
+        showBigToast('⚠️ ဈေးနှုန်းမှန်ကန်စွာထည့်ပါ', '', 'danger', false);
+        renderCart();
+        return;
+    }
+    
+    price = Math.round(price);
+    
+    if (cart[index].originalPrice === undefined) {
+        cart[index].originalPrice = cart[index].price;
+    }
+    
+    cart[index].price = price;
+    renderCart();
+    updateScannedPreview();
+    updatePopCartContent();
+    updateScannerTotal();
+    showBigToast('✅ ' + cart[index].name + ' ဈေး ' + price.toLocaleString() + ' Ks', '', 'success', false);
 }
 
 function removeCartItemCompletely(i) {
