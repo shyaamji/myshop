@@ -2402,7 +2402,23 @@ function checkout() {
         return;
     }
     var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
-    var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm };
+var cartForSave = cart.map(function(item) {
+    var itemCopy = {
+        id: item.id,
+        barcode: item.barcode,
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        unit: item.unit || 'ခု',
+        stock: item.stock
+    };
+    if (item.originalPrice !== undefined && item.originalPrice !== item.price) {
+        itemCopy.originalPrice = item.originalPrice;
+    }
+    return itemCopy;
+});
+
+var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cartForSave), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm };
     supabase.from('SalesHistory').insert([sd]).then(function() {
         salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString() });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
@@ -2483,7 +2499,11 @@ function printVoucher(sale) {
         subtotal += Number(it.price) * Number(it.qty);
         var itemUnit = it.unit || '';
         var qtyDisplay = it.qty + (itemUnit ? ' ' + itemUnit : '');
-        itemsHTML += '<tr><td style="width:35%;padding:0px 1px;text-align:left;">' + it.name + '</td><td style="width:22%;padding:0px 1px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:13%;padding:0px 1px;text-align:center;">' + qtyDisplay + '</td><td style="width:30%;padding:0px 1px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>';
+       var priceDisplay = Number(it.price).toLocaleString() + ' Ks';
+if (it.originalPrice && it.originalPrice !== it.price) {
+    priceDisplay = Number(it.price).toLocaleString() + ' (မူရင်း:' + Number(it.originalPrice).toLocaleString() + ')';
+}
+itemsHTML += '<tr><td style="width:35%;padding:0px 1px;text-align:left;">' + it.name + '</td><td style="width:22%;padding:0px 1px;text-align:right;font-size:7px;">' + priceDisplay + '</td><td style="width:13%;padding:0px 1px;text-align:center;">' + qtyDisplay + '</td><td style="width:30%;padding:0px 1px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>';
     }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
     var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တ‌လေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr><tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr><tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">' + dt.split(',')[0] + '</td></tr><tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
