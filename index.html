@@ -1024,26 +1024,26 @@
         }
         .admin-only-feature { display: none; }
         /* ===== ADMIN BULK DELETE ===== */
-.admin-bulk-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    border-bottom: 2px solid var(--border-color);
-}
-.admin-bulk-actions .btn {
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 8px;
-}
-.admin-product-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--accent-gold);
-}
+        .admin-bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .admin-bulk-actions .btn {
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .admin-product-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-gold);
+        }
         
         /* ===== RESPONSIVE ===== */
         @media (max-width:600px) {
@@ -1489,12 +1489,12 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <div id="admin-search-suggestions" class="search-results"></div>
                 </div>
                 
-<!-- Bulk Action Buttons -->
-<div class="admin-bulk-actions" id="admin-bulk-actions" style="display:none;">
-    <button class="btn btn-sm btn-outline-secondary" onclick="selectAllAdminProducts()">✅ အားလုံးရွေးမည်</button>
-    <button class="btn btn-sm btn-outline-secondary" onclick="deselectAllAdminProducts()">⬜ အားလုံးပယ်ဖျက်မည်</button>
-    <button class="btn btn-sm btn-danger" onclick="bulkDeleteProducts()">🗑️ ရွေးထားသော ပစ္စည်းများကို ဖျက်မည် (<span id="selected-count">0</span>)</button>
-</div>
+                <!-- Bulk Action Buttons -->
+                <div class="admin-bulk-actions" id="admin-bulk-actions" style="display:none;">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="selectAllAdminProducts()">✅ အားလုံးရွေးမည်</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="deselectAllAdminProducts()">⬜ အားလုံးပယ်ဖျက်မည်</button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkDeleteProducts()">🗑️ ရွေးထားသော ပစ္စည်းများကို ဖျက်မည် (<span id="selected-count">0</span>)</button>
+                </div>
                 <div id="admin-product-list" class="d-flex flex-column gap-2"></div>
             </div>
         </div>
@@ -1603,6 +1603,7 @@ function playBeep() {
 function dismissKeyboard() {
     if (document.activeElement) document.activeElement.blur();
 }
+
 // =====================================================================
 // BULK DELETE FUNCTIONS
 // =====================================================================
@@ -2167,7 +2168,7 @@ function renderCart() {
         ti += item.qty;
         var opts = '';
         for (var k = 1; k <= 100; k++) opts += '<option value="' + k + '"' + (k === item.qty ? ' selected' : '') + '>' + k + '</option>';
-list.innerHTML += '<div class="cart-item" style="padding:8px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:700;font-size:14px;color:#2563eb;flex:1;min-width:0;padding-right:8px;">' + item.name + '</span><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')" style="flex-shrink:0;">❌</button></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><div style="display:flex;align-items:center;background:var(--bg-card);border-radius:8px;padding:2px;border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',-1)">−</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',1)">+</button></div><div style="display:flex;align-items:center;gap:3px;"><span style="font-size:10px;color:var(--text-muted);">ဈေး:</span><input type="number" value="' + item.price + '" onchange="changeCartItemPrice(' + i + ', this.value)" onfocus="this.select()" style="width:65px;padding:3px 4px;font-size:11px;text-align:center;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-main);"></div><span style="font-weight:700;font-size:12px;color:var(--accent-gold);white-space:nowrap;">= ' + Number(item.price * item.qty).toLocaleString() + ' Ks</span></div></div>';
+        list.innerHTML += '<div class="cart-item" style="padding:8px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:700;font-size:14px;color:#2563eb;flex:1;min-width:0;padding-right:8px;">' + item.name + '</span><button class="btn-delete-item" onclick="removeCartItemCompletely(' + i + ')" style="flex-shrink:0;">❌</button></div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><div style="display:flex;align-items:center;background:var(--bg-card);border-radius:8px;padding:2px;border:1px solid var(--border-color);"><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',-1)">−</button><select class="suggestion-qty-select mx-1" onchange="changeQtySelectFromCart(' + i + ',this.value)">' + opts + '</select><button class="btn btn-sm border-0 py-0 px-2 fw-bold" style="font-size:15px;" onclick="changeQty(' + i + ',1)">+</button></div><div style="display:flex;align-items:center;gap:3px;"><span style="font-size:10px;color:var(--text-muted);">ဈေး:</span><input type="number" value="' + item.price + '" onchange="changeCartItemPrice(' + i + ', this.value)" onfocus="this.select()" style="width:65px;padding:3px 4px;font-size:11px;text-align:center;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-main);"></div><span style="font-weight:700;font-size:12px;color:var(--accent-gold);white-space:nowrap;">= ' + Number(item.price * item.qty).toLocaleString() + ' Ks</span></div></div>';
     });
     var dIn = document.getElementById('cart-discount-input').value.trim(), dAmt = 0;
     if (dIn.includes('%')) dAmt = total * (parseFloat(dIn.replace('%', '')) / 100);
@@ -2188,7 +2189,9 @@ list.innerHTML += '<div class="cart-item" style="padding:8px;margin-bottom:4px;"
     if (inlinePayment && inlinePayment.value !== mainPayment) {
         inlinePayment.value = mainPayment;
     }
-    function changeCartItemPrice(index, newPrice) {
+}
+
+function changeCartItemPrice(index, newPrice) {
     playBeep();
     var cart = carts[activeCartIndex];
     if (!cart[index]) return;
@@ -2212,7 +2215,6 @@ list.innerHTML += '<div class="cart-item" style="padding:8px;margin-bottom:4px;"
     updatePopCartContent();
     updateScannerTotal();
     showBigToast('✅ ' + cart[index].name + ' ဈေး ' + price.toLocaleString() + ' Ks', '', 'success', false);
-}
 }
 
 function changeQty(i, c) {
@@ -2247,31 +2249,6 @@ function changeQtySelectFromCart(i, nq) {
     updatePopCartContent();
     updateScannerTotal();
     filterProductNames();
-}
-function changeCartItemPrice(index, newPrice) {
-    playBeep();
-    var cart = carts[activeCartIndex];
-    if (!cart[index]) return;
-    
-    var price = parseFloat(newPrice);
-    if (isNaN(price) || price < 1) {
-        showBigToast('⚠️ ဈေးနှုန်းမှန်ကန်စွာထည့်ပါ', '', 'danger', false);
-        renderCart();
-        return;
-    }
-    
-    price = Math.round(price);
-    
-    if (cart[index].originalPrice === undefined) {
-        cart[index].originalPrice = cart[index].price;
-    }
-    
-    cart[index].price = price;
-    renderCart();
-    updateScannedPreview();
-    updatePopCartContent();
-    updateScannerTotal();
-    showBigToast('✅ ' + cart[index].name + ' ဈေး ' + price.toLocaleString() + ' Ks', '', 'success', false);
 }
 
 function removeCartItemCompletely(i) {
@@ -2486,9 +2463,8 @@ function printVoucher(sale) {
         itemsHTML += '<tr><td style="width:35%;padding:0px 1px;text-align:left;">' + it.name + '</td><td style="width:22%;padding:0px 1px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:13%;padding:0px 1px;text-align:center;">' + qtyDisplay + '</td><td style="width:30%;padding:0px 1px;text-align:right;">' + (it.price * it.qty).toLocaleString() + '</td></tr>';
     }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
-// အောက်ပါစာကြောင်း ထည့်ပါ
-var fullDateTime = dt;  // မူရင်း date string ကို သိမ်းထား
-    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တ‌လေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr><tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr><tr><td style="width:30%;">ရက်စွဲ/အချိန်:</td><td style="width:70%;text-align:right;">' + fullDateTime + '</td></tr><tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
+    var fullDateTime = dt;
+    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr><tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr><tr><td style="width:30%;">ရက်စွဲ/အချိန်:</td><td style="width:70%;text-align:right;">' + fullDateTime + '</td></tr><tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
     var printFrame = document.createElement('iframe');
     printFrame.style.position = 'fixed';
     printFrame.style.right = '0';
@@ -2598,8 +2574,8 @@ function resetAdminProductList() {
     adminProductsAll = [];
     adminProductsLoading = false;
     adminProductsHasMore = true;
-    selectedProductIds = {};  // <-- ဒီတစ်ကြောင်းထည့်ပါ
-    updateSelectedCount();     // <-- ဒီတစ်ကြောင်းထည့်ပါ
+    selectedProductIds = {};
+    updateSelectedCount();
     
     if (adminProductsObserver) {
         adminProductsObserver.disconnect();
@@ -2625,7 +2601,6 @@ function renderAdminProducts(arr) {
     if (!list) return;
     list.innerHTML = '';
     
-    // Remove old observer
     if (adminProductsObserver) {
         adminProductsObserver.disconnect();
         adminProductsObserver = null;
@@ -2639,18 +2614,13 @@ function renderAdminProducts(arr) {
         return;
     }
     
-    // Create sentinel element
     var sentinel = document.createElement('div');
     sentinel.id = 'admin-products-sentinel';
     sentinel.style.cssText = 'height:10px;width:100%;';
-    
-    // Insert sentinel after the list
     list.parentNode.insertBefore(sentinel, list.nextSibling);
     
-    // Load first batch
     loadMoreAdminProducts();
     
-    // Set up Intersection Observer
     if ('IntersectionObserver' in window) {
         adminProductsObserver = new IntersectionObserver(function(entries) {
             if (entries[0].isIntersecting && !adminProductsLoading && adminProductsHasMore) {
@@ -2697,8 +2667,8 @@ function loadMoreAdminProducts() {
             
             var div = document.createElement('div');
             div.className = 'p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2';
-var isChecked = selectedProductIds[productId] ? ' checked' : '';
-div.innerHTML = '<div class="d-flex justify-content-between align-items-center"><div class="d-flex align-items-center gap-2"><input type="checkbox" class="admin-product-checkbox" id="chk-' + productId + '"' + isChecked + ' onchange="toggleProductSelection(\'' + productId + '\', this.checked)"><label for="chk-' + productId + '" class="fw-bold fs-6" style="cursor:pointer;">' + prod.name + '</label></div><div>' + sb + '</div></div>' +
+            var isChecked = selectedProductIds[productId] ? ' checked' : '';
+            div.innerHTML = '<div class="d-flex justify-content-between align-items-center"><div class="d-flex align-items-center gap-2"><input type="checkbox" class="admin-product-checkbox" id="chk-' + productId + '"' + isChecked + ' onchange="toggleProductSelection(\'' + productId + '\', this.checked)"><label for="chk-' + productId + '" class="fw-bold fs-6" style="cursor:pointer;">' + prod.name + '</label></div><div>' + sb + '</div></div>' +
                 '<div class="text-muted small">Barcode: ' + prod.barcode + ' | ID: ' + productId + '</div>' +
                 '<div class="row g-2">' +
                     '<div class="col-3"><small>အရင်း</small><input type="number" id="p-cost-' + productId + '" class="form-control form-control-sm" value="' + cost + '"></div>' +
@@ -3079,7 +3049,6 @@ function closeFullScanner() {
     isScannerClosed = true;
     clearTimeout(scanPauseTimer);
     
-    // Force remove active class and hide scanner
     var scannerMode = document.getElementById('scannerFullMode');
     if (scannerMode) {
         scannerMode.classList.remove('active');
@@ -3103,7 +3072,6 @@ function closeFullScanner() {
     resetFlashlight();
     updateScannerTotal();
     
-    // Ensure body overflow is restored
     document.body.style.overflow = '';
 }
 
