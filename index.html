@@ -230,7 +230,7 @@
         <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
         <h4 class="fw-bold mb-3">POS System Locked</h4>
         <p class="text-muted small mb-3">စနစ်သုံးရန် Password ထည့်ပါ</p>
-        <input type="password" id="home-pass-input" class="form-control text-center mb-3 py-2" placeholder="Password ထည့်ပါ" autocomplete="current-password">
+        <input type="password" id="home-pass-input" class="form-control text-center mb-3 py-2" placeholder="Password ထည့်ပါ" autocomplete="55">
         <button class="btn btn-premium-gold w-100 py-2" onclick="checkUniversalLogin()">🔓 ဖွင့်မည်</button>
         <div id="lock-error" class="text-danger small mt-2" style="display:none;">Password မှားယွင်းနေပါသည်။</div>
     </div>
@@ -534,7 +534,7 @@
 // =====================================================================
 var SUPABASE_URL = 'https://mqkvfcjhwhurdakozote.supabase.co/rest/v1/';
 var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
-var supabase = window.supabase.createClient(https://mqkvfcjhwhurdakozote.supabase.co/rest/v1/,sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN);
+var supabase = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // =====================================================================
 // GLOBAL VARIABLES
