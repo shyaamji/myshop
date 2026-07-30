@@ -129,6 +129,49 @@
             font-size: 18px;
         }
         
+        /* ===== AUDIO/VIBRATION TOGGLE BUTTONS ===== */
+        .audio-vib-toggle-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-left: 4px;
+        }
+        .audio-vib-btn {
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+            height: 36px;
+            width: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+        }
+        .audio-vib-btn.active {
+            border-color: var(--accent-gold);
+            background: var(--accent-gold);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(180,83,9,0.3);
+        }
+        [data-theme=dark] .audio-vib-btn.active {
+            background: #fbbf24;
+            color: #000;
+            border-color: #fbbf24;
+            box-shadow: 0 2px 8px rgba(251,191,36,0.4);
+        }
+        .audio-vib-btn:active { transform: scale(0.9); }
+        .audio-vib-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.1;
+        }
+        
         /* ===== CARDS ===== */
         .custom-card {
             background: var(--bg-card);
@@ -1115,6 +1158,15 @@
                 width: 40px !important;
                 font-size: 10px !important;
             }
+            .audio-vib-btn {
+                height: 30px;
+                width: 30px;
+                font-size: 13px;
+                border-radius: 8px;
+            }
+            .audio-vib-label {
+                font-size: 8px;
+            }
         }
     </style>
 </head>
@@ -1305,6 +1357,11 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
             <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
             <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
+            <!-- ★★★ အသံ/Vibration ခလုတ်များ ★★★ -->
+            <div class="audio-vib-toggle-group">
+                <button class="audio-vib-btn active" id="audio-toggle-btn" onclick="toggleAudio()" title="အသံ ဖွင့်/ပိတ်">🔊</button>
+                <button class="audio-vib-btn active" id="vib-toggle-btn" onclick="toggleVibration()" title="တုန်ခါမှု ဖွင့်/ပိတ်">📳</button>
+            </div>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
     </div>
@@ -1552,6 +1609,10 @@ var lastScannedTime = 0;
 var modalProduct = null;
 var modalQty = 1;
 
+// ★★★ အသံနှင့် Vibration သီးခြားစီ ဖွင့်/ပိတ် ★★★
+var audioEnabled = true;    // true = အသံဖွင့်, false = အသံပိတ်
+var vibrationEnabled = true; // true = တုန်ခါမှုဖွင့်, false = တုန်ခါမှုပိတ်
+
 // Lazy loading variables for admin products
 var adminProductsPage = 0;
 var adminProductsPerPage = 15;
@@ -1584,20 +1645,78 @@ function buildBarcodeIndex() {
     }
 }
 
+// ★★★ MODIFIED playBeep() - အသံနှင့် Vibration သီးခြားစီ ထိန်းချုပ် ★★★
 function playBeep() {
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        if (!audioCtx) return;
-        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = 'sine';
-        o.frequency.setValueAtTime(800, audioCtx.currentTime);
-        g.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        o.connect(g);
-        g.connect(audioCtx.destination);
-        o.start();
-        o.stop(audioCtx.currentTime + 0.08);
-    } catch(e) {}
+    // Vibration (ဖွင့်ထားမှသာ)
+    if (vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate(100);
+    }
+    
+    // Audio (ဖွင့်ထားမှသာ)
+    if (audioEnabled) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            if (!audioCtx) return;
+            var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(800, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start();
+            o.stop(audioCtx.currentTime + 0.08);
+        } catch(e) {}
+    }
+}
+
+// ★★★ Toggle Audio ★★★
+function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    var btn = document.getElementById('audio-toggle-btn');
+    if (audioEnabled) {
+        btn.classList.add('active');
+        btn.innerHTML = '🔊';
+        btn.title = 'အသံ ဖွင့်';
+        // တစ်ခါနှိပ်တိုင်း အသံကြားရအောင်
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            if (audioCtx) {
+                var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(880, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.start();
+                o.stop(audioCtx.currentTime + 0.06);
+            }
+        } catch(e) {}
+    } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '🔇';
+        btn.title = 'အသံ ပိတ်';
+    }
+}
+
+// ★★★ Toggle Vibration ★★★
+function toggleVibration() {
+    vibrationEnabled = !vibrationEnabled;
+    var btn = document.getElementById('vib-toggle-btn');
+    if (vibrationEnabled) {
+        btn.classList.add('active');
+        btn.innerHTML = '📳';
+        btn.title = 'တုန်ခါမှု ဖွင့်';
+        // တစ်ခါနှိပ်တိုင်း vibrate လုပ်ပြမယ်
+        if (navigator.vibrate) {
+            navigator.vibrate(80);
+        }
+    } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '📴';
+        btn.title = 'တုန်ခါမှု ပိတ်';
+    }
 }
 
 function dismissKeyboard() {
@@ -2465,14 +2584,13 @@ function printVoucher(sale) {
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
     
     // ===== ရက်စွဲနဲ့ အချိန်ကို ခွဲထုတ်ပါ =====
-    var datePart = dt.split(',')[0] || dt;  // "25/07/2026"
-    var timePart = dt.split(',')[1] || '';  // " 14:30:25"
+    var datePart = dt.split(',')[0] || dt;
+    var timePart = dt.split(',')[1] || '';
     timePart = timePart.trim();
     
     var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table>' +
         '<tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr>' +
         '<tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr>' +
-        // ===== ရက်စွဲနဲ့ အချိန်ကို သီးခြားပြပါ =====
         '<tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">' + datePart + '</td></tr>' +
         '<tr><td style="width:30%;">အချိန်:</td><td style="width:70%;text-align:right;">' + timePart + '</td></tr>' +
         '<tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
