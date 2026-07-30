@@ -1704,7 +1704,6 @@ function loadSettings() {
         vibrationEnabled = savedVibration === 'true';
     }
     
-    // Update UI
     var soundToggle = document.getElementById('master-sound-toggle');
     var vibrationToggle = document.getElementById('vibration-toggle');
     var descEl = document.getElementById('vibration-desc');
@@ -1712,7 +1711,6 @@ function loadSettings() {
     if (soundToggle) soundToggle.checked = soundEnabled;
     if (vibrationToggle) vibrationToggle.checked = vibrationEnabled;
     
-    // iOS warning
     if (isIOS && descEl) {
         descEl.textContent = '⚠️ iOS တွင် တုန်ခါမှုမရနိုင်ပါ (အသံဖြင့် အစားထိုးပါ)';
     }
@@ -1721,7 +1719,6 @@ function loadSettings() {
 function toggleMasterSound() {
     soundEnabled = document.getElementById('master-sound-toggle').checked;
     localStorage.setItem('soundEnabled', soundEnabled);
-    
     if (soundEnabled) {
         playConfirmSound();
     }
@@ -1738,27 +1735,8 @@ function toggleVibration() {
         descEl.textContent = '⚠️ iOS တွင် တုန်ခါမှုမရနိုင်ပါ (အသံဖြင့် အစားထိုးထားပါသည်)';
     }
     
-    if (vibrationEnabled) {
-        // Android အတွက်သာ vibrate
-        if (navigator.vibrate && !isIOS) {
-            try {
-                navigator.vibrate(30);
-            } catch(e) {}
-        }
-    }
-}
-
-function vibrate(pattern) {
-    // iOS အတွက် - vibration မရှိပါ
-    if (!vibrationEnabled) return;
-    
-    // Android အတွက် vibration
-    if (navigator.vibrate) {
-        try {
-            navigator.vibrate(pattern);
-        } catch(e) {
-            // vibration fail silent
-        }
+    if (vibrationEnabled && !isIOS && navigator.vibrate) {
+        try { navigator.vibrate(30); } catch(e) {}
     }
 }
 
@@ -1811,24 +1789,32 @@ function playScanSuccessSound() {
 }
 
 function playClickSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.05);
-        vibrate(15);
-    } catch(e) {}
+    if (soundEnabled) {
+        if (!isAudioInitialized) initAudio();
+        if (audioCtx && audioCtx.state === 'running') {
+            try {
+                var now = audioCtx.currentTime;
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } catch(e) {}
+        }
+    }
+    
+    if (vibrationEnabled) {
+        var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isIOS && navigator.vibrate) {
+            try { navigator.vibrate(15); } catch(e) {}
+        }
+    }
 }
 
 function playConfirmSound() {
@@ -1862,24 +1848,32 @@ function playConfirmSound() {
 }
 
 function playErrorSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.setValueAtTime(200, now + 0.1);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
-        vibrate([50, 50, 50]);
-    } catch(e) {}
+    if (soundEnabled) {
+        if (!isAudioInitialized) initAudio();
+        if (audioCtx && audioCtx.state === 'running') {
+            try {
+                var now = audioCtx.currentTime;
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.setValueAtTime(200, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } catch(e) {}
+        }
+    }
+    
+    if (vibrationEnabled) {
+        var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isIOS && navigator.vibrate) {
+            try { navigator.vibrate([50, 50, 50]); } catch(e) {}
+        }
+    }
 }
 
 function playCheckoutSound() {
@@ -3751,16 +3745,10 @@ function updatePasswords() {
         });
 }
 
-// =====================================================================
-// SPECIAL ROLE SETUP FUNCTION
-// =====================================================================
 function setupSpecialRoleUI() {
     document.documentElement.setAttribute('data-role', 'special');
 }
 
-// =====================================================================
-// LOGIN & ROLE MANAGEMENT
-// =====================================================================
 function checkUniversalLogin() {
     if (!passwordsLoaded) {
         document.getElementById('lock-error').style.display = 'block';
@@ -3822,9 +3810,6 @@ function lockAppImmediate() {
     window.location.reload();
 }
 
-// =====================================================================
-// LOAD DATA
-// =====================================================================
 function loadProductsFromSheet() {
     supabase.from('Products').select('*')
         .then(function(r) {
@@ -3869,9 +3854,6 @@ function loadSalesHistoryFromSheet() {
         });
 }
 
-// =====================================================================
-// WINDOW ONLOAD
-// =====================================================================
 window.onload = function() {
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
