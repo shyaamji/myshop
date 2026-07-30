@@ -1497,7 +1497,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <div class="setting-row">
                     <div>
                         <div class="setting-label">📳 တုန်ခါမှု</div>
-                        <div class="setting-desc">အရေအတွက်ပြောင်းချိန် တုန်ခါမှု ဖွင့်/ပိတ်ရန်</div>
+                        <div class="setting-desc" id="vibration-desc">အရေအတွက်ပြောင်းချိန် တုန်ခါမှု ဖွင့်/ပိတ်ရန်</div>
                     </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="vibration-toggle" onchange="toggleVibration()" checked>
@@ -1695,6 +1695,7 @@ var selectedProductIds = {};
 function loadSettings() {
     var savedSound = localStorage.getItem('soundEnabled');
     var savedVibration = localStorage.getItem('vibrationEnabled');
+    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     
     if (savedSound !== null) {
         soundEnabled = savedSound === 'true';
@@ -1706,9 +1707,15 @@ function loadSettings() {
     // Update UI
     var soundToggle = document.getElementById('master-sound-toggle');
     var vibrationToggle = document.getElementById('vibration-toggle');
+    var descEl = document.getElementById('vibration-desc');
     
     if (soundToggle) soundToggle.checked = soundEnabled;
     if (vibrationToggle) vibrationToggle.checked = vibrationEnabled;
+    
+    // iOS warning
+    if (isIOS && descEl) {
+        descEl.textContent = '⚠️ iOS တွင် တုန်ခါမှုမရနိုင်ပါ (အသံဖြင့် အစားထိုးပါ)';
+    }
 }
 
 function toggleMasterSound() {
@@ -1724,19 +1731,39 @@ function toggleVibration() {
     vibrationEnabled = document.getElementById('vibration-toggle').checked;
     localStorage.setItem('vibrationEnabled', vibrationEnabled);
     
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(30);
+    var descEl = document.getElementById('vibration-desc');
+    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (isIOS && descEl) {
+        descEl.textContent = '⚠️ iOS တွင် တုန်ခါမှုမရနိုင်ပါ (အသံဖြင့် အစားထိုးထားပါသည်)';
+    }
+    
+    if (vibrationEnabled) {
+        // Android အတွက်သာ vibrate
+        if (navigator.vibrate && !isIOS) {
+            try {
+                navigator.vibrate(30);
+            } catch(e) {}
+        }
     }
 }
 
 function vibrate(pattern) {
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(pattern);
+    // iOS အတွက် - vibration မရှိပါ
+    if (!vibrationEnabled) return;
+    
+    // Android အတွက် vibration
+    if (navigator.vibrate) {
+        try {
+            navigator.vibrate(pattern);
+        } catch(e) {
+            // vibration fail silent
+        }
     }
 }
 
 // =====================================================================
-// SOUND EFFECTS - ဈေးဝယ်သူများ နားငြီးမှုမရှိစေရန် နူးညံ့သောအသံများ
+// SOUND EFFECTS
 // =====================================================================
 var isAudioInitialized = false;
 
@@ -1750,14 +1777,12 @@ function initAudio() {
     }
 }
 
-// ✅ Scan Success Sound - နူးညံ့တဲ့ အတည်ပြုသံ (ဒီး-ဒင်)
 function playScanSuccessSound() {
     if (!soundEnabled) return;
     if (!isAudioInitialized) initAudio();
     if (!audioCtx || audioCtx.state !== 'running') return;
     try {
         var now = audioCtx.currentTime;
-        
         var osc1 = audioCtx.createOscillator();
         var gain1 = audioCtx.createGain();
         osc1.type = 'sine';
@@ -1782,11 +1807,9 @@ function playScanSuccessSound() {
         gain2.connect(audioCtx.destination);
         osc2.start(now + 0.1);
         osc2.stop(now + 0.25);
-        
     } catch(e) {}
 }
 
-// 🔢 Quantity Change Sound - ပျော့ပျောင်းတဲ့ ကလစ်သံ
 function playClickSound() {
     if (!soundEnabled) return;
     if (!isAudioInitialized) initAudio();
@@ -1804,19 +1827,16 @@ function playClickSound() {
         gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.05);
-        
         vibrate(15);
     } catch(e) {}
 }
 
-// ✅ Confirm/Add Sound - အတည်ပြုသံ
 function playConfirmSound() {
     if (!soundEnabled) return;
     if (!isAudioInitialized) initAudio();
     if (!audioCtx || audioCtx.state !== 'running') return;
     try {
         var now = audioCtx.currentTime;
-        
         var osc1 = audioCtx.createOscillator();
         var gain1 = audioCtx.createGain();
         osc1.type = 'sine';
@@ -1838,11 +1858,9 @@ function playConfirmSound() {
         gain2.connect(audioCtx.destination);
         osc2.start(now + 0.06);
         osc2.stop(now + 0.15);
-        
     } catch(e) {}
 }
 
-// ❌ Error/Void Sound - နိမ့်တဲ့သံ
 function playErrorSound() {
     if (!soundEnabled) return;
     if (!isAudioInitialized) initAudio();
@@ -1860,12 +1878,10 @@ function playErrorSound() {
         gain.connect(audioCtx.destination);
         osc.start(now);
         osc.stop(now + 0.15);
-        
         vibrate([50, 50, 50]);
     } catch(e) {}
 }
 
-// 🛒 Checkout Success Sound
 function playCheckoutSound() {
     if (!soundEnabled) return;
     if (!isAudioInitialized) initAudio();
@@ -3526,7 +3542,7 @@ function selectScanVariant(productId, barcode, name, price, stock) {
     toastProduct = selectedProduct;
     toastQty = 1;
     document.getElementById('toastBigMsg').textContent = '📦 ' + name;
-    document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock + ' ' + (selectedProduct.unit||'ခု');
+    document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock + ' ခု';
     toastEl.className = 'toast-big show success';
     var maxQty = Math.min(stock, 100), selHTML = '';
     for (var i = 1; i <= maxQty; i++) {
