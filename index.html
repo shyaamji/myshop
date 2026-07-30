@@ -175,88 +175,6 @@
             border-radius: 10px !important;
         }
         
-        /* ===== TOGGLE SWITCH ===== */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 28px;
-        }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .toggle-slider {
-            background: linear-gradient(135deg, #d97706, #b45309);
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(24px);
-        }
-        [data-theme=dark] input:checked + .toggle-slider {
-            background: linear-gradient(135deg, #fbbf24, #d97706);
-        }
-        
-        /* ===== SETTING CARD ===== */
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        .setting-label {
-            font-weight: 600;
-            font-size: 15px;
-            color: var(--text-main);
-        }
-        .setting-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-        .sound-test-btn {
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-main);
-            transition: all 0.2s;
-        }
-        .sound-test-btn:active {
-            transform: scale(0.95);
-            background: var(--accent-gold);
-            color: #fff;
-        }
-        
         /* ===== TOAST ===== */
         .toast-big {
             position: fixed;
@@ -1386,7 +1304,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
             <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
-            <button id="btn-settings" class="btn" onclick="switchTab('settings')">🔊 ဆက်တင်</button>
             <button id="btn-logout-tab" class="btn text-danger" onclick="lockAppImmediate()">🔒 ထွက်မည်</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
@@ -1472,47 +1389,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== SETTINGS TAB ===== -->
-        <div id="settings" class="tab-content">
-            <div class="custom-card" style="border-top:4px solid #6366f1!important;">
-                <h6 class="fw-bold mb-4" style="color:#6366f1;">🔊 အသံ နှင့် တုန်ခါမှု ဆက်တင်များ</h6>
-                
-                <!-- Master Sound Toggle -->
-                <div class="setting-row">
-                    <div>
-                        <div class="setting-label">🔊 အသံအားလုံး</div>
-                        <div class="setting-desc">အက်ပ်၏ အသံအားလုံးကို ဖွင့်/ပိတ်ရန်</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="master-sound-toggle" onchange="toggleMasterSound()" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <!-- Vibration Toggle -->
-                <div class="setting-row">
-                    <div>
-                        <div class="setting-label">📳 တုန်ခါမှု</div>
-                        <div class="setting-desc">အရေအတွက်ပြောင်းချိန် တုန်ခါမှု ဖွင့်/ပိတ်ရန်</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="vibration-toggle" onchange="toggleVibration()" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-
-                <hr style="border-color:var(--border-color);margin:20px 0;">
-                <h6 class="fw-bold mb-3 text-secondary">🎵 အသံစမ်းသပ်ရန်</h6>
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="sound-test-btn" onclick="playScanSuccessSound()">🔍 Scan သံ</button>
-                    <button class="sound-test-btn" onclick="playClickSound()">👆 ကလစ်သံ</button>
-                    <button class="sound-test-btn" onclick="playConfirmSound()">✅ အတည်ပြုသံ</button>
-                    <button class="sound-test-btn" onclick="playErrorSound()">❌ Error သံ</button>
-                    <button class="sound-test-btn" onclick="playCheckoutSound()">🛒 Checkout သံ</button>
                 </div>
             </div>
         </div>
@@ -1676,10 +1552,6 @@ var lastScannedTime = 0;
 var modalProduct = null;
 var modalQty = 1;
 
-// Sound & Vibration Settings
-var soundEnabled = true;
-var vibrationEnabled = true;
-
 // Lazy loading variables for admin products
 var adminProductsPage = 0;
 var adminProductsPerPage = 15;
@@ -1687,207 +1559,8 @@ var adminProductsAll = [];
 var adminProductsLoading = false;
 var adminProductsHasMore = true;
 var adminProductsObserver = null;
+// Bulk delete variables
 var selectedProductIds = {};
-
-// =====================================================================
-// SETTINGS FUNCTIONS
-// =====================================================================
-function loadSettings() {
-    var savedSound = localStorage.getItem('soundEnabled');
-    var savedVibration = localStorage.getItem('vibrationEnabled');
-    
-    if (savedSound !== null) {
-        soundEnabled = savedSound === 'true';
-    }
-    if (savedVibration !== null) {
-        vibrationEnabled = savedVibration === 'true';
-    }
-    
-    // Update UI
-    var soundToggle = document.getElementById('master-sound-toggle');
-    var vibrationToggle = document.getElementById('vibration-toggle');
-    
-    if (soundToggle) soundToggle.checked = soundEnabled;
-    if (vibrationToggle) vibrationToggle.checked = vibrationEnabled;
-}
-
-function toggleMasterSound() {
-    soundEnabled = document.getElementById('master-sound-toggle').checked;
-    localStorage.setItem('soundEnabled', soundEnabled);
-    
-    if (soundEnabled) {
-        playConfirmSound();
-    }
-}
-
-function toggleVibration() {
-    vibrationEnabled = document.getElementById('vibration-toggle').checked;
-    localStorage.setItem('vibrationEnabled', vibrationEnabled);
-    
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(30);
-    }
-}
-
-function vibrate(pattern) {
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(pattern);
-    }
-}
-
-// =====================================================================
-// SOUND EFFECTS - ဈေးဝယ်သူများ နားငြီးမှုမရှိစေရန် နူးညံ့သောအသံများ
-// =====================================================================
-var isAudioInitialized = false;
-
-function initAudio() {
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        isAudioInitialized = true;
-    } catch(e) {
-        isAudioInitialized = false;
-    }
-}
-
-// ✅ Scan Success Sound - နူးညံ့တဲ့ အတည်ပြုသံ (ဒီး-ဒင်)
-function playScanSuccessSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        
-        var osc1 = audioCtx.createOscillator();
-        var gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(880, now);
-        osc1.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
-        gain1.gain.setValueAtTime(0.12, now);
-        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.12);
-        
-        var osc2 = audioCtx.createOscillator();
-        var gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1100, now + 0.1);
-        osc2.frequency.setValueAtTime(1400, now + 0.12);
-        gain2.gain.setValueAtTime(0.001, now);
-        gain2.gain.setValueAtTime(0.1, now + 0.1);
-        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(now + 0.1);
-        osc2.stop(now + 0.25);
-        
-    } catch(e) {}
-}
-
-// 🔢 Quantity Change Sound - ပျော့ပျောင်းတဲ့ ကလစ်သံ
-function playClickSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.05);
-        
-        vibrate(15);
-    } catch(e) {}
-}
-
-// ✅ Confirm/Add Sound - အတည်ပြုသံ
-function playConfirmSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        
-        var osc1 = audioCtx.createOscillator();
-        var gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(1000, now);
-        gain1.gain.setValueAtTime(0.1, now);
-        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.06);
-        
-        var osc2 = audioCtx.createOscillator();
-        var gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1500, now + 0.06);
-        gain2.gain.setValueAtTime(0.08, now + 0.06);
-        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(now + 0.06);
-        osc2.stop(now + 0.15);
-        
-    } catch(e) {}
-}
-
-// ❌ Error/Void Sound - နိမ့်တဲ့သံ
-function playErrorSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.setValueAtTime(200, now + 0.1);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
-        
-        vibrate([50, 50, 50]);
-    } catch(e) {}
-}
-
-// 🛒 Checkout Success Sound
-function playCheckoutSound() {
-    if (!soundEnabled) return;
-    if (!isAudioInitialized) initAudio();
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    try {
-        var now = audioCtx.currentTime;
-        var notes = [523, 659, 784, 1047];
-        for (var i = 0; i < notes.length; i++) {
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(notes[i], now + i * 0.08);
-            gain.gain.setValueAtTime(0.001, now);
-            gain.gain.setValueAtTime(0.08, now + i * 0.08);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.12);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(now + i * 0.08);
-            osc.stop(now + i * 0.08 + 0.12);
-        }
-    } catch(e) {}
-}
 
 // =====================================================================
 // HELPER FUNCTIONS
@@ -1909,6 +1582,22 @@ function buildBarcodeIndex() {
             barcodeIndex[bc].push(productsDB[i]);
         }
     }
+}
+
+function playBeep() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (!audioCtx) return;
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(800, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        o.connect(g);
+        g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + 0.08);
+    } catch(e) {}
 }
 
 function dismissKeyboard() {
@@ -2046,7 +1735,7 @@ function showBigToast(m, s, t, sa, p) {
 }
 
 function toastQtyChange(c) {
-    playClickSound();
+    playBeep();
     var s = document.getElementById('toastQtySelect'), cv = parseInt(s.value) || 1, nv = cv + c, st = getStockNumber(toastProduct);
     if (nv < 1) nv = 1;
     if (nv > st) nv = st;
@@ -2056,16 +1745,15 @@ function toastQtyChange(c) {
 }
 
 function toastQtySelectChange(v) {
-    playClickSound();
+    playBeep();
     toastQty = parseInt(v) || 1;
 }
 
 function toastQtyConfirm() {
     if (!toastProduct) return;
-    playConfirmSound();
+    playBeep();
     var b = toastProduct.barcode.toString(), pid = toastProduct.id, st = getStockNumber(toastProduct), q = toastQty;
     if (q > st) {
-        playErrorSound();
         showBigToast('⚠️ လက်ကျန် ' + st + ' ' + (toastProduct.unit||'ခု') + ' သာ', '', 'danger', false);
         return;
     }
@@ -2076,7 +1764,6 @@ function toastQtyConfirm() {
     }
     if (item) {
         if (item.qty + q > st) {
-            playErrorSound();
             showBigToast('⚠️ လက်ကျန် ' + st + ' ' + (toastProduct.unit||'ခု') + ' သာ', '', 'danger', false);
             return;
         }
@@ -2099,7 +1786,6 @@ function openQtyModal(product) {
     modalQty = 1;
     var st = getStockNumber(product);
     if (st <= 0) {
-        playErrorSound();
         showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false);
         return;
     }
@@ -2118,12 +1804,11 @@ function closeQtyModal() {
 
 function modalQtyChange(delta) {
     if (!modalProduct) return;
-    playClickSound();
+    playBeep();
     var st = getStockNumber(modalProduct);
     var newQty = modalQty + delta;
     if (newQty < 1) newQty = 1;
     if (newQty > st) {
-        playErrorSound();
         showBigToast('⚠️ လက်ကျန် ' + st + ' ' + (modalProduct.unit || 'ခု') + ' သာ', '', 'danger', false);
         return;
     }
@@ -2133,7 +1818,7 @@ function modalQtyChange(delta) {
 
 function confirmQtyModal() {
     if (!modalProduct) return;
-    playConfirmSound();
+    playBeep();
     var cart = carts[activeCartIndex];
     var st = getStockNumber(modalProduct);
     var existingIdx = -1;
@@ -2148,7 +1833,6 @@ function confirmQtyModal() {
     }
     if (existingIdx !== -1) {
         if (cart[existingIdx].qty + modalQty > st) {
-            playErrorSound();
             showBigToast('⚠️ လက်ကျန် ' + st + ' ' + (modalProduct.unit || 'ခု') + ' သာ', '', 'danger', false);
             return;
         }
@@ -2183,7 +1867,6 @@ function confirmQtyModal() {
 function checkoutFromInline() {
     var cart = carts[activeCartIndex];
     if (!cart.length) {
-        playErrorSound();
         showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
         return;
     }
@@ -2193,7 +1876,6 @@ function checkoutFromInline() {
 function checkoutFromPopCart() {
     var cart = carts[activeCartIndex];
     if (!cart.length) {
-        playErrorSound();
         showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
         return;
     }
@@ -2284,7 +1966,7 @@ function filterProductNames() {
                 return function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    playClickSound();
+                    playBeep();
                     changeQtyFromSearch(b, -1);
                 };
             })(bStr);
@@ -2301,7 +1983,7 @@ function filterProductNames() {
                 return function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    playClickSound();
+                    playBeep();
                     changeQtyFromSearch(b, 1);
                 };
             })(bStr);
@@ -2356,7 +2038,6 @@ function changeQtyFromSearch(bc, delta) {
         if (p) {
             var st = getStockNumber(p);
             if (st <= 0) {
-                playErrorSound();
                 showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false);
                 return;
             }
@@ -2388,7 +2069,6 @@ function changeQtyFromSearch(bc, delta) {
         cart.splice(idx, 1);
         updateSearchQtyDisplay(bStr, 0);
     } else if (nq > st) {
-        playErrorSound();
         showBigToast('⚠️ ' + st + ' ' + (cart[idx].unit || 'ခု') + ' သာ', '', 'danger', false);
         return;
     } else {
@@ -2410,7 +2090,7 @@ function updateSearchQtyDisplay(barcode, qty) {
 }
 
 function confirmFromSearch(barcode, product) {
-    playConfirmSound();
+    playBeep();
     var bStr = barcode.toString();
     var cart = carts[activeCartIndex];
     
@@ -2425,7 +2105,6 @@ function confirmFromSearch(barcode, product) {
     if (idx === -1) {
         var st = getStockNumber(product);
         if (st <= 0) {
-            playErrorSound();
             showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false);
             return;
         }
@@ -2513,13 +2192,12 @@ function renderCart() {
 }
 
 function changeCartItemPrice(index, newPrice) {
-    playClickSound();
+    playBeep();
     var cart = carts[activeCartIndex];
     if (!cart[index]) return;
     
     var price = parseFloat(newPrice);
     if (isNaN(price) || price < 0) {
-        playErrorSound();
         showBigToast('⚠️ ဈေးနှုန်းမှန်ကန်စွာထည့်ပါ', '', 'danger', false);
         renderCart();
         return;
@@ -2540,13 +2218,12 @@ function changeCartItemPrice(index, newPrice) {
 }
 
 function changeQty(i, c) {
-    playClickSound();
+    playBeep();
     var cart = carts[activeCartIndex];
     if (!cart[i]) return;
     var st = getStockNumber(cart[i]), nq = cart[i].qty + c;
     if (nq <= 0) cart.splice(i, 1);
     else if (nq > st) {
-        playErrorSound();
         showBigToast('⚠️ ' + st + ' ' + (cart[i].unit||'ခု') + ' သာ', '', 'danger', false);
         return;
     } else cart[i].qty = nq;
@@ -2558,12 +2235,11 @@ function changeQty(i, c) {
 }
 
 function changeQtySelectFromCart(i, nq) {
-    playClickSound();
+    playBeep();
     var cart = carts[activeCartIndex];
     if (!cart[i]) return;
     var st = getStockNumber(cart[i]), tq = parseInt(nq) || 1;
     if (tq > st) {
-        playErrorSound();
         showBigToast('⚠️ ' + st + ' ' + (cart[i].unit||'ခု') + ' သာ', '', 'danger', false);
         return;
     }
@@ -2576,7 +2252,7 @@ function changeQtySelectFromCart(i, nq) {
 }
 
 function removeCartItemCompletely(i) {
-    playClickSound();
+    playBeep();
     carts[activeCartIndex].splice(i, 1);
     renderCart();
     updateScannedPreview();
@@ -2699,14 +2375,12 @@ function updateScannedPreview() {
 function checkout() {
     var cart = carts[activeCartIndex];
     if (!cart.length) {
-        playErrorSound();
         showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
         return;
     }
     var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
     var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText, disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value, sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm };
     supabase.from('SalesHistory').insert([sd]).then(function() {
-        playCheckoutSound();
         salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString() });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
@@ -2724,7 +2398,6 @@ function checkout() {
             }
         }
     }).catch(function(err) {
-        playConfirmSound();
         salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString() });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
@@ -2769,7 +2442,6 @@ function printVoucher(sale) {
             }
         }
         if (!found) {
-            playErrorSound();
             showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false);
             return;
         }
@@ -2792,13 +2464,15 @@ function printVoucher(sale) {
     }
     var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
     
-    var datePart = dt.split(',')[0] || dt;
-    var timePart = dt.split(',')[1] || '';
+    // ===== ရက်စွဲနဲ့ အချိန်ကို ခွဲထုတ်ပါ =====
+    var datePart = dt.split(',')[0] || dt;  // "25/07/2026"
+    var timePart = dt.split(',')[1] || '';  // " 14:30:25"
     timePart = timePart.trim();
     
     var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table>' +
         '<tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">' + vid + '</td></tr>' +
         '<tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">' + cn + '</td></tr>' +
+        // ===== ရက်စွဲနဲ့ အချိန်ကို သီးခြားပြပါ =====
         '<tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">' + datePart + '</td></tr>' +
         '<tr><td style="width:30%;">အချိန်:</td><td style="width:70%;text-align:right;">' + timePart + '</td></tr>' +
         '<tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">' + pm + '</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>' + itemsHTML + '</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">' + subtotal.toLocaleString() + ' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-' + disc + '</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">' + total + ' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
@@ -2875,7 +2549,6 @@ function searchHistory() {
 function deleteSaleFromSheet(vid) {
     if (!confirm("ဖျက်မှာသေချာလား?")) return;
     supabase.from('SalesHistory').delete().eq('voucher_id', vid.toString()).then(function() {
-        playConfirmSound();
         salesHistory = salesHistory.filter(function(s) {
             return (s.voucher_id || '').toString() !== vid.toString();
         });
@@ -2883,7 +2556,6 @@ function deleteSaleFromSheet(vid) {
         displayHistory(salesHistory);
         showBigToast('🗑️ ဖျက်ပြီး - Sync လုပ်ပါ', '', 'success', false);
     }).catch(function(err) {
-        playErrorSound();
         showBigToast('❌ Error: ' + err.message, '', 'danger', false);
     });
 }
@@ -2893,7 +2565,6 @@ function clearAllSalesHistoryOnline(btn) {
     btn.disabled = true;
     btn.innerText = "⏳";
     supabase.from('SalesHistory').delete().neq('id', 0).then(function() {
-        playConfirmSound();
         localStorage.removeItem('salesHistory');
         salesHistory = [];
         displayHistory(salesHistory);
@@ -2901,7 +2572,6 @@ function clearAllSalesHistoryOnline(btn) {
         btn.innerText = "⚠️ အားလုံးဖျက်မည်";
         showBigToast('✅ ရှင်းပြီး', '', 'success', false);
     }).catch(function(err) {
-        playErrorSound();
         btn.disabled = false;
         btn.innerText = "⚠️ အားလုံးဖျက်မည်";
         showBigToast('❌ Error: ' + err.message, '', 'danger', false);
@@ -3054,7 +2724,6 @@ function cleanupAdminScroll() {
 function addNewProduct() {
     var name = document.getElementById('new-name').value.trim(), price = document.getElementById('new-price').value.trim();
     if (!name || !price) {
-        playErrorSound();
         showBigToast('ဖြည့်ပါ', '', 'danger', false);
         return;
     }
@@ -3070,7 +2739,6 @@ function addNewProduct() {
         unit: document.getElementById('new-unit').value || 'ခု'
     };
     supabase.from('Products').insert([np]).then(function() {
-        playConfirmSound();
         btn.disabled = false;
         showBigToast('✅ သိမ်းပြီး', '', 'success', false);
         document.getElementById('new-barcode').value = '';
@@ -3082,7 +2750,6 @@ function addNewProduct() {
         loadProductsFromSheet();
         switchTab('sales');
     }).catch(function(err) {
-        playErrorSound();
         btn.disabled = false;
         showBigToast('❌ Error: ' + err.message, '', 'danger', false);
     });
@@ -3094,7 +2761,6 @@ function uploadProductToSheet(productId) {
         if (productsDB[i].id === productId) { prod = productsDB[i]; break; }
     }
     if (!prod) {
-        playErrorSound();
         showBigToast('❌ Product မတွေ့ပါ', '', 'danger', false);
         return;
     }
@@ -3103,14 +2769,12 @@ function uploadProductToSheet(productId) {
     btn.innerText = "⏳";
     supabase.from('Products').update({ price: Number(price), stock: Number(stock), extra1: String(cost), unit: unit }).eq('id', productId)
         .then(function() {
-            playConfirmSound();
             btn.disabled = false;
             btn.innerText = "💾 ပြင်";
             showBigToast('✅ ပြင်ပြီး', '', 'success', false);
             loadProductsFromSheet();
         })
         .catch(function(err) {
-            playErrorSound();
             btn.disabled = false;
             btn.innerText = "💾 ပြင်";
             showBigToast('❌ Error: ' + err.message, '', 'danger', false);
@@ -3125,14 +2789,12 @@ function deleteProductFromSheet(productId) {
     if (!prod) return;
     if (!confirm(prod.name + ' (ID: ' + productId + ') ဖျက်မှာသေချာလား?')) return;
     supabase.from('Products').delete().eq('id', productId).then(function() {
-        playConfirmSound();
         productsDB = productsDB.filter(function(p) { return p.id !== productId; });
         resetAdminProductList();
         renderAdminProducts(productsDB);
         showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false);
         loadProductsFromSheet();
     }).catch(function(err) {
-        playErrorSound();
         showBigToast('❌ Error: ' + err.message, '', 'danger', false);
     });
 }
@@ -3454,7 +3116,7 @@ function onScanSuccessFull(dt) {
     if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return;
     lastScannedBarcode = dt;
     lastScannedTime = now;
-    playScanSuccessSound();
+    playBeep();
     var matchedProducts = barcodeIndex[dt.toString()] || [];
     if (matchedProducts.length === 0) {
         pendingBarcode = dt;
@@ -3468,7 +3130,6 @@ function onScanSuccessFull(dt) {
         var p = matchedProducts[0];
         var st = getStockNumber(p);
         if (st <= 0) {
-            playErrorSound();
             showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false);
             isScanPaused = true;
             canScan = false;
@@ -3610,7 +3271,6 @@ function toggleFlashlight() {
                 btn.innerHTML = '💡';
             }
         } catch(e) {
-            playErrorSound();
             showBigToast('⚠️ ဓာတ်မီး မရပါ', '', 'danger', false);
         }
     }
@@ -3645,7 +3305,6 @@ function toggleTheme() {
 function switchTab(id) {
     var r = localStorage.getItem('currentUserRole') || 'user';
     if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') {
-        playErrorSound();
         showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false);
         return;
     }
@@ -3664,9 +3323,6 @@ function switchTab(id) {
         }, 50);
     } else {
         cleanupAdminScroll();
-    }
-    if (id === 'settings') {
-        loadSettings();
     }
     if (id === 'dashboard') {
         calculateTodaySales();
@@ -3700,7 +3356,6 @@ function updatePasswords() {
     var newStaff = document.getElementById('new-staff-password').value.trim();
     var newSpecial = document.getElementById('new-special-password').value.trim();
     if (!newAdmin && !newStaff && !newSpecial) {
-        playErrorSound();
         showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false);
         return;
     }
@@ -3711,7 +3366,6 @@ function updatePasswords() {
     supabase.from('settings').update(updateData).eq('id', 1)
         .then(function(response) {
             if (!response.error) {
-                playConfirmSound();
                 if (newAdmin) adminPassword = newAdmin;
                 if (newStaff) homePassword = newStaff;
                 if (newSpecial) specialPassword = newSpecial;
@@ -3725,12 +3379,10 @@ function updatePasswords() {
                     window.location.reload();
                 }, 3000);
             } else {
-                playErrorSound();
                 showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false);
             }
         })
         .catch(function(err) {
-            playErrorSound();
             showBigToast('❌ Error: ' + err.message, '', 'danger', false);
         });
 }
@@ -3769,7 +3421,6 @@ function checkUniversalLogin() {
             setupSpecialRoleUI();
         }
         
-        loadSettings();
         initAudio();
     } else {
         document.getElementById('lock-error').style.display = 'block';
@@ -3804,6 +3455,13 @@ function lockAppImmediate() {
     localStorage.removeItem('currentUserRole');
     document.documentElement.removeAttribute('data-role');
     window.location.reload();
+}
+
+function initAudio() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    } catch(e) {}
 }
 
 // =====================================================================
@@ -3859,8 +3517,6 @@ function loadSalesHistoryFromSheet() {
 window.onload = function() {
     var theme = document.documentElement.getAttribute('data-theme') || 'light';
     document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
-    
-    loadSettings();
     
     var cached = localStorage.getItem('productsCache');
     if (cached) {
