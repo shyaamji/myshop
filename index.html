@@ -3133,9 +3133,9 @@ function startScanner() {
         html5QrcodeScannerFull = null;
     }
     html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", {
-        fps: 30,
-        qrbox: { width: 270, height: 350 },
-        aspectRatio: 1.5,
+        fps: 15,
+        qrbox: { width: 270, height: 600 },
+        aspectRatio: 1.0,
         disableFlip: false,
         formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
