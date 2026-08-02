@@ -1278,285 +1278,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
     </div>
 </div>
 
-// =====================================================================
-// STOCK ALERT SYSTEM - LIVE PUSH NOTIFICATION
-// =====================================================================
-
-// 1. Check stock and send alert
-function checkStockAndNotify(product) {
-    if (!product) return;
-    
-    var currentStock = getStockNumber(product);
-    var minStock = Number(product.extra2) || 5; // extra2 ထဲမှာ min stock သိမ်းထားပါတယ်
-    var productName = product.name || 'ပစ္စည်း';
-    var unit = product.unit || 'ခု';
-    
-    // စတော့ ကုန်သွားရင်
-    if (currentStock <= 0) {
-        var msg = '🔴 ' + productName + ' ကုန်သွားပါပြီ!';
-        var subMsg = 'ကျေးဇူးပြု၍ ပြန်လည်ဖြည့်သွင်းပါ။';
-        showBigToast(msg, subMsg, 'danger', false);
-        
-        // Browser Notification (ခွင့်ပြုထားရင်)
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('⚠️ စတော့ကုန်သွားပါပြီ', {
-                body: productName + ' ကုန်သွားပါပြီ။ ပြန်လည်ဖြည့်သွင်းပါ။',
-                icon: 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
-            });
-        }
-        
-        playBeep();
-        return;
-    }
-    
-    // စတော့ အနည်းငယ်သာ ကျန်ရင် (min stock ထက် နည်းသွားရင်)
-    if (currentStock <= minStock) {
-        var msg = '🟡 ' + productName + ' စတော့ နည်းနေပါပြီ!';
-        var subMsg = 'လက်ကျန် ' + currentStock + ' ' + unit + ' သာ ကျန်ပါတော့သည်။';
-        showBigToast(msg, subMsg, 'warning', false);
-        
-        // Browser Notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('⚠️ စတော့နည်းနေပါပြီ', {
-                body: productName + ' လက်ကျန် ' + currentStock + ' ' + unit + ' သာ ကျန်ပါတော့သည်။',
-                icon: 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
-            });
-        }
-        
-        playBeep();
-        return;
-    }
-    
-    // စတော့ လုံလောက်ပါတယ် (ပုံမှန်)
-    if (currentStock > minStock) {
-        // ပုံမှန်အတိုင်း ပြသမှာ မဟုတ်ပါဘူး (သတိပေးချက်မလိုပါ)
-        return;
-    }
-}
-
-// 2. Override add to cart function to check stock
-function addToCartWithStockCheck(product, qty) {
-    if (!product) return;
-    
-    var currentStock = getStockNumber(product);
-    var requestedQty = qty || 1;
-    
-    if (currentStock <= 0) {
-        showBigToast('🔴 ' + product.name + ' ကုန်သွားပါပြီ', 'ကျေးဇူးပြု၍ ပြန်လည်ဖြည့်သွင်းပါ။', 'danger', false);
-        checkStockAndNotify(product);
-        return false;
-    }
-    
-    if (currentStock < requestedQty) {
-        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
-        return false;
-    }
-    
-    // စတော့ လုံလောက်ပါတယ်
-    // ပုံမှန်အတိုင်း ထည့်ပါ
-    return true;
-}
-
-// 3. After adding to cart, check stock again
-function afterAddToCart(product) {
-    if (!product) return;
-    checkStockAndNotify(product);
-}
-
-// 4. After checkout, check stock for all items
-function afterCheckout(cartItems) {
-    if (!cartItems || !cartItems.length) return;
-    
-    for (var i = 0; i < cartItems.length; i++) {
-        var item = cartItems[i];
-        var product = productsDB.find(function(p) {
-            return p.id === item.id || p.barcode.toString() === item.barcode.toString();
-        });
-        if (product) {
-            checkStockAndNotify(product);
-        }
-    }
-}
-
-// 5. Request notification permission on load
-function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission().then(function(permission) {
-            if (permission === 'granted') {
-                console.log('✅ Notification permission granted');
-            }
-        });
-    }
-}
-
-// 6. Override existing functions to include stock check
-// ===== MODIFIED: toastQtyConfirm =====
-var originalToastQtyConfirm = toastQtyConfirm;
-toastQtyConfirm = function() {
-    if (!toastProduct) return;
-    
-    var canAdd = addToCartWithStockCheck(toastProduct, toastQty);
-    if (!canAdd) {
-        // စတော့မလုံလောက်ရင် မထည့်တော့ပါ
-        return;
-    }
-    
-    // ပုံမှန်အတိုင်း ထည့်ပါ
-    originalToastQtyConfirm();
-    
-    // ထည့်ပြီးရင် စတော့ စစ်ဆေးပါ
-    afterAddToCart(toastProduct);
-};
-
-// ===== MODIFIED: confirmQtyModal =====
-var originalConfirmQtyModal = confirmQtyModal;
-confirmQtyModal = function() {
-    if (!modalProduct) return;
-    
-    var canAdd = addToCartWithStockCheck(modalProduct, modalQty);
-    if (!canAdd) {
-        // စတော့မလုံလောက်ရင် မထည့်တော့ပါ
-        return;
-    }
-    
-    // ပုံမှန်အတိုင်း ထည့်ပါ
-    originalConfirmQtyModal();
-    
-    // ထည့်ပြီးရင် စတော့ စစ်ဆေးပါ
-    afterAddToCart(modalProduct);
-};
-
-// ===== MODIFIED: changeQty =====
-var originalChangeQty = changeQty;
-changeQty = function(index, delta) {
-    var cart = carts[activeCartIndex];
-    if (!cart[index]) return;
-    
-    var product = cart[index];
-    var currentStock = getStockNumber(product);
-    var newQty = product.qty + delta;
-    
-    if (delta > 0 && newQty > currentStock) {
-        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
-        checkStockAndNotify(product);
-        return;
-    }
-    
-    // ပုံမှန်အတိုင်း လုပ်ပါ
-    originalChangeQty(index, delta);
-    
-    // စတော့ စစ်ဆေးပါ
-    if (delta > 0) {
-        var updatedProduct = productsDB.find(function(p) {
-            return p.id === product.id || p.barcode.toString() === product.barcode.toString();
-        });
-        if (updatedProduct) {
-            checkStockAndNotify(updatedProduct);
-        }
-    }
-};
-
-// ===== MODIFIED: changeQtySelectFromCart =====
-var originalChangeQtySelectFromCart = changeQtySelectFromCart;
-changeQtySelectFromCart = function(index, qty) {
-    var cart = carts[activeCartIndex];
-    if (!cart[index]) return;
-    
-    var product = cart[index];
-    var currentStock = getStockNumber(product);
-    var newQty = parseInt(qty) || 1;
-    
-    if (newQty > currentStock) {
-        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
-        checkStockAndNotify(product);
-        return;
-    }
-    
-    // ပုံမှန်အတိုင်း လုပ်ပါ
-    originalChangeQtySelectFromCart(index, qty);
-    
-    // စတော့ စစ်ဆေးပါ
-    var updatedProduct = productsDB.find(function(p) {
-        return p.id === product.id || p.barcode.toString() === product.barcode.toString();
-    });
-    if (updatedProduct) {
-        checkStockAndNotify(updatedProduct);
-    }
-};
-
-// ===== MODIFIED: checkout =====
-var originalCheckout = checkout;
-checkout = function() {
-    var cart = carts[activeCartIndex];
-    if (!cart || !cart.length) {
-        showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
-        return;
-    }
-    
-    // Check stock before checkout
-    var allAvailable = true;
-    for (var i = 0; i < cart.length; i++) {
-        var item = cart[i];
-        var product = productsDB.find(function(p) {
-            return p.id === item.id || p.barcode.toString() === item.barcode.toString();
-        });
-        if (product) {
-            var currentStock = getStockNumber(product);
-            if (currentStock < item.qty) {
-                showBigToast('⚠️ ' + product.name + ' လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
-                allAvailable = false;
-                break;
-            }
-        }
-    }
-    
-    if (!allAvailable) return;
-    
-    // ပုံမှန်အတိုင်း checkout လုပ်ပါ
-    originalCheckout();
-    
-    // Checkout လုပ်ပြီးရင် စတော့ စစ်ဆေးပါ
-    setTimeout(function() {
-        for (var j = 0; j < cart.length; j++) {
-            var item = cart[j];
-            var product = productsDB.find(function(p) {
-                return p.id === item.id || p.barcode.toString() === item.barcode.toString();
-            });
-            if (product) {
-                checkStockAndNotify(product);
-            }
-        }
-    }, 500);
-};
-
-// ===== MODIFIED: onScanSuccessFull =====
-var originalOnScanSuccessFull = onScanSuccessFull;
-onScanSuccessFull = function(barcode) {
-    // Call original function first
-    originalOnScanSuccessFull(barcode);
-    
-    // After scan, check stock
-    setTimeout(function() {
-        var matchedProducts = barcodeIndex[barcode.toString()] || [];
-        if (matchedProducts.length === 1) {
-            var product = matchedProducts[0];
-            checkStockAndNotify(product);
-        } else if (matchedProducts.length > 1) {
-            // For multiple products, check all
-            for (var i = 0; i < matchedProducts.length; i++) {
-                checkStockAndNotify(matchedProducts[i]);
-            }
-        }
-    }, 1000);
-};
-
-// ===== INIT: Request notification permission =====
-requestNotificationPermission();
-
-// =====================================================================
-// END OF STOCK ALERT SYSTEM
-// =====================================================================
-
 <!-- ===== SCANNER TOGGLE ===== -->
 <button class="scanner-popup-toggle" id="scannerToggleBtn" onclick="toggleFullScanner()">
     📷 <span class="badge-scan" id="scanBadge">●</span>
@@ -3686,7 +3407,286 @@ function resetFlashlight() {
         btn.classList.remove('active');
         btn.innerHTML = '🔦';
     }
+    // =====================================================================
+// STOCK ALERT SYSTEM - LIVE PUSH NOTIFICATION
+// =====================================================================
+
+// 1. Check stock and send alert
+function checkStockAndNotify(product) {
+    if (!product) return;
+    
+    var currentStock = getStockNumber(product);
+    var minStock = Number(product.extra2) || 5; // extra2 ထဲမှာ min stock သိမ်းထားပါတယ်
+    var productName = product.name || 'ပစ္စည်း';
+    var unit = product.unit || 'ခု';
+    
+    // စတော့ ကုန်သွားရင်
+    if (currentStock <= 0) {
+        var msg = '🔴 ' + productName + ' ကုန်သွားပါပြီ!';
+        var subMsg = 'ကျေးဇူးပြု၍ ပြန်လည်ဖြည့်သွင်းပါ။';
+        showBigToast(msg, subMsg, 'danger', false);
+        
+        // Browser Notification (ခွင့်ပြုထားရင်)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('⚠️ စတော့ကုန်သွားပါပြီ', {
+                body: productName + ' ကုန်သွားပါပြီ။ ပြန်လည်ဖြည့်သွင်းပါ။',
+                icon: 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
+            });
+        }
+        
+        playBeep();
+        return;
+    }
+    
+    // စတော့ အနည်းငယ်သာ ကျန်ရင် (min stock ထက် နည်းသွားရင်)
+    if (currentStock <= minStock) {
+        var msg = '🟡 ' + productName + ' စတော့ နည်းနေပါပြီ!';
+        var subMsg = 'လက်ကျန် ' + currentStock + ' ' + unit + ' သာ ကျန်ပါတော့သည်။';
+        showBigToast(msg, subMsg, 'warning', false);
+        
+        // Browser Notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('⚠️ စတော့နည်းနေပါပြီ', {
+                body: productName + ' လက်ကျန် ' + currentStock + ' ' + unit + ' သာ ကျန်ပါတော့သည်။',
+                icon: 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
+            });
+        }
+        
+        playBeep();
+        return;
+    }
+    
+    // စတော့ လုံလောက်ပါတယ် (ပုံမှန်)
+    if (currentStock > minStock) {
+        // ပုံမှန်အတိုင်း ပြသမှာ မဟုတ်ပါဘူး (သတိပေးချက်မလိုပါ)
+        return;
+    }
 }
+
+// 2. Override add to cart function to check stock
+function addToCartWithStockCheck(product, qty) {
+    if (!product) return;
+    
+    var currentStock = getStockNumber(product);
+    var requestedQty = qty || 1;
+    
+    if (currentStock <= 0) {
+        showBigToast('🔴 ' + product.name + ' ကုန်သွားပါပြီ', 'ကျေးဇူးပြု၍ ပြန်လည်ဖြည့်သွင်းပါ။', 'danger', false);
+        checkStockAndNotify(product);
+        return false;
+    }
+    
+    if (currentStock < requestedQty) {
+        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
+        return false;
+    }
+    
+    // စတော့ လုံလောက်ပါတယ်
+    // ပုံမှန်အတိုင်း ထည့်ပါ
+    return true;
+}
+
+// 3. After adding to cart, check stock again
+function afterAddToCart(product) {
+    if (!product) return;
+    checkStockAndNotify(product);
+}
+
+// 4. After checkout, check stock for all items
+function afterCheckout(cartItems) {
+    if (!cartItems || !cartItems.length) return;
+    
+    for (var i = 0; i < cartItems.length; i++) {
+        var item = cartItems[i];
+        var product = productsDB.find(function(p) {
+            return p.id === item.id || p.barcode.toString() === item.barcode.toString();
+        });
+        if (product) {
+            checkStockAndNotify(product);
+        }
+    }
+}
+
+// 5. Request notification permission on load
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                console.log('✅ Notification permission granted');
+            }
+        });
+    }
+}
+
+// 6. Override existing functions to include stock check
+// ===== MODIFIED: toastQtyConfirm =====
+var originalToastQtyConfirm = toastQtyConfirm;
+toastQtyConfirm = function() {
+    if (!toastProduct) return;
+    
+    var canAdd = addToCartWithStockCheck(toastProduct, toastQty);
+    if (!canAdd) {
+        // စတော့မလုံလောက်ရင် မထည့်တော့ပါ
+        return;
+    }
+    
+    // ပုံမှန်အတိုင်း ထည့်ပါ
+    originalToastQtyConfirm();
+    
+    // ထည့်ပြီးရင် စတော့ စစ်ဆေးပါ
+    afterAddToCart(toastProduct);
+};
+
+// ===== MODIFIED: confirmQtyModal =====
+var originalConfirmQtyModal = confirmQtyModal;
+confirmQtyModal = function() {
+    if (!modalProduct) return;
+    
+    var canAdd = addToCartWithStockCheck(modalProduct, modalQty);
+    if (!canAdd) {
+        // စတော့မလုံလောက်ရင် မထည့်တော့ပါ
+        return;
+    }
+    
+    // ပုံမှန်အတိုင်း ထည့်ပါ
+    originalConfirmQtyModal();
+    
+    // ထည့်ပြီးရင် စတော့ စစ်ဆေးပါ
+    afterAddToCart(modalProduct);
+};
+
+// ===== MODIFIED: changeQty =====
+var originalChangeQty = changeQty;
+changeQty = function(index, delta) {
+    var cart = carts[activeCartIndex];
+    if (!cart[index]) return;
+    
+    var product = cart[index];
+    var currentStock = getStockNumber(product);
+    var newQty = product.qty + delta;
+    
+    if (delta > 0 && newQty > currentStock) {
+        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
+        checkStockAndNotify(product);
+        return;
+    }
+    
+    // ပုံမှန်အတိုင်း လုပ်ပါ
+    originalChangeQty(index, delta);
+    
+    // စတော့ စစ်ဆေးပါ
+    if (delta > 0) {
+        var updatedProduct = productsDB.find(function(p) {
+            return p.id === product.id || p.barcode.toString() === product.barcode.toString();
+        });
+        if (updatedProduct) {
+            checkStockAndNotify(updatedProduct);
+        }
+    }
+};
+
+// ===== MODIFIED: changeQtySelectFromCart =====
+var originalChangeQtySelectFromCart = changeQtySelectFromCart;
+changeQtySelectFromCart = function(index, qty) {
+    var cart = carts[activeCartIndex];
+    if (!cart[index]) return;
+    
+    var product = cart[index];
+    var currentStock = getStockNumber(product);
+    var newQty = parseInt(qty) || 1;
+    
+    if (newQty > currentStock) {
+        showBigToast('⚠️ လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
+        checkStockAndNotify(product);
+        return;
+    }
+    
+    // ပုံမှန်အတိုင်း လုပ်ပါ
+    originalChangeQtySelectFromCart(index, qty);
+    
+    // စတော့ စစ်ဆေးပါ
+    var updatedProduct = productsDB.find(function(p) {
+        return p.id === product.id || p.barcode.toString() === product.barcode.toString();
+    });
+    if (updatedProduct) {
+        checkStockAndNotify(updatedProduct);
+    }
+};
+
+// ===== MODIFIED: checkout =====
+var originalCheckout = checkout;
+checkout = function() {
+    var cart = carts[activeCartIndex];
+    if (!cart || !cart.length) {
+        showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
+        return;
+    }
+    
+    // Check stock before checkout
+    var allAvailable = true;
+    for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        var product = productsDB.find(function(p) {
+            return p.id === item.id || p.barcode.toString() === item.barcode.toString();
+        });
+        if (product) {
+            var currentStock = getStockNumber(product);
+            if (currentStock < item.qty) {
+                showBigToast('⚠️ ' + product.name + ' လက်ကျန် ' + currentStock + ' ' + (product.unit || 'ခု') + ' သာ', 'ကျေးဇူးပြု၍ လျှော့ယူပါ။', 'danger', false);
+                allAvailable = false;
+                break;
+            }
+        }
+    }
+    
+    if (!allAvailable) return;
+    
+    // ပုံမှန်အတိုင်း checkout လုပ်ပါ
+    originalCheckout();
+    
+    // Checkout လုပ်ပြီးရင် စတော့ စစ်ဆေးပါ
+    setTimeout(function() {
+        for (var j = 0; j < cart.length; j++) {
+            var item = cart[j];
+            var product = productsDB.find(function(p) {
+                return p.id === item.id || p.barcode.toString() === item.barcode.toString();
+            });
+            if (product) {
+                checkStockAndNotify(product);
+            }
+        }
+    }, 500);
+};
+
+// ===== MODIFIED: onScanSuccessFull =====
+var originalOnScanSuccessFull = onScanSuccessFull;
+onScanSuccessFull = function(barcode) {
+    // Call original function first
+    originalOnScanSuccessFull(barcode);
+    
+    // After scan, check stock
+    setTimeout(function() {
+        var matchedProducts = barcodeIndex[barcode.toString()] || [];
+        if (matchedProducts.length === 1) {
+            var product = matchedProducts[0];
+            checkStockAndNotify(product);
+        } else if (matchedProducts.length > 1) {
+            // For multiple products, check all
+            for (var i = 0; i < matchedProducts.length; i++) {
+                checkStockAndNotify(matchedProducts[i]);
+            }
+        }
+    }, 1000);
+};
+
+// ===== INIT: Request notification permission =====
+requestNotificationPermission();
+
+// =====================================================================
+// END OF STOCK ALERT SYSTEM
+// =====================================================================
+}
+
 
 // =====================================================================
 // THEME / TAB / PASSWORD / LOCK
