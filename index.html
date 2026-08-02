@@ -3540,6 +3540,8 @@ function checkUniversalLogin() {
         }
         
         initAudio();
+        // ★★★ FCM ကို Login ဝင်ပြီးမှ စတင်ပါ ★★★
+        initFCM();
     } else {
         document.getElementById('lock-error').style.display = 'block';
         document.getElementById('lock-error').textContent = '❌ Password မှားယွင်းနေပါသည်။';
@@ -3580,6 +3582,154 @@ function initAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     } catch(e) {}
+}
+
+// =====================================================================
+// FIREBASE PUSH NOTIFICATION (FCM)
+// =====================================================================
+
+// 🔥 Firebase Config (VAPID Key ထည့်သွင်းပြီး)
+var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCW8IP1YnDDlfL5iKPuFnVAIgLuO2EpJW4",
+    authDomain: "winthiri-eddf7.firebaseapp.com",
+    projectId: "winthiri-eddf7",
+    storageBucket: "winthiri-eddf7.firebasestorage.app",
+    messagingSenderId: "472856050149",
+    appId: "1:472856050149:web:a52bd275c846120f75570c",
+    vapidKey: "BDh3pDuiuSqhqhZU3EP2m4mo8OvcZzH5h04-lvWRQJRxgXsqY6DB5cqf4sk02xPXqbej_P7mRYFzeVAJpnEClNE"  // ← VAPID Key ထည့်ပြီး
+};
+
+// 📱 FCM Variables
+var messaging = null;
+var fcmToken = null;
+
+// 📱 FCM Initialization
+function initFCM() {
+    // PWA Mode စစ်ဆေးခြင်း
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone || 
+                window.location.protocol === 'app:';
+    
+    if (!isPWA) {
+        console.log('🌐 Web Browser Mode - Push Notification ကို သုံးမည်မဟုတ်ပါ');
+        return;
+    }
+    
+    // Firebase SDK မရှိသေးရင် ထည့်သွင်းပါ
+    if (typeof firebase === 'undefined') {
+        console.log('⏳ Firebase SDK ကို ထည့်သွင်းနေပါသည်...');
+        var script1 = document.createElement('script');
+        script1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+        document.head.appendChild(script1);
+        
+        var script2 = document.createElement('script');
+        script2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js';
+        document.head.appendChild(script2);
+        
+        script2.onload = function() {
+            console.log('✅ Firebase SDK ထည့်သွင်းပြီးပါပြီ');
+            initializeFirebase();
+        };
+    } else {
+        initializeFirebase();
+    }
+}
+
+function initializeFirebase() {
+    try {
+        // Firebase Initialize
+        firebase.initializeApp({
+            apiKey: FIREBASE_CONFIG.apiKey,
+            authDomain: FIREBASE_CONFIG.authDomain,
+            projectId: FIREBASE_CONFIG.projectId,
+            storageBucket: FIREBASE_CONFIG.storageBucket,
+            messagingSenderId: FIREBASE_CONFIG.messagingSenderId,
+            appId: FIREBASE_CONFIG.appId
+        });
+        
+        messaging = firebase.messaging();
+        console.log('✅ FCM ကို စတင်ပါပြီ');
+        
+        // Notification ခွင့်ပြုချက်တောင်းခြင်း
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                console.log('✅ Notification ခွင့်ပြုပြီးပါပြီ');
+                getFCMToken();
+            } else {
+                console.log('❌ Notification ခွင့်မပြုပါ');
+            }
+        });
+        
+        // Foreground Message လက်ခံခြင်း
+        messaging.onMessage(function(payload) {
+            console.log('📩 Foreground Message:', payload);
+            var title = payload.data?.title || payload.notification?.title || '📢 Stock Alert';
+            var body = payload.data?.body || payload.notification?.body || '';
+            showBigToast('🔔 ' + title, body, 'success', false);
+            playBeep();
+        });
+        
+    } catch(e) {
+        console.log('❌ FCM Error:', e);
+    }
+}
+
+// FCM Token ရယူခြင်း
+function getFCMToken() {
+    if (!messaging) {
+        console.log('❌ Messaging မရှိပါ');
+        return;
+    }
+    
+    if (!FIREBASE_CONFIG.vapidKey) {
+        console.log('⚠️ VAPID Key မထည့်ရသေးပါ။ Firebase Console > Cloud Messaging မှ ရယူပါ။');
+        return;
+    }
+    
+    messaging.getToken({ vapidKey: FIREBASE_CONFIG.vapidKey })
+        .then(function(token) {
+            fcmToken = token;
+            console.log('✅ FCM Token:', token);
+            
+            // Supabase မှာ Token သိမ်းဆည်းခြင်း
+            saveTokenToSupabase(token);
+            
+            // Token သက်တမ်းကုန်တိုင်း ပြန်ရယူခြင်း
+            messaging.onTokenRefresh(function() {
+                messaging.getToken({ vapidKey: FIREBASE_CONFIG.vapidKey })
+                    .then(function(newToken) {
+                        fcmToken = newToken;
+                        saveTokenToSupabase(newToken);
+                    });
+            });
+        })
+        .catch(function(err) {
+            console.log('❌ Token Error:', err);
+        });
+}
+
+// Supabase မှာ Token သိမ်းဆည်းခြင်း
+function saveTokenToSupabase(token) {
+    if (!token) return;
+    
+    var userId = localStorage.getItem('userId') || 'device_' + Date.now();
+    if (!localStorage.getItem('userId')) {
+        localStorage.setItem('userId', userId);
+    }
+    
+    // fcm_tokens ဇယားကို အရင်ဖန်တီးပါ (Supabase SQL Editor မှာ လုပ်ပါ)
+    supabase.from('fcm_tokens').upsert({
+        user_id: userId,
+        token: token,
+        device_info: navigator.userAgent || 'Unknown',
+        updated_at: new Date().toISOString()
+    }, { onConflict: 'token' })
+    .then(function() {
+        console.log('✅ Token ကို Supabase မှာ သိမ်းပြီးပါပြီ');
+    })
+    .catch(function(err) {
+        console.log('❌ Token သိမ်းရာတွင် အမှားရှိပါသည်:', err);
+    });
 }
 
 // =====================================================================
@@ -3656,6 +3806,8 @@ window.onload = function() {
             }
             document.getElementById('app-lock-screen').style.display = 'none';
             document.getElementById('app-main-content').style.display = 'block';
+            // ★★★ Login ဝင်ပြီးမှ FCM ကို စတင်ပါ ★★★
+            initFCM();
         }
     });
     
