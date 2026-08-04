@@ -216,7 +216,6 @@
         .inline-cart-select { width: 50px !important; flex: 0 0 auto !important; font-size: 11px !important; padding: 4px 4px !important; border-radius: 8px !important; text-align: center; }
         
         /* ===== SEARCH ===== */
-        .search-item.added-to-cart {background: rgba(16, 185, 129, 0.1) !important; border-left: 4px solid var(--accent-success) !important;}[data-theme=dark] .search-item.added-to-cart {background: rgba(16, 185, 129, 0.15) !important;}
         .search-results { position: absolute; left: 0; right: 0; width: 100%; z-index: 9999; max-height: 260px; overflow-y: auto; background: var(--bg-card); border: 2px solid var(--accent-gold); border-radius: 14px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); margin-top: 6px; display: none; }
         .search-item { padding: 10px 14px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s; }
         .search-item:last-child { border-bottom: none; }
@@ -927,7 +926,18 @@ function filterProductNames() {
         var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
         var info = document.createElement('div'); info.className = 'item-info';
         info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
-        info.onclick = (function(p) { return function() { openQtyModal(p); }; })(prod);
+        info.onclick = (function(p, divEl) { return function() { 
+    // ★★★ အားလုံးရဲ့ အရောင်ကို မူရင်းအတိုင်းပြန်ထား ★★★
+    var allItems = document.querySelectorAll('.search-item');
+    for (var x = 0; x < allItems.length; x++) {
+        allItems[x].style.background = '';
+        allItems[x].style.borderLeft = '';
+    }
+    // ★★★ ရွေးထားတဲ့ အကွက်ကို အရောင်ပြောင်း ★★★
+    divEl.style.background = 'rgba(16, 185, 129, 0.2)';
+    divEl.style.borderLeft = '4px solid var(--accent-success)';
+    openQtyModal(p); 
+}; })(prod, div);
         var act = document.createElement('div'); act.className = 'item-actions';
         if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
         else {
@@ -981,20 +991,6 @@ function confirmFromSearch(barcode, product) {
     for (var i = 0; i < cart.length; i++) { if (cart[i].barcode && cart[i].barcode.toString() === bStr) { idx = i; break; } }
     if (idx === -1) { var st4 = getStockNumber(product); if (st4 <= 0) { showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false); return; } cart.push({ id: product.id, barcode: product.barcode, name: product.name, price: product.price, stock: product.stock, qty: 1, unit: product.unit || 'ခု' }); updateSearchQtyDisplay(bStr, 1); showBigToast('✅ ' + product.name + ' ×1 ထည့်ပြီး', '', 'success', false); }
     else { showBigToast('✅ ' + product.name + ' ×' + cart[idx].qty + ' ထည့်ပြီး', '', 'success', false); }
-    
-    // ★★★ ထည့်ပြီးတဲ့ search item ကို အစိမ်းရောင်ပြောင်းမယ် ★★★
-    var allSearchItems = document.querySelectorAll('.search-item');
-    for (var k = 0; k < allSearchItems.length; k++) {
-        var cart2 = carts[activeCartIndex];
-        var found = false;
-        for (var m = 0; m < cart2.length; m++) {
-            if (cart2[m].barcode && cart2[m].barcode.toString() === bStr) {
-                found = true; break;
-            }
-        }
-        if (found) { allSearchItems[k].classList.add('added-to-cart'); }
-    }
-    
     renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     document.getElementById('name-search-input').value = ''; document.getElementById('name-search-input').focus();
     document.getElementById('search-suggestions').style.display = 'none'; document.getElementById('close-search-btn').style.display = 'none';
