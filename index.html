@@ -1161,14 +1161,14 @@ function printVoucherFromOrder(orderId) {
     
     // Sales History ထဲထည့်မယ်
     var saleData = {
-        voucher_id: vid,
-        customer_name: order.customer_name,
-        items: JSON.stringify(order.items),
-        total_amount: String(totalAmount),
-        date: new Date().toLocaleString(),
-        extra1: order.discount || '0',
-        extra2: order.payment_mode || 'Cash'
-    };
+    voucher_id: vid,
+    customer_name: order.customer_name,
+    items: JSON.stringify(order.items),
+    total_amount: String(totalAmount),
+    date: new Date().toLocaleString(),
+    extra1: order.discount || '0',
+    extra2: '📋Order|' + (order.payment_mode || 'Cash')
+};
     
     supabase.from('SalesHistory').insert([saleData]).then(function() {
         salesHistory.unshift({
@@ -1439,10 +1439,21 @@ function displayHistory(data) {
         var il = '', items = sale.items;
         if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
         if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); }
-        var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0';
+        var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0';
         if (typeof total === 'number') total = String(total);
+        
+        // ★★★ Order / ဆိုင် ခွဲမယ် ★★★
+        var pm = sale.extra2 || 'Cash';
+        var voucherBadge = '';
+        if (pm.indexOf('📋Order|') === 0) {
+            voucherBadge = '<span class="badge bg-warning text-dark me-1" style="font-size:10px;">📋 Order</span>';
+            pm = pm.replace('📋Order|', '');
+        } else {
+            voucherBadge = '<span class="badge bg-success me-1" style="font-size:10px;">🛒 ဆိုင်</span>';
+        }
+        
         var db = role === 'admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\'' + vid + '\')">🗑️ ဖျက်</button>' : '';
-        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | 💳 ' + pm + '</div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0">' + (Number(total.replace(/,/g, '')) || 0).toLocaleString() + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>';
+        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: ' + vid + '</span><small class="text-muted">' + dt + '</small></div><div class="small mb-1">ဝယ်သူ: <b>' + cn + '</b> | ' + voucherBadge + '💳 ' + pm + '</div><hr class="my-2" style="border-style:dashed;"><div class="py-1">' + il + '</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0">' + (Number(total.replace(/,/g, '')) || 0).toLocaleString() + ' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\'' + vid + '\')">🖨️ ပြန်ထုတ်</button>' + db + '</div></div></div>';
     });
 }
 function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { return (s.voucher_id || '').toLowerCase().includes(t) || (s.customer_name || '').toLowerCase().includes(t); })); }
