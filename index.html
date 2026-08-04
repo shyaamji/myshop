@@ -216,7 +216,6 @@
         .inline-cart-select { width: 50px !important; flex: 0 0 auto !important; font-size: 11px !important; padding: 4px 4px !important; border-radius: 8px !important; text-align: center; }
         
         /* ===== SEARCH ===== */
-        .search-item.selected-item {background: #2563eb !important;}.search-item.selected-item .item-name {color: #ffffff !important;}.search-item.selected-item .item-price {color: #bfdbfe !important;}
         .search-results { position: absolute; left: 0; right: 0; width: 100%; z-index: 9999; max-height: 260px; overflow-y: auto; background: var(--bg-card); border: 2px solid var(--accent-gold); border-radius: 14px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); margin-top: 6px; display: none; }
         .search-item { padding: 10px 14px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s; }
         .search-item:last-child { border-bottom: none; }
@@ -927,7 +926,7 @@ function filterProductNames() {
         var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
         var info = document.createElement('div'); info.className = 'item-info';
         info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
-        info.onclick = (function(p, d) { return function() {var allItems = document.querySelectorAll('.search-item');for (var x = 0; x < allItems.length; x++) {allItems[x].classList.remove('selected-item');}d.classList.add('selected-item');openQtyModal(p);}; })(prod, div);
+        info.onclick = (function(p) { return function() { openQtyModal(p); }; })(prod);
         var act = document.createElement('div'); act.className = 'item-actions';
         if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
         else {
@@ -1439,7 +1438,7 @@ function displayHistory(data) {
     data.forEach(function(sale) {
         var il = '', items = sale.items;
         if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-        if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); }
+        if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty" style="padding:0 15px;">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total" style="padding-left:10px;">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>';}); }
         var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', disc = sale.extra1 || '0', total = sale.total_amount || sale.total || '0';
         if (typeof total === 'number') total = String(total);
         
