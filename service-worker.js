@@ -1,5 +1,5 @@
 // service-worker.js
-var CACHE_NAME = 'winsithiri-v2';
+var CACHE_NAME = 'winsithiri-v3';
 
 // Cache လုပ်မယ့်ဖိုင်တွေ (အင်တာနက်မရှိရင်ပြဖို့ အခြေခံဖိုင်တွေပဲ)
 var urlsToCache = [
