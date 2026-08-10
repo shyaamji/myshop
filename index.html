@@ -1362,7 +1362,59 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <button class="audio-vib-btn active" id="audio-toggle-btn" onclick="toggleAudio()" title="အသံ ဖွင့်/ပိတ်">🔊</button>
                 <button class="audio-vib-btn active" id="vib-toggle-btn" onclick="toggleVibration()" title="တုန်ခါမှု ဖွင့်/ပိတ်">📳</button>
             </div>
+            <button class="theme-toggle-btn ms-1" onclick="openPrinterSettings()" id="printer-settings-btn" title="Printer ချိတ်ဆက်ရန်">🖨️</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        </div>
+    </div>
+
+    <!-- ===== PRINTER SETTINGS MODAL ===== -->
+    <div id="printer-settings-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
+        <div style="background:var(--bg-card);border-radius:20px;padding:1.5rem;width:90%;max-width:420px;max-height:85vh;overflow-y:auto;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">🖨️ Printer ချိတ်ဆက်မှု</h6>
+                <button class="btn btn-sm btn-light" onclick="closePrinterSettings()">✕</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="text-secondary small fw-bold mb-2 d-block">Print နည်းလမ်း ရွေးပါ</label>
+                <div class="d-flex flex-column gap-2">
+                    <label class="d-flex align-items-center gap-2 p-2 rounded-3 border" style="cursor:pointer;">
+                        <input type="radio" name="printer-mode" value="browser" onchange="selectPrinterMode('browser')"> 
+                        <span>🖥️ စက်ပုံမှန် Print (USB / AirPrint / Share Printer)</span>
+                    </label>
+                    <label class="d-flex align-items-center gap-2 p-2 rounded-3 border" style="cursor:pointer;">
+                        <input type="radio" name="printer-mode" value="bluetooth" onchange="selectPrinterMode('bluetooth')">
+                        <span>📶 Bluetooth Thermal Printer</span>
+                    </label>
+                    <label class="d-flex align-items-center gap-2 p-2 rounded-3 border" style="cursor:pointer;">
+                        <input type="radio" name="printer-mode" value="wifi" onchange="selectPrinterMode('wifi')">
+                        <span>📡 WiFi Thermal Printer (Epson ePOS)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="bluetooth-printer-panel" style="display:none;" class="mb-3 p-3 rounded-3" style="background:var(--bg-input);">
+                <div class="small text-muted mb-2">Android Chrome/Edge browser လိုအပ်ပါသည်။ Thermal Printer ကို Bluetooth ဖွင့်ထားပြီး ချိတ်ဆက်ပါ။</div>
+                <div class="small fw-bold mb-2" id="bt-printer-status">❌ မချိတ်ဆက်ရသေးပါ</div>
+                <button class="btn btn-sm btn-premium-gold w-100" onclick="connectBluetoothPrinter()">🔗 Bluetooth Printer ချိတ်ဆက်ရန်</button>
+            </div>
+
+            <div id="wifi-printer-panel" style="display:none;" class="mb-3 p-3 rounded-3" style="background:var(--bg-input);">
+                <div class="small text-muted mb-2">Epson ePOS-Print (WiFi TM Series) ကို support ပါသည်။ Printer ရဲ့ IP Address ထည့်ပါ။</div>
+                <label class="small fw-bold mb-1 d-block">Printer IP Address</label>
+                <input type="text" id="wifi-printer-ip" class="form-control mb-2" placeholder="ဥပမာ - 192.168.1.50">
+                <button class="btn btn-sm btn-outline-secondary w-100" onclick="testWifiPrinter()">🔍 Test ချိတ်ဆက်မှု</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="small fw-bold mb-1 d-block">စက္ကူအကျယ် (Thermal Printer အတွက်)</label>
+                <select id="printer-paper-width" class="form-control">
+                    <option value="384">58mm (384px)</option>
+                    <option value="576">80mm (576px)</option>
+                </select>
+            </div>
+
+            <button class="btn btn-success w-100 fw-bold" style="background-color:var(--accent-success);border:none;border-radius:12px;" onclick="savePrinterSettings()">💾 သိမ်းမည်</button>
         </div>
     </div>
 
@@ -1492,6 +1544,15 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     </div>
                 </div>
             </div>
+            <div class="custom-card p-3" id="sold-out-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-danger mb-0">🔴 ကုန်သွားသော ပစ္စည်းများ</h6>
+                    <span class="badge bg-danger-subtle text-danger border px-2 py-1" id="sold-out-count">0</span>
+                </div>
+                <div id="sold-out-list" class="d-flex flex-column gap-2">
+                    <div class="text-center text-muted py-3">ဒေတာ တွက်ချက်နေပါသည်...</div>
+                </div>
+            </div>
             <div class="custom-card p-3">
                 <h6 class="fw-bold text-secondary mb-4">📈 နောက်ဆုံး ၇ ရက်စာ ရောင်းအားပြဇယား</h6>
                 <div style="position:relative;width:100%;height:220px;"><canvas id="salesChart"></canvas></div>
@@ -1610,6 +1671,10 @@ var modalProduct = null;
 var modalQty = 1;
 var audioEnabled = true;
 var vibrationEnabled = true;
+var printerSettings = JSON.parse(localStorage.getItem('printerSettings') || '{"mode":"browser","wifiIp":"","paperWidth":384}');
+var btPrinterDevice = null, btPrinterCharacteristic = null;
+var BT_PRINTER_SERVICE_UUID = '000018f0-0000-1000-8000-00805f9b34fb';
+var BT_PRINTER_CHAR_UUID = '00002af1-0000-1000-8000-00805f9b34fb';
 
 // ★★★ Cache ကို မ refresh ခင် delay လုပ်ဖို့ variable ★★★
 var productsLoadTimer = null;
@@ -1631,6 +1696,32 @@ function getStockNumber(p) {
     if (v === undefined || v === null || v === '') return 0;
     var n = Number(v);
     return isNaN(n) ? 0 : n;
+}
+
+// =====================================================================
+// ★★★ SOLD OUT PRODUCTS - separate stock=0 display ★★★
+// =====================================================================
+function getSoldOutProducts() {
+    return productsDB.filter(function(p) { return getStockNumber(p) <= 0; });
+}
+
+function renderSoldOutProducts() {
+    var wrap = document.getElementById('sold-out-list'), countEl = document.getElementById('sold-out-count');
+    if (!wrap) return;
+    var soldOut = getSoldOutProducts();
+    if (countEl) countEl.textContent = soldOut.length;
+    if (soldOut.length === 0) {
+        wrap.innerHTML = '<div class="text-center text-muted py-3">✅ ကုန်သွားသော ပစ္စည်း မရှိပါ</div>';
+        return;
+    }
+    var h = '';
+    soldOut.forEach(function(p) {
+        h += '<div class="d-flex justify-content-between align-items-center p-2 rounded-3 border" style="background:var(--bg-input);">' +
+             '<div><div class="fw-bold" style="font-size:14px;">' + p.name + '</div>' +
+             '<div class="text-muted" style="font-size:11px;">Barcode: ' + (p.barcode || '-') + '</div></div>' +
+             '<span class="badge bg-danger-subtle text-danger border px-2 py-1">🔴 ကုန်</span></div>';
+    });
+    wrap.innerHTML = h;
 }
 
 function buildBarcodeIndex() {
@@ -2085,6 +2176,9 @@ function checkout() {
         localStorage.setItem('productsCache', JSON.stringify(productsDB));
         localStorage.setItem('productsCacheTime', Date.now());
         
+        // ★★★ Refresh sold-out list immediately after stock deduction ★★★
+        renderSoldOutProducts();
+        
         // ★★★ Refresh from server after 2 sec ★★★
         clearTimeout(productsLoadTimer);
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
@@ -2109,11 +2203,18 @@ function scannerCheckout() {
 }
 
 // =====================================================================
-// PRINT VOUCHER
+// PRINT VOUCHER (dispatcher: browser / bluetooth / wifi)
 // =====================================================================
 function printVoucher(sale) {
     if (typeof sale === 'string') { var f = null; for (var i = 0; i < salesHistory.length; i++) { if ((salesHistory[i].voucher_id||'') === sale || (salesHistory[i].voucher_id||'').toString() === sale.toString()) { f = salesHistory[i]; break; } } if (!f) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; } sale = f; }
     if (!sale || !sale.items) return;
+    var mode = (printerSettings && printerSettings.mode) || 'browser';
+    if (mode === 'bluetooth') { printViaBluetooth(sale); return; }
+    if (mode === 'wifi') { printViaWifiEpos(sale); return; }
+    printViaBrowser(sale);
+}
+
+function printViaBrowser(sale) {
     var itemsArr = sale.items; if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } }
     if (!Array.isArray(itemsArr)) return;
     var itemsHTML = '', subtotal = 0;
@@ -2125,6 +2226,224 @@ function printVoucher(sale) {
     var fd = pf.contentWindow.document; fd.open(); fd.write(pc); fd.close();
     pf.onload = function() { pf.contentWindow.focus(); pf.contentWindow.print(); setTimeout(function() { if(pf&&pf.parentNode) document.body.removeChild(pf); }, 1000); };
     setTimeout(function() { try { pf.contentWindow.focus(); pf.contentWindow.print(); setTimeout(function() { if(pf&&pf.parentNode) document.body.removeChild(pf); }, 1000); } catch(e) {} }, 800);
+}
+
+// =====================================================================
+// ★★★ THERMAL PRINTER SUPPORT (Bluetooth + WiFi) ★★★
+// =====================================================================
+
+// Draws the receipt on a canvas (image-based so Myanmar text prints
+// correctly on ESC/POS thermal printers that lack Unicode fonts).
+function renderReceiptToCanvas(sale, paperWidth) {
+    var itemsArr = sale.items; if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } }
+    if (!Array.isArray(itemsArr)) itemsArr = [];
+    var vid = sale.voucher_id || '', cn = sale.customer_name || '', dt = sale.date || '', pm = sale.extra2 || 'Cash', disc = sale.extra1 || '0', total = sale.total_amount || '0';
+    var dp = dt.split(',')[0] || dt, tp = (dt.split(',')[1] || '').trim();
+    var subtotal = 0; itemsArr.forEach(function(it) { subtotal += Number(it.price) * Number(it.qty); });
+
+    var W = paperWidth || 384, pad = 10, lineH = 22;
+    var fontBold = 'bold 16px sans-serif', fontMain = '13px sans-serif', fontSmall = '11px sans-serif', fontHead = 'bold 12px sans-serif', fontTotal = 'bold 15px sans-serif';
+
+    var estH = pad + 24 + 14 + 18 + 8 + (lineH * 5) + 8 + lineH + (lineH * itemsArr.length) + 8 + (lineH * 3) + 12 + 30 + pad;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = estH;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, canvas.height);
+    ctx.fillStyle = '#000'; ctx.textBaseline = 'top';
+
+    function dashed(y) { ctx.save(); ctx.strokeStyle = '#000'; ctx.setLineDash([2, 2]); ctx.beginPath(); ctx.moveTo(4, y); ctx.lineTo(W - 4, y); ctx.stroke(); ctx.restore(); }
+    function row(y, label, value) { ctx.textAlign = 'left'; ctx.fillText(label, pad, y); ctx.textAlign = 'right'; ctx.fillText(value, W - pad, y); }
+
+    var y = pad;
+    ctx.font = fontBold; ctx.textAlign = 'center';
+    ctx.fillText('ဝင်းသီရိ', W / 2, y); y += 24;
+    ctx.font = fontSmall;
+    ctx.fillText('မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား', W / 2, y); y += 14;
+    ctx.fillText('ရေကန်လမ်း၊လားရှိုးမြို့', W / 2, y); y += 18;
+    dashed(y); y += 8;
+
+    ctx.font = fontMain;
+    row(y, 'Voucher:', vid); y += lineH;
+    row(y, 'ဝယ်သူ:', cn); y += lineH;
+    row(y, 'ရက်စွဲ:', dp); y += lineH;
+    row(y, 'အချိန်:', tp); y += lineH;
+    row(y, 'ငွေချေမှု:', pm); y += lineH;
+    dashed(y); y += 8;
+
+    ctx.font = fontHead;
+    row(y, 'ပစ္စည်း', 'သင့်ငွေ'); y += lineH;
+    ctx.font = fontMain;
+    itemsArr.forEach(function(it) {
+        var lineTotal = Number(it.price) * Number(it.qty), u = it.unit || '';
+        row(y, it.name + ' x' + it.qty + (u ? (' ' + u) : ''), Number(lineTotal).toLocaleString());
+        y += lineH;
+    });
+    dashed(y); y += 8;
+
+    ctx.font = fontMain;
+    row(y, 'ကျသင့်ငွေ:', subtotal.toLocaleString() + ' Ks'); y += lineH;
+    row(y, 'Discount:', '-' + disc); y += lineH;
+    ctx.font = fontTotal;
+    row(y, 'စုစုပေါင်း:', Number(total.toString().replace(/,/g, '')).toLocaleString() + ' Ks'); y += lineH;
+    dashed(y); y += 12;
+
+    ctx.font = fontSmall; ctx.textAlign = 'center';
+    ctx.fillText('ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!', W / 2, y);
+
+    return canvas;
+}
+
+// Converts a canvas to ESC/POS raster bit-image bytes (GS v 0).
+function canvasToEscPosRaster(canvas) {
+    var ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+    var imgData = ctx.getImageData(0, 0, w, h).data;
+    var widthBytes = Math.ceil(w / 8);
+    var header = [0x1D, 0x76, 0x30, 0x00, widthBytes & 0xFF, (widthBytes >> 8) & 0xFF, h & 0xFF, (h >> 8) & 0xFF];
+    var data = new Uint8Array(widthBytes * h);
+    for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+            var idx = (y * w + x) * 4;
+            var r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
+            var gray = r * 0.3 + g * 0.59 + b * 0.11;
+            if (a > 128 && gray < 180) { data[y * widthBytes + (x >> 3)] |= (0x80 >> (x % 8)); }
+        }
+    }
+    var full = new Uint8Array(2 + header.length + data.length + 4);
+    full.set([0x1B, 0x40], 0);
+    full.set(header, 2);
+    full.set(data, 2 + header.length);
+    full.set([0x0A, 0x0A, 0x0A, 0x0A], 2 + header.length + data.length);
+    return full;
+}
+
+function sendBluetoothData(bytes) {
+    return new Promise(function(resolve, reject) {
+        if (!btPrinterCharacteristic) { reject(new Error('Printer မချိတ်ဆက်ရသေးပါ')); return; }
+        var chunkSize = 100, i = 0;
+        function sendChunk() {
+            if (i >= bytes.length) { resolve(); return; }
+            var chunk = bytes.slice(i, i + chunkSize);
+            btPrinterCharacteristic.writeValue(chunk).then(function() {
+                i += chunkSize;
+                setTimeout(sendChunk, 20);
+            }).catch(reject);
+        }
+        sendChunk();
+    });
+}
+
+function printViaBluetooth(sale) {
+    if (!btPrinterCharacteristic) {
+        showBigToast('⚠️ Bluetooth Printer မချိတ်ဆက်ရသေးပါ', '🖨️ ခလုတ်နှိပ်ပြီး ချိတ်ဆက်ပါ', 'danger', false);
+        printViaBrowser(sale);
+        return;
+    }
+    try {
+        var canvas = renderReceiptToCanvas(sale, Number(printerSettings.paperWidth) || 384);
+        var bytes = canvasToEscPosRaster(canvas);
+        sendBluetoothData(bytes).then(function() {
+            showBigToast('🖨️ Bluetooth Printer မှ ပရင့်ထုတ်ပြီး', '', 'success', false);
+        }).catch(function(err) {
+            showBigToast('❌ Print မအောင်မြင်ပါ', err.message || '', 'danger', false);
+        });
+    } catch (e) { showBigToast('❌ Print Error', e.message || '', 'danger', false); }
+}
+
+function printViaWifiEpos(sale) {
+    if (!printerSettings.wifiIp) {
+        showBigToast('⚠️ Printer IP လိပ်စာ မထည့်ရသေးပါ', '🖨️ Printer Settings မှာ ထည့်ပါ', 'danger', false);
+        printViaBrowser(sale);
+        return;
+    }
+    try {
+        var canvas = renderReceiptToCanvas(sale, Number(printerSettings.paperWidth) || 384);
+        var b64 = canvas.toDataURL('image/png').split(',')[1];
+        var xml = '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"><image width="' + canvas.width + '" height="' + canvas.height + '" color="color_1" mode="mono">' + b64 + '</image><cut type="feed"/></epos-print></s:Body></s:Envelope>';
+        fetch('http://' + printerSettings.wifiIp + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+            body: xml
+        }).then(function(r) {
+            if (r.ok) showBigToast('🖨️ WiFi Printer မှ ပရင့်ထုတ်ပြီး', '', 'success', false);
+            else showBigToast('❌ Printer Response Error', '', 'danger', false);
+        }).catch(function(err) {
+            showBigToast('❌ WiFi Printer ချိတ်ဆက်မရပါ', 'IP လိပ်စာနှင့် Network စစ်ပါ', 'danger', false);
+        });
+    } catch (e) { showBigToast('❌ Print Error', e.message || '', 'danger', false); }
+}
+
+function connectBluetoothPrinter() {
+    if (!navigator.bluetooth) {
+        showBigToast('❌ Bluetooth Print မရပါ', 'Android Chrome/Edge browser အသုံးပြုပါ', 'danger', false);
+        return;
+    }
+    navigator.bluetooth.requestDevice({
+        filters: [{ services: [BT_PRINTER_SERVICE_UUID] }],
+        optionalServices: [BT_PRINTER_SERVICE_UUID]
+    }).then(function(device) {
+        btPrinterDevice = device;
+        printerSettings.btDeviceName = device.name || 'Bluetooth Printer';
+        device.addEventListener('gattserverdisconnected', function() {
+            btPrinterCharacteristic = null;
+            var st = document.getElementById('bt-printer-status');
+            if (st) st.textContent = '❌ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည်';
+        });
+        return device.gatt.connect();
+    }).then(function(server) {
+        return server.getPrimaryService(BT_PRINTER_SERVICE_UUID);
+    }).then(function(service) {
+        return service.getCharacteristic(BT_PRINTER_CHAR_UUID);
+    }).then(function(characteristic) {
+        btPrinterCharacteristic = characteristic;
+        localStorage.setItem('printerSettings', JSON.stringify(printerSettings));
+        var st = document.getElementById('bt-printer-status');
+        if (st) st.textContent = '✅ ' + (printerSettings.btDeviceName || 'Printer') + ' ချိတ်ဆက်ပြီး';
+        showBigToast('✅ Bluetooth Printer ချိတ်ဆက်ပြီး', printerSettings.btDeviceName || '', 'success', false);
+    }).catch(function(err) {
+        showBigToast('❌ ချိတ်ဆက်မရပါ', err.message || '', 'danger', false);
+    });
+}
+
+function testWifiPrinter() {
+    var ip = document.getElementById('wifi-printer-ip').value.trim();
+    if (!ip) { showBigToast('⚠️ Printer IP ထည့်ပါ', '', 'danger', false); return; }
+    fetch('http://' + ip + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=3000', { method: 'GET' })
+        .then(function() { showBigToast('✅ Printer ကို ချိတ်ဆက်နိုင်ပါသည်', ip, 'success', false); })
+        .catch(function() { showBigToast('❌ Printer ကို ရောက်ရှိနိုင်ခြင်း မရှိပါ', 'IP နှင့် WiFi Network တူ/မတူ စစ်ပါ', 'danger', false); });
+}
+
+function openPrinterSettings() {
+    var modal = document.getElementById('printer-settings-modal');
+    if (!modal) return;
+    var mode = printerSettings.mode || 'browser';
+    document.querySelectorAll('input[name="printer-mode"]').forEach(function(el) { el.checked = (el.value === mode); });
+    document.getElementById('bluetooth-printer-panel').style.display = (mode === 'bluetooth') ? 'block' : 'none';
+    document.getElementById('wifi-printer-panel').style.display = (mode === 'wifi') ? 'block' : 'none';
+    document.getElementById('wifi-printer-ip').value = printerSettings.wifiIp || '';
+    document.getElementById('printer-paper-width').value = String(printerSettings.paperWidth || 384);
+    var st = document.getElementById('bt-printer-status');
+    if (st) st.textContent = btPrinterCharacteristic ? ('✅ ' + (printerSettings.btDeviceName || 'Printer') + ' ချိတ်ဆက်ပြီး') : '❌ မချိတ်ဆက်ရသေးပါ';
+    modal.style.display = 'flex';
+}
+
+function closePrinterSettings() {
+    var modal = document.getElementById('printer-settings-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function selectPrinterMode(mode) {
+    document.getElementById('bluetooth-printer-panel').style.display = (mode === 'bluetooth') ? 'block' : 'none';
+    document.getElementById('wifi-printer-panel').style.display = (mode === 'wifi') ? 'block' : 'none';
+}
+
+function savePrinterSettings() {
+    var mode = (document.querySelector('input[name="printer-mode"]:checked') || {}).value || 'browser';
+    printerSettings.mode = mode;
+    printerSettings.wifiIp = document.getElementById('wifi-printer-ip').value.trim();
+    printerSettings.paperWidth = Number(document.getElementById('printer-paper-width').value) || 384;
+    localStorage.setItem('printerSettings', JSON.stringify(printerSettings));
+    showBigToast('✅ Printer Setting သိမ်းပြီး', '', 'success', false);
+    closePrinterSettings();
 }
 
 // =====================================================================
@@ -2262,7 +2581,7 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); } }
 function loadPasswordsFromSupabase(callback) { supabase.from('settings').select('*').eq('id', 1).single().then(function(r) { if (r.data) { adminPassword = r.data.admin_password || ''; homePassword = r.data.staff_password || ''; specialPassword = r.data.special_password || ''; passwordsLoaded = true; lastKnownUpdate = r.data.updated_at || ''; } else { passwordsLoaded = true; } if (callback) callback(); }).catch(function(e) { passwordsLoaded = true; if (callback) callback(); }); }
 function updatePasswords() { var na = document.getElementById('new-admin-password').value.trim(), ns = document.getElementById('new-staff-password').value.trim(), nsp = document.getElementById('new-special-password').value.trim(); if (!na && !ns && !nsp) { showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false); return; } var ud = { updated_at: new Date().toISOString() }; if (na) ud.admin_password = na; if (ns) ud.staff_password = ns; if (nsp) ud.special_password = nsp; supabase.from('settings').update(ud).eq('id', 1).then(function(r) { if (!r.error) { if (na) adminPassword = na; if (ns) homePassword = ns; if (nsp) specialPassword = nsp; showBigToast('✅ Password ပြောင်းပြီး', 'စနစ်အားလုံး log out', 'success', false); document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-special-password').value = ''; setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000); } else { showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false); } }).catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); }); }
 function setupSpecialRoleUI() { document.documentElement.setAttribute('data-role', 'special'); }
@@ -2291,6 +2610,8 @@ function loadProductsFromSheet() {
                 }
                 // Refresh search results
                 filterProductNames();
+                // Refresh sold-out list
+                renderSoldOutProducts();
             }
         })
         .catch(function(e) {
@@ -2362,6 +2683,7 @@ window.onload = function() {
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     
     if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); }
+    renderSoldOutProducts();
     
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
