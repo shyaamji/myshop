@@ -786,6 +786,16 @@
             position: relative;
             overflow: hidden;
         }
+        .cart-tab-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent-gold);
+            opacity: 0;
+            transition: opacity .25s;
+            z-index: 0;
+            border-radius: 20px;
+        }
         .cart-tab-btn.active {
             border-color: var(--accent-gold);
             background: transparent;
@@ -793,7 +803,8 @@
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(180,83,9,0.3);
         }
-        .cart-tab-btn.active span { position: relative; z-index: 1; }
+        .cart-tab-btn.active::before { opacity: 1; }
+        .cart-tab-btn span { position: relative; z-index: 1; }
         [data-theme=dark] .cart-tab-btn.active { color: #000; }
         .cart-tab-btn .badge-cart {
             background: var(--accent-danger);
@@ -1341,8 +1352,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
     <div class="container mt-4">
         <div class="nav-tabs-custom" role="group">
             <button id="btn-sales" class="btn active" onclick="switchTab('sales')">🛒 အရောင်း</button>
-            <button id="btn-orders" class="btn" onclick="switchTab('orders')">📋 အော်ဒါ</button>
-            <button id="btn-inventory" class="btn" onclick="switchTab('inventory')">📦 စတော့</button>
             <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
@@ -1422,58 +1431,21 @@ window.addEventListener('beforeinstallprompt', function(e) {
                         </div>
                     </div>
                     <div class="p-4" style="background:var(--bg-input);border-top:1px solid var(--border-color);">
-                        <div class="row align-items-center g-2">
-                            <div class="col-12 text-center mb-1">
-                                <small class="text-secondary d-block fw-bold" style="font-size:11px;">TOTAL DUE</small>
+                        <div class="row align-items-center g-3">
+                            <div class="col-6">
+                                <small class="text-secondary d-block fw-bold mb-1" style="font-size:11px;">TOTAL DUE</small>
                                 <h3 class="fw-bold mb-0 font-monospace" style="font-size:26px;">
                                     <span id="cart-total" style="color:var(--accent-gold);">0</span>
                                     <span style="font-size:15px;" class="text-muted">Ks</span>
                                 </h3>
                             </div>
-                            <div class="col-6">
-                                <button class="btn btn-warning w-100 py-2.5 fw-bold text-dark" style="border-radius:12px;" onclick="holdOrder()">
-                                    ⏸️ ဆိုင်းငံ့မည်
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button id="checkout-btn" class="btn btn-premium-gold w-100 py-2.5 shadow-sm" onclick="checkout()">
-                                    <span>Voucher</span> ➡️
+                            <div class="col-6 text-end">
+                                <button id="checkout-btn" class="btn btn-premium-gold w-100 py-3 shadow-sm" onclick="checkout()">
+                                    <span>Voucher ထုတ်မည်</span> ➡️
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== ORDER/HOLD TAB ===== -->
-        <div id="orders" class="tab-content">
-            <div class="custom-card">
-                <h6 class="fw-bold text-secondary mb-3">📋 ဆိုင်းငံ့ထားသော အော်ဒါစာရင်းများ</h6>
-                <div id="orders-list" class="d-flex flex-column gap-2">
-                    <div class="text-center text-muted py-4">ဆိုင်းငံ့ထားသော အော်ဒါမရှိပါ။</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== INVENTORY / STOCK TAB ===== -->
-        <div id="inventory" class="tab-content">
-            <div class="custom-card">
-                <h6 class="fw-bold text-danger mb-3">🔴 ကုန်သွားသော ပစ္စည်းများစာရင်း</h6>
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px;border-color:var(--border-color);">
-                        <thead><tr class="table-light text-danger"><th>ပစ္စည်းအမည်</th><th>Barcode</th><th>ရောင်းဈေး</th></tr></thead>
-                        <tbody id="out-of-stock-table-body"><tr><td colspan="3" class="text-muted py-3">ကုန်ပစ္စည်း မရှိပါ...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="custom-card">
-                <h6 class="fw-bold text-warning mb-3">🟡 လက်ကျန်နည်းနေသော ပစ္စည်းများစာရင်း</h6>
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered text-center align-middle mb-0" style="font-size:14px;border-color:var(--border-color);">
-                        <thead><tr class="table-light text-warning"><th>ပစ္စည်းအမည်</th><th>လက်ကျန်စတော့</th><th>သတိပေးစတော့</th></tr></thead>
-                        <tbody id="low-stock-table-body"><tr><td colspan="3" class="text-muted py-3">လက်ကျန်နည်းပစ္စည်း မရှိပါ...</td></tr></tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -1638,9 +1610,10 @@ var modalProduct = null;
 var modalQty = 1;
 var audioEnabled = true;
 var vibrationEnabled = true;
-var pendingOrders = JSON.parse(localStorage.getItem('pendingOrders') || '[]');
 
+// ★★★ Cache ကို မ refresh ခင် delay လုပ်ဖို့ variable ★★★
 var productsLoadTimer = null;
+
 var adminProductsPage = 0;
 var adminProductsPerPage = 15;
 var adminProductsAll = [];
@@ -1698,9 +1671,25 @@ function toggleAudio() {
     if (audioEnabled) {
         btn.classList.add('active');
         btn.innerHTML = '🔊';
+        btn.title = 'အသံ ဖွင့်';
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            if (audioCtx) {
+                var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(880, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                o.connect(g);
+                g.connect(audioCtx.destination);
+                o.start();
+                o.stop(audioCtx.currentTime + 0.06);
+            }
+        } catch(e) {}
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '🔇';
+        btn.title = 'အသံ ပိတ်';
     }
 }
 
@@ -1710,143 +1699,19 @@ function toggleVibration() {
     if (vibrationEnabled) {
         btn.classList.add('active');
         btn.innerHTML = '📳';
+        btn.title = 'တုန်ခါမှု ဖွင့်';
+        if (navigator.vibrate) {
+            navigator.vibrate(80);
+        }
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '📴';
+        btn.title = 'တုန်ခါမှု ပိတ်';
     }
 }
 
 function dismissKeyboard() {
     if (document.activeElement) document.activeElement.blur();
-}
-
-// =====================================================================
-// ORDER (HOLD/RESUME) SYSTEM FUNCTIONS
-// =====================================================================
-function holdOrder() {
-    var cart = carts[activeCartIndex];
-    if (!cart.length) { showBigToast('⚠️ ပစ္စည်းမရှိဘဲ ဆိုင်းငံ့၍မရပါ', '', 'danger', false); return; }
-    var orderName = prompt("အော်ဒါမှတ်သားရန် အမည် သို့မဟုတ် ဖုန်းနံပါတ်ထည့်ပါ -", "") || "အမည်မသိအော်ဒါ";
-    var orderId = "ORD-" + Date.now().toString().slice(-6);
-    
-    // Deduct stock immediately from database & local
-    for (var i = 0; i < cart.length; i++) {
-        var item = cart[i], ns = Math.max(0, getStockNumber(item) - item.qty);
-        if (item.id) { supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {}); }
-        for (var j = 0; j < productsDB.length; j++) {
-            if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = String(ns); break; }
-        }
-    }
-    
-    pendingOrders.push({ id: orderId, name: orderName, items: JSON.parse(JSON.stringify(cart)), time: new Date().toLocaleTimeString() });
-    localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-    localStorage.setItem('productsCache', JSON.stringify(productsDB));
-    
-    carts[activeCartIndex] = [];
-    renderCart();
-    renderOrdersTab();
-    buildBarcodeIndex();
-    showBigToast('⏸️ အော်ဒါကို ခေတ္တဆိုင်းငံ့သိမ်းဆည်းလိုက်ပါပြီ', '', 'success', false);
-}
-
-function renderOrdersTab() {
-    var list = document.getElementById('orders-list');
-    if (!list) return;
-    if (pendingOrders.length === 0) { list.innerHTML = '<div class="text-center text-muted py-4">ဆိုင်းငံ့ထားသော အော်ဒါမရှိပါ။</div>'; return; }
-    list.innerHTML = '';
-    pendingOrders.forEach(function(ord, index) {
-        var itemText = ord.items.map(function(i) { return i.name + " x" + i.qty; }).join(', ');
-        list.innerHTML += `<div class="p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-primary">${ord.name} (${ord.id})</span>
-                <small class="text-muted">${ord.time}</small>
-            </div>
-            <div class="small text-truncate text-muted">${itemText}</div>
-            <div class="row g-2 mt-1">
-                <div class="col-6"><button class="btn btn-sm btn-success w-100 fw-bold" onclick="resumeOrder('${ord.id}')">🔄 ပြန်ပြင်မည် / ဘောက်ချာထုတ်မည်</button></div>
-                <div class="col-6"><button class="btn btn-sm btn-outline-danger w-100 fw-bold" onclick="cancelOrder('${ord.id}')">🗑️ အော်ဒါဖျက်သိမ်းမည်</button></div>
-            </div>
-        </div>`;
-    });
-}
-
-function resumeOrder(id) {
-    var idx = pendingOrders.findIndex(function(o) { return o.id === id; });
-    if (idx === -1) return;
-    var ord = pendingOrders[idx];
-    
-    // Restock temporarily back to current cart to allow edits
-    for (var i = 0; i < ord.items.length; i++) {
-        var item = ord.items[i];
-        for (var j = 0; j < productsDB.length; j++) {
-            if (item.id && productsDB[j].id === item.id) {
-                productsDB[j].stock = String(getStockNumber(productsDB[j]) + item.qty);
-                break;
-            }
-        }
-    }
-    
-    carts[activeCartIndex] = ord.items;
-    pendingOrders.splice(idx, 1);
-    localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-    localStorage.setItem('productsCache', JSON.stringify(productsDB));
-    
-    renderCart();
-    renderOrdersTab();
-    buildBarcodeIndex();
-    switchTab('sales');
-    showBigToast('🔄 အော်ဒါကို ပြန်လည်ခေါ်ယူပြင်ဆင်နေပါသည်', '', 'success', false);
-}
-
-function cancelOrder(id) {
-    if (!confirm("ဤအော်ဒါကို ဖျက်သိမ်းမှာ သေချာပါသလား? (စတော့များ မူလအတိုင်း ပြန်တိုးပါမည်)")) return;
-    var idx = pendingOrders.findIndex(function(o) { return o.id === id; });
-    if (idx === -1) return;
-    var ord = pendingOrders[idx];
-    
-    // Add stock back to database & local
-    for (var i = 0; i < ord.items.length; i++) {
-        var item = ord.items[i];
-        for (var j = 0; j < productsDB.length; j++) {
-            if (item.id && productsDB[j].id === item.id) {
-                var ns = getStockNumber(productsDB[j]) + item.qty;
-                productsDB[j].stock = String(ns);
-                supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {});
-                break;
-            }
-        }
-    }
-    
-    pendingOrders.splice(idx, 1);
-    localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-    localStorage.setItem('productsCache', JSON.stringify(productsDB));
-    
-    renderOrdersTab();
-    buildBarcodeIndex();
-    showBigToast('🗑️ အော်ဒါကို ဖျက်သိမ်းပြီး စတော့များပြန်ဖြည့်ပြီးပါပြီ', '', 'success', false);
-}
-
-// =====================================================================
-// INVENTORY TAB LOGIC
-// =====================================================================
-function renderInventoryTab() {
-    var outBody = document.getElementById('out-of-stock-table-body');
-    var lowBody = document.getElementById('low-stock-table-body');
-    if (!outBody || !lowBody) return;
-    
-    var outHTML = '', lowHTML = '';
-    productsDB.forEach(function(prod) {
-        var st = getStockNumber(prod);
-        var minSt = Number(prod.extra2) || 5;
-        if (st <= 0) {
-            outHTML += `<tr><td class="fw-bold">${prod.name}</td><td>${prod.barcode}</td><td class="text-danger fw-bold">${Number(prod.price).toLocaleString()} Ks</td></tr>`;
-        } else if (st <= minSt) {
-            lowHTML += `<tr><td class="fw-bold">${prod.name}</td><td class="text-warning fw-bold">${st} ${prod.unit||'ခု'}</td><td class="text-muted">${minSt} ${prod.unit||'ခု'}</td></tr>`;
-        }
-    });
-    
-    outBody.innerHTML = outHTML || '<tr><td colspan="3" class="text-muted py-3">ကုန်ပစ္စည်းလုံးဝမရှိပါ ✨</td></tr>';
-    lowBody.innerHTML = lowHTML || '<tr><td colspan="3" class="text-muted py-3">လက်ကျန်နည်းပစ္စည်းမရှိပါ ✨</td></tr>';
 }
 
 // =====================================================================
@@ -1887,7 +1752,7 @@ function deselectAllAdminProducts() {
 function bulkDeleteProducts() {
     var idsToDelete = Object.keys(selectedProductIds).filter(function(k) { return selectedProductIds[k]; });
     if (idsToDelete.length === 0) { showBigToast('⚠️ ဖျက်ရန် ပစ္စည်းရွေးထားရန် လိုအပ်ပါသည်', '', 'danger', false); return; }
-    if (!confirm('ရွေးထားသော ပစ္စည်း ' + idsToDelete.length + ' ခုကို ဖျက်မှာ သေချာပါသလား?')) return;
+    if (!confirm('ရွေးထားသော ပစ္စည်း ' + idsToDelete.length + ' ခုကို ဖျက်မှာ သေချာပါသလား?\n\nဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်မရနိုင်ပါ!')) return;
     var deletePromises = [];
     for (var i = 0; i < idsToDelete.length; i++) { deletePromises.push(supabase.from('Products').delete().eq('id', idsToDelete[i])); }
     Promise.all(deletePromises).then(function() {
@@ -1897,6 +1762,7 @@ function bulkDeleteProducts() {
         resetAdminProductList();
         renderAdminProducts(productsDB);
         buildBarcodeIndex();
+        // ★★★ Cache update ★★★
         localStorage.setItem('productsCache', JSON.stringify(productsDB));
         localStorage.setItem('productsCacheTime', Date.now());
         showBigToast('✅ ပစ္စည်း ' + idsToDelete.length + ' ခု ဖျက်ပြီးပါပြီ', '', 'success', false);
@@ -2131,11 +1997,9 @@ function changeCartItemPrice(index, newPrice) {
     if (cart[index].originalPrice === undefined) cart[index].originalPrice = cart[index].price;
     cart[index].price = price;
     renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
+    showBigToast('✅ ' + cart[index].name + ' ဈေး ' + price.toLocaleString() + ' Ks', '', 'success', false);
 }
 
-// =====================================================================
-// REGULAR QTY CHANGE
-// =====================================================================
 function changeQty(i, c) {
     playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return;
     var st = getStockNumber(cart[i]), nq = cart[i].qty + c;
@@ -2189,12 +2053,12 @@ function updateScannedPreview() {
 }
 
 // =====================================================================
-// CHECKOUT
+// ★★★ CHECKOUT - Cache Fix ★★★
 // =====================================================================
 function checkout() {
     var cart = carts[activeCartIndex];
     if (!cart.length) { showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false); return; }
-    var cn = prompt("ဝယ်သူအမည် (Customer) -", "") || "Customer";
+    var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
     var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText,
         disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value,
         sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm };
@@ -2205,18 +2069,23 @@ function checkout() {
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
         
+        // ★★★ Stock update and cache refresh ★★★
         for (var i = 0; i < cart.length; i++) {
             var item = cart[i], ns = Math.max(0, getStockNumber(item) - item.qty);
+            // Update Supabase
             if (item.id) { supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {}); }
             else { supabase.from('Products').update({ stock: String(ns) }).eq('barcode', item.barcode.toString()).then(function() {}); }
+            // ★★★ Update local productsDB immediately ★★★
             for (var j = 0; j < productsDB.length; j++) {
                 if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = String(ns); break; }
                 else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) { productsDB[j].stock = String(ns); break; }
             }
         }
+        // ★★★ Save updated productsDB to cache ★★★
         localStorage.setItem('productsCache', JSON.stringify(productsDB));
         localStorage.setItem('productsCacheTime', Date.now());
         
+        // ★★★ Refresh from server after 2 sec ★★★
         clearTimeout(productsLoadTimer);
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
         
@@ -2240,76 +2109,22 @@ function scannerCheckout() {
 }
 
 // =====================================================================
-// PRINT VOUCHER (UPDATED FOR WI-FI / NETWORK THERMAL PRINTERS)
+// PRINT VOUCHER
 // =====================================================================
 function printVoucher(sale) {
     if (typeof sale === 'string') { var f = null; for (var i = 0; i < salesHistory.length; i++) { if ((salesHistory[i].voucher_id||'') === sale || (salesHistory[i].voucher_id||'').toString() === sale.toString()) { f = salesHistory[i]; break; } } if (!f) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; } sale = f; }
     if (!sale || !sale.items) return;
     var itemsArr = sale.items; if (typeof itemsArr === 'string') { try { itemsArr = JSON.parse(itemsArr); } catch(e) { itemsArr = []; } }
     if (!Array.isArray(itemsArr)) return;
-    
     var itemsHTML = '', subtotal = 0;
-    for (var i = 0; i < itemsArr.length; i++) { 
-        var it = itemsArr[i]; 
-        subtotal += Number(it.price) * Number(it.qty); 
-        var u = it.unit||''; 
-        itemsHTML += '<tr><td style="width:40%;padding:2px 0;text-align:left;">' + it.name + '</td><td style="width:20%;padding:2px 0;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:15%;padding:2px 0;text-align:center;">' + it.qty + (u?' '+u:'') + '</td><td style="width:25%;padding:2px 0;text-align:right;">' + (it.price*it.qty).toLocaleString() + '</td></tr>'; 
-    }
-    
+    for (var i = 0; i < itemsArr.length; i++) { var it = itemsArr[i]; subtotal += Number(it.price) * Number(it.qty); var u = it.unit||''; itemsHTML += '<tr><td style="width:35%;padding:0px 1px;text-align:left;">' + it.name + '</td><td style="width:22%;padding:0px 1px;text-align:right;">' + Number(it.price).toLocaleString() + '</td><td style="width:13%;padding:0px 1px;text-align:center;">' + it.qty + (u?' '+u:'') + '</td><td style="width:30%;padding:0px 1px;text-align:right;">' + (it.price*it.qty).toLocaleString() + '</td></tr>'; }
     var vid = sale.voucher_id||'', cn = sale.customer_name||'', dt = sale.date||'', pm = sale.extra2||'Cash', disc = sale.extra1||'0', total = sale.total_amount||'0';
-    var dp = dt.split(',')[0]||dt;
-    
-    // Wi-Fi / Browser Bluetooth POS Printers Standard Layout Template
-    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title>' +
-             '<style>' +
-             '@page { size: auto; margin: 0mm; }' +
-             'html, body { margin: 0; padding: 0; font-family: "Courier New", Courier, monospace, sans-serif; color: #000; background: #fff; -webkit-print-color-adjust: exact; }' +
-             'body { width: 76mm; padding: 4mm 4mm 10mm 4mm; box-sizing: border-box; font-size: 12px; line-height: 1.4; }' +
-             'h2 { text-align: center; margin: 0 0 4px 0; font-size: 18px; font-weight: bold; }' +
-             '.shop-address { text-align: center; font-size: 11px; margin: 0 0 6px 0; line-height: 1.3; font-weight: normal; }' +
-             '.dashed { border-top: 1px dashed #000; margin: 6px 0; width: 100%; }' +
-             'table { width: 100%; border-collapse: collapse; margin: 4px 0; table-layout: fixed; }' +
-             'td, th { padding: 2px 0; font-size: 12px; word-break: break-word; }' +
-             '.items-table th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; font-size: 11px; font-weight: bold; }' +
-             '.total-row td { font-weight: bold; font-size: 13px; padding-top: 6px; }' +
-             '.thanks { text-align: center; font-size: 11px; margin-top: 12px; font-style: italic; }' +
-             '</style></head><body>' +
-             '<h2>ဝင်းသီရိ</h2>' +
-             '<div class="shop-address">မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div>' +
-             '<div class="dashed"></div>' +
-             '<table>' +
-             '<tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;font-weight:bold;">'+vid+'</td></tr>' +
-             '<tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">'+cn+'</td></tr>' +
-             '<tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">'+dp+'</td></tr>' +
-             '<tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">'+pm+'</td></tr>' +
-             '</table>' +
-             '<div class="dashed"></div>' +
-             '<table class="items-table">' +
-             '<thead><tr><th style="width:40%;text-align:left;">ပစ္စည်း</th><th style="width:20%;text-align:right;">ဈေး</th><th style="width:15%;text-align:center;">ခု</th><th style="width:25%;text-align:right;">သင့်ငွေ</th></tr></thead>' +
-             '<tbody>'+itemsHTML+'</tbody>' +
-             '</table>' +
-             '<div class="dashed"></div>' +
-             '<table>' +
-             '<tr><td style="width:40%;">Discount:</td><td style="width:60%;text-align:right;">-'+disc+'</td></tr>' +
-             '<tr class="total-row"><td style="width:40%;">စုစုပေါင်း:</td><td style="width:60%;text-align:right;">'+total+' Ks</td></tr>' +
-             '</table>' +
-             '<div class="dashed"></div>' +
-             '<div class="thanks">ဝယ်ယူမှုကို ကျေးဇူးတင်ပါသည်!</div>' +
-             '</body></html>';
-             
-    var pf = document.createElement('iframe'); 
-    pf.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;'; 
-    document.body.appendChild(pf);
-    var fd = pf.contentWindow.document; 
-    fd.open(); 
-    fd.write(pc); 
-    fd.close();
-    
-    pf.onload = function() { 
-        pf.contentWindow.focus(); 
-        pf.contentWindow.print(); 
-        setTimeout(function() { if(pf && pf.parentNode) document.body.removeChild(pf); }, 1000); 
-    };
+    var dp = dt.split(',')[0]||dt, tp = (dt.split(',')[1]||'').trim();
+    var pc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Voucher</title><style>body{font-family:monospace;margin:0;padding:3px;color:#000;font-size:7px;width:280px;max-width:280px;box-sizing:border-box;}*,*:before,*:after{box-sizing:border-box;}h2{text-align:center;margin:0 0 1px 0;font-size:13px;font-weight:bold;}.shop-address{text-align:center;font-size:8px;color:#555;margin:0 0 4px 0;line-height:1.2;}.dashed{border-top:1px dashed #000;margin:3px 0;}table{width:100%;border-collapse:collapse;margin:2px 0;table-layout:fixed;}td{padding:0px 1px;font-size:9px;word-break:break-word;}.items-table{margin-top:3px;}.items-table th{border-top:1px dashed #000;border-bottom:1px dashed #000;padding:1px;font-size:8px;}.items-table td{padding:1px;border-bottom:none;font-size:9px;}.total-row td{font-weight:bold;font-size:10px;padding-top:4px;}.thanks{text-align:center;font-size:8px;margin-top:5px;}</style></head><body><h2>ဝင်းသီရိ</h2><div class="shop-address">မန္တလေးလမ်းနှင့်ခိုင်ရွှေဝါလမ်းကြား၊ရေကန်လမ်း၊လားရှိုးမြို့</div><div class="dashed"></div><table><tr><td style="width:30%;">Voucher:</td><td style="width:70%;text-align:right;">'+vid+'</td></tr><tr><td style="width:30%;">ဝယ်သူ:</td><td style="width:70%;text-align:right;">'+cn+'</td></tr><tr><td style="width:30%;">ရက်စွဲ:</td><td style="width:70%;text-align:right;">'+dp+'</td></tr><tr><td style="width:30%;">အချိန်:</td><td style="width:70%;text-align:right;">'+tp+'</td></tr><tr><td style="width:30%;">ငွေချေမှု:</td><td style="width:70%;text-align:right;">'+pm+'</td></tr></table><div class="dashed"></div><table class="items-table"><thead><tr><th style="width:35%;text-align:left;">ပစ္စည်း</th><th style="width:22%;text-align:right;">ဈေး</th><th style="width:13%;text-align:center;">ခု</th><th style="width:30%;text-align:right;">သင့်ငွေ</th></tr></thead><tbody>'+itemsHTML+'</tbody></table><div class="dashed"></div><table><tr><td style="width:30%;">ကျသင့်ငွေ:</td><td style="width:70%;text-align:right;">'+subtotal.toLocaleString()+' Ks</td></tr><tr><td style="width:30%;">Discount:</td><td style="width:70%;text-align:right;">-'+disc+'</td></tr><tr class="total-row"><td style="width:30%;">စုစုပေါင်း:</td><td style="width:70%;text-align:right;">'+total+' Ks</td></tr></table><div class="dashed"></div><div class="thanks">ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါသည်!</div></body></html>';
+    var pf = document.createElement('iframe'); pf.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;'; document.body.appendChild(pf);
+    var fd = pf.contentWindow.document; fd.open(); fd.write(pc); fd.close();
+    pf.onload = function() { pf.contentWindow.focus(); pf.contentWindow.print(); setTimeout(function() { if(pf&&pf.parentNode) document.body.removeChild(pf); }, 1000); };
+    setTimeout(function() { try { pf.contentWindow.focus(); pf.contentWindow.print(); setTimeout(function() { if(pf&&pf.parentNode) document.body.removeChild(pf); }, 1000); } catch(e) {} }, 800);
 }
 
 // =====================================================================
@@ -2333,34 +2148,43 @@ function deleteSaleFromSheet(vid) { if (!confirm("ဖျက်မှာသေခ
 function clearAllSalesHistoryOnline(btn) { if (!confirm("အားလုံးဖျက်မှာသေချာလား?")) return; btn.disabled=true; btn.innerText="⏳"; supabase.from('SalesHistory').delete().neq('id',0).then(function() { localStorage.removeItem('salesHistory'); salesHistory=[]; displayHistory(salesHistory); btn.disabled=false; btn.innerText="⚠️ အားလုံးဖျက်မည်"; showBigToast('✅ ရှင်းပြီး', '', 'success', false); }).catch(function(err) { btn.disabled=false; btn.innerText="⚠️ အားလုံးဖျက်မည်"; showBigToast('❌ Error: '+err.message, '', 'danger', false); }); }
 
 // =====================================================================
-// ADMIN PRODUCT FUNCTIONS
+// ADMIN PRODUCT FUNCTIONS (LAZY LOADING)
 // =====================================================================
-function resetAdminProductList() { adminProductsPage=0; adminProductsAll=[]; adminProductsLoading=false; adminProductsHasMore=true; selectedProductIds={}; updateSelectedCount(); if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;} var list=document.getElementById('admin-product-list'); if(list)list.innerHTML=''; }
-function renderAdminProducts(arr) { adminProductsAll=arr||[]; adminProductsPage=0; adminProductsLoading=false; adminProductsHasMore=true; var list=document.getElementById('admin-product-list'); if(!list)return; list.innerHTML=''; if(adminProductsAll.length===0){list.innerHTML='<div class="text-center text-muted py-4">ပစ္စည်းမရှိပါ</div>';return;} var sentinel=document.createElement('div'); sentinel.id='admin-products-sentinel'; sentinel.style.cssText='height:10px;width:100%;'; list.parentNode.insertBefore(sentinel,list.nextSibling); loadMoreAdminProducts(); if('IntersectionObserver' in window){adminProductsObserver=new IntersectionObserver(function(entries){if(entries[0].isIntersecting&&!adminProductsLoading&&adminProductsHasMore){loadMoreAdminProducts();}},{rootMargin:'200px'});adminProductsObserver.observe(sentinel);} }
-function loadMoreAdminProducts() { if(adminProductsLoading||!adminProductsHasMore)return; adminProductsLoading=true; setTimeout(function(){var list=document.getElementById('admin-product-list'); if(!list){adminProductsLoading=false;return;} var start=adminProductsPage*adminProductsPerPage,end=Math.min(start+adminProductsPerPage,adminProductsAll.length),batch=adminProductsAll.slice(start,end); if(batch.length===0){adminProductsHasMore=false;adminProductsLoading=false;return;} var fragment=document.createDocumentFragment(); batch.forEach(function(prod){var productId=prod.id,limit=Number(prod.extra2)||5,cost=prod.extra1||0,sd=getStockNumber(prod),unit=prod.unit||'ခု'; var sb='<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: '+sd+' '+unit+'</span>'; if(sd<=0)sb='<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if(sd<=limit)sb='<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:'+sd+' '+unit+'</span>'; var unitOpts='',units=['ခု','ဘူး','ထုပ်','ကဒ်','လုံး','ချောင်း','တောင့်','ပုလင်း','အိတ်','စုံ']; for(var u=0;u<units.length;u++)unitOpts+='<option value="'+units[u]+'"'+(unit===units[u]?' selected':'')+'>'+units[u]+'</option>'; var div=document.createElement('div'); div.className='p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2'; var isChecked=selectedProductIds[productId]?' checked':''; div.innerHTML='<div class="d-flex justify-content-between align-items-center"><div class="d-flex align-items-center gap-2"><input type="checkbox" class="admin-product-checkbox" id="chk-'+productId+'"'+isChecked+' onchange="toggleProductSelection(\''+productId+'\', this.checked)"><label for="chk-'+productId+'" class="fw-bold fs-6" style="cursor:pointer;">'+prod.name+'</label></div><div>'+sb+'</div></div><div class="text-muted small">Barcode: '+prod.barcode+'</div><div class="row g-2"><div class="col-3"><small>အရင်း</small><input type="number" id="p-cost-'+productId+'" class="form-control form-control-sm" value="'+cost+'"></div><div class="col-3"><small>ရောင်း</small><input type="number" id="p-price-'+productId+'" class="form-control form-control-sm" value="'+prod.price+'"></div><div class="col-3"><small>စတော့</small><input type="number" id="p-stock-'+productId+'" class="form-control form-control-sm" value="'+sd+'"></div><div class="col-3"><small>ယူနစ်</small><select id="p-unit-'+productId+'" class="form-control form-control-sm">'+unitOpts+'</select></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-'+productId+'" onclick="uploadProductToSheet('+productId+')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet('+productId+')">🗑️</button></div></div>'; fragment.appendChild(div);}); list.appendChild(fragment); adminProductsPage++; adminProductsLoading=false; },10); }
-function cleanupAdminScroll() { if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;} adminProductsLoading=false; }
-function addNewProduct() { var name=document.getElementById('new-name').value.trim(),price=document.getElementById('new-price').value.trim(); if(!name||!price){showBigToast('ဖြည့်ပါ','','danger',false);return;} var btn=document.getElementById('add-prod-btn'); btn.disabled=true; var np={barcode:document.getElementById('new-barcode').value||"NB-"+Date.now(),name:name,price:Number(price),stock:Number(document.getElementById('new-stock').value)||0,extra1:String(document.getElementById('new-cost').value)||'0',extra2:String(document.getElementById('new-min-stock').value)||'5',unit:document.getElementById('new-unit').value||'ခု'}; supabase.from('Products').insert([np]).then(function(){btn.disabled=false;showBigToast('✅ သိမ်းပြီး','','success',false);document.getElementById('new-barcode').value='';document.getElementById('new-name').value='';document.getElementById('new-price').value='';document.getElementById('new-stock').value='';document.getElementById('new-cost').value='0';loadProductsFromSheet();switchTab('sales');}).catch(function(err){btn.disabled=false;showBigToast('❌ Error: '+err.message,'','danger',false);}); }
+function resetAdminProductList() { adminProductsPage=0; adminProductsAll=[]; adminProductsLoading=false; adminProductsHasMore=true; selectedProductIds={}; updateSelectedCount(); if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;} var list=document.getElementById('admin-product-list'); if(list)list.innerHTML=''; var old=document.getElementById('admin-products-sentinel'); if(old)old.remove(); }
+function renderAdminProducts(arr) { adminProductsAll=arr||[]; adminProductsPage=0; adminProductsLoading=false; adminProductsHasMore=true; var list=document.getElementById('admin-product-list'); if(!list)return; list.innerHTML=''; if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;} var old=document.getElementById('admin-products-sentinel'); if(old)old.remove(); if(adminProductsAll.length===0){list.innerHTML='<div class="text-center text-muted py-4">ပစ္စည်းမရှိပါ</div>';return;} var sentinel=document.createElement('div'); sentinel.id='admin-products-sentinel'; sentinel.style.cssText='height:10px;width:100%;'; list.parentNode.insertBefore(sentinel,list.nextSibling); loadMoreAdminProducts(); if('IntersectionObserver' in window){adminProductsObserver=new IntersectionObserver(function(entries){if(entries[0].isIntersecting&&!adminProductsLoading&&adminProductsHasMore){loadMoreAdminProducts();}},{rootMargin:'200px'});adminProductsObserver.observe(sentinel);} }
+function loadMoreAdminProducts() { if(adminProductsLoading||!adminProductsHasMore)return; adminProductsLoading=true; setTimeout(function(){var list=document.getElementById('admin-product-list'); if(!list){adminProductsLoading=false;return;} var start=adminProductsPage*adminProductsPerPage,end=Math.min(start+adminProductsPerPage,adminProductsAll.length),batch=adminProductsAll.slice(start,end); if(batch.length===0){adminProductsHasMore=false;adminProductsLoading=false;return;} var fragment=document.createDocumentFragment(); batch.forEach(function(prod){var productId=prod.id,limit=Number(prod.extra2)||5,cost=prod.extra1||0,sd=getStockNumber(prod),unit=prod.unit||'ခု'; var sb='<span class="badge bg-success-subtle text-success border px-2 py-1">စတော့: '+sd+' '+unit+'</span>'; if(sd<=0)sb='<span class="badge bg-danger-subtle text-danger border px-2 py-1">ကုန်</span>'; else if(sd<=limit)sb='<span class="badge bg-warning-subtle text-warning border px-2 py-1">နည်း:'+sd+' '+unit+'</span>'; var unitOpts='',units=['ခု','ဘူး','ထုပ်','ကဒ်','လုံး','ချောင်း','တောင့်','ပုလင်း','အိတ်','စုံ']; for(var u=0;u<units.length;u++)unitOpts+='<option value="'+units[u]+'"'+(unit===units[u]?' selected':'')+'>'+units[u]+'</option>'; var div=document.createElement('div'); div.className='p-3 mb-2 rounded-4 border bg-transparent shadow-sm d-flex flex-column gap-2'; var isChecked=selectedProductIds[productId]?' checked':''; div.innerHTML='<div class="d-flex justify-content-between align-items-center"><div class="d-flex align-items-center gap-2"><input type="checkbox" class="admin-product-checkbox" id="chk-'+productId+'"'+isChecked+' onchange="toggleProductSelection(\''+productId+'\', this.checked)"><label for="chk-'+productId+'" class="fw-bold fs-6" style="cursor:pointer;">'+prod.name+'</label></div><div>'+sb+'</div></div><div class="text-muted small">Barcode: '+prod.barcode+' | ID: '+productId+'</div><div class="row g-2"><div class="col-3"><small>အရင်း</small><input type="number" id="p-cost-'+productId+'" class="form-control form-control-sm" value="'+cost+'"></div><div class="col-3"><small>ရောင်း</small><input type="number" id="p-price-'+productId+'" class="form-control form-control-sm" value="'+prod.price+'"></div><div class="col-3"><small>စတော့</small><input type="number" id="p-stock-'+productId+'" class="form-control form-control-sm" value="'+sd+'"></div><div class="col-3"><small>ယူနစ်</small><select id="p-unit-'+productId+'" class="form-control form-control-sm">'+unitOpts+'</select></div></div><div class="row g-2"><div class="col-8"><button class="btn btn-sm btn-premium-gold w-100" id="edit-btn-'+productId+'" onclick="uploadProductToSheet('+productId+')">💾 ပြင်</button></div><div class="col-4"><button class="btn btn-sm btn-outline-danger w-100" onclick="deleteProductFromSheet('+productId+')">🗑️</button></div></div>'; fragment.appendChild(div);}); list.appendChild(fragment); adminProductsPage++; adminProductsLoading=false; if(end>=adminProductsAll.length){adminProductsHasMore=false; var sentinel=document.getElementById('admin-products-sentinel'); if(sentinel)sentinel.remove(); if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;}}},10); }
+function cleanupAdminScroll() { if(adminProductsObserver){adminProductsObserver.disconnect();adminProductsObserver=null;} var s=document.getElementById('admin-products-sentinel'); if(s)s.remove(); adminProductsLoading=false; }
+function addNewProduct() { var name=document.getElementById('new-name').value.trim(),price=document.getElementById('new-price').value.trim(); if(!name||!price){showBigToast('ဖြည့်ပါ','','danger',false);return;} var btn=document.getElementById('add-prod-btn'); btn.disabled=true; var np={barcode:document.getElementById('new-barcode').value||"NB-"+Date.now(),name:name,price:Number(price),stock:Number(document.getElementById('new-stock').value)||0,extra1:String(document.getElementById('new-cost').value)||'0',extra2:String(document.getElementById('new-min-stock').value)||'5',unit:document.getElementById('new-unit').value||'ခု'}; supabase.from('Products').insert([np]).then(function(){btn.disabled=false;showBigToast('✅ သိမ်းပြီး','','success',false);document.getElementById('new-barcode').value='';document.getElementById('new-name').value='';document.getElementById('new-price').value='';document.getElementById('new-stock').value='';document.getElementById('new-cost').value='0';document.getElementById('new-min-stock').value='5';loadProductsFromSheet();switchTab('sales');}).catch(function(err){btn.disabled=false;showBigToast('❌ Error: '+err.message,'','danger',false);}); }
 
+// ★★★ Admin Update - Cache Fix ★★★
 function uploadProductToSheet(productId) {
     var prod = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].id === productId) { prod = productsDB[i]; break; } }
-    if (!prod) return;
+    if (!prod) { showBigToast('❌ Product မတွေ့ပါ', '', 'danger', false); return; }
     var cost = document.getElementById('p-cost-' + productId).value, price = document.getElementById('p-price-' + productId).value,
         stock = document.getElementById('p-stock-' + productId).value, unit = document.getElementById('p-unit-' + productId).value,
         btn = document.getElementById('edit-btn-' + productId);
     btn.disabled = true; btn.innerText = "⏳";
     supabase.from('Products').update({ price: Number(price), stock: Number(stock), extra1: String(cost), unit: unit }).eq('id', productId)
-        .then(function() { btn.disabled = false; btn.innerText = "💾 ပြင်"; loadProductsFromSheet(); showBigToast('✅ ပြင်ပြီး', '', 'success', false); })
+        .then(function() {
+            btn.disabled = false; btn.innerText = "💾 ပြင်";
+            // ★★★ Update local and cache immediately ★★★
+            loadProductsFromSheet();
+            showBigToast('✅ ပြင်ပြီး', '', 'success', false);
+        })
         .catch(function(err) { btn.disabled = false; btn.innerText = "💾 ပြင်"; showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
 
 function deleteProductFromSheet(productId) {
     var prod = null; for (var i = 0; i < productsDB.length; i++) { if (productsDB[i].id === productId) { prod = productsDB[i]; break; } }
     if (!prod) return;
-    if (!confirm(prod.name + ' ဖျက်မှာသေჩာလား?')) return;
+    if (!confirm(prod.name + ' (ID: ' + productId + ') ဖျက်မှာသေချာလား?')) return;
     supabase.from('Products').delete().eq('id', productId).then(function() {
         productsDB = productsDB.filter(function(p) { return p.id !== productId; });
+        // ★★★ Cache update ★★★
         localStorage.setItem('productsCache', JSON.stringify(productsDB));
-        resetAdminProductList(); renderAdminProducts(productsDB); buildBarcodeIndex(); showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false);
+        localStorage.setItem('productsCacheTime', Date.now());
+        resetAdminProductList(); renderAdminProducts(productsDB); buildBarcodeIndex();
+        showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false);
     }).catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
 
@@ -2420,13 +2244,17 @@ function updateSalesChartLogic() {
 // SCANNER FULL MODE
 // =====================================================================
 function toggleFullScanner() { var m = document.getElementById('scannerFullMode'); if (m.classList.contains('active')) { closeFullScanner(); } else { if (isScannerClosed) isScannerClosed = false; openFullScanner(); } }
-function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannerFullMode').style.display = 'flex'; document.getElementById('scannedPreview').classList.add('active'); document.getElementById('scannedPreview').style.display = 'block'; isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); updateScannerTotal(); setTimeout(function() { startScanner(); }, 300); }
-function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 250, height: 180 }, aspectRatio: 1.0, disableFlip: false, formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39 ], rememberLastUsedCamera: true }); html5QrcodeScannerFull.render(onScanSuccessFull, onScanFailure); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); }
-function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); var sm = document.getElementById('scannerFullMode'); if (sm) { sm.classList.remove('active'); sm.style.display = 'none'; } var sp = document.getElementById('scannedPreview'); if (sp) { sp.classList.remove('active'); sp.style.display = 'none'; } isFullScannerActive = false; var sb = document.getElementById('scanBadge'); if (sb) sb.style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); }
+function openFullScanner() { isScannerClosed = false; if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { v.srcObject = null; v.remove(); } catch(e) {} }); rd.innerHTML = ''; } document.getElementById('scannerFullMode').classList.add('active'); document.getElementById('scannerFullMode').style.display = 'flex'; document.getElementById('scannedPreview').classList.add('active'); document.getElementById('scannedPreview').style.display = 'block'; isFullScannerActive = true; document.getElementById('scanBadge').style.display = 'none'; isScanPaused = false; resetFlashlight(); updateScannerTotal(); var sp = document.getElementById('scanner-payment-mode'), mp = document.getElementById('cart-payment-mode'); if (sp && mp) sp.value = mp.value; setTimeout(function() { startScanner(); }, 300); }
+function startScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } html5QrcodeScannerFull = new Html5QrcodeScanner("full-reader", { fps: 10, qrbox: { width: 250, height: 180 }, aspectRatio: 1.0, disableFlip: false, formatsToSupport: [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8, Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39, Html5QrcodeSupportedFormats.ITF, Html5QrcodeSupportedFormats.QR_CODE ], rememberLastUsedCamera: true, supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA, Html5QrcodeScanType.SCAN_TYPE_FILE] }); html5QrcodeScannerFull.render(onScanSuccessFull, onScanFailure); canScan = true; isScannerClosed = false; updateFullScannerStatus(true); }
+function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeScannerFull.stop(); html5QrcodeScannerFull.clear(); } catch(e) {} html5QrcodeScannerFull = null; } var rd = document.getElementById('full-reader'); if (rd) { rd.querySelectorAll('video').forEach(function(v) { try { if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; } v.remove(); } catch(e) {} }); rd.innerHTML = ''; } canScan = false; isScanPaused = false; isScannerClosed = true; clearTimeout(scanPauseTimer); var sm = document.getElementById('scannerFullMode'); if (sm) { sm.classList.remove('active'); sm.style.display = 'none'; } var sp = document.getElementById('scannedPreview'); if (sp) { sp.classList.remove('active'); sp.style.display = 'none'; } isFullScannerActive = false; var sb = document.getElementById('scanBadge'); if (sb) sb.style.display = 'block'; updateFullScannerStatus(false); resetFlashlight(); updateScannerTotal(); document.body.style.overflow = ''; }
 function toggleFullScannerScan() { if (canScan) closeFullScanner(); else openFullScanner(); }
 function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; } }
 function onScanFailure(error) {}
-function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; var now = Date.now(); if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return; lastScannedBarcode = dt; lastScannedTime = now; playBeep(); var matchedProducts = barcodeIndex[dt.toString()] || []; if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st, 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); } }
+function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; var now = Date.now(); if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return; lastScannedBarcode = dt; lastScannedTime = now; playBeep(); var matchedProducts = barcodeIndex[dt.toString()] || []; if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ' + (p.unit||'ခု'), 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); return; } if (matchedProducts.length > 1) { var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions'); document.getElementById('toastBigMsg').textContent = '📦 Barcode: ' + dt; document.getElementById('toastBigSub').textContent = 'ပစ္စည်းအမျိုးအစား ရွေးပါ-'; toastEl.className = 'toast-big show success'; var html = ''; for (var i = 0; i < matchedProducts.length; i++) { var mp = matchedProducts[i]; var mpSt = getStockNumber(mp); var isOut = mpSt <= 0; html += '<button onclick="' + (isOut ? 'showBigToast(\'🔴 ကုန်သွားပါပြီ\',\'\',\'danger\',false);' : 'selectScanVariant(\'' + mp.id + '\',\'' + mp.barcode + '\',\'' + mp.name.replace(/'/g, "\\'") + '\',' + mp.price + ',' + mpSt + ')') + '" style="background:var(--accent-gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;' + (isOut ? 'opacity:0.5;' : '') + '">' + mp.name + ' - ' + Number(mp.price).toLocaleString() + ' Ks ' + (isOut ? '🔴' : '') + '</button>'; } html += '<button onclick="cancelScanVariant()" style="background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-color);border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;">⏹️ မရွေးတော့ပါ</button>'; actEl.innerHTML = html; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000); } }
+function selectScanVariant(productId, barcode, name, price, stock) { var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions'); toastProduct = { id: productId, barcode: barcode, name: name, price: price, stock: stock }; toastQty = 1; document.getElementById('toastBigMsg').textContent = '📦 ' + name; document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock; toastEl.className = 'toast-big show success'; var maxQty = Math.min(stock, 100), selHTML = ''; for (var i = 1; i <= maxQty; i++) selHTML += '<option value="' + i + '">' + i + '</option>'; actEl.innerHTML = '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)" style="width:100%;margin-bottom:8px;">' + selHTML + '</select><div style="display:flex;gap:6px;justify-content:center;"><button onclick="toastQtyChange(-1)">−</button><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button></div>'; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000); }
+function cancelScanVariant() { var actEl = document.getElementById('toastBigActions'); actEl.style.display = 'none'; actEl.innerHTML = ''; clearTimeout(document.getElementById('toastBig')._hideTimer); clearTimeout(scanPauseTimer); document.getElementById('toastBig').classList.remove('show'); toastProduct = null; isScanPaused = false; canScan = true; updateFullScannerStatus(true); }
+function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
+function cancelAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); pendingBarcode = null; if (!isScannerClosed) { canScan = true; updateFullScannerStatus(true); } }
 function toggleFlashlight() { var btn = document.getElementById('flashlightToggleBtn'); if (!currentVideoTrack) { var videos = document.querySelectorAll('#full-reader video'); for (var i = 0; i < videos.length; i++) { if (videos[i].srcObject) { var tracks = videos[i].srcObject.getVideoTracks(); if (tracks.length > 0) { currentVideoTrack = tracks[0]; break; } } } } if (currentVideoTrack) { try { if (isFlashlightOn) { currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] }); isFlashlightOn = false; btn.classList.remove('active'); btn.innerHTML = '🔦'; } else { currentVideoTrack.applyConstraints({ advanced: [{ torch: true }] }); isFlashlightOn = true; btn.classList.add('active'); btn.innerHTML = '💡'; } } catch(e) { showBigToast('⚠️ ဓာတ်မီး မရပါ', '', 'danger', false); } } }
 function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { currentVideoTrack.applyConstraints({ advanced: [{ torch: false }] }); } catch(e) {} } isFlashlightOn = false; currentVideoTrack = null; var btn = document.getElementById('flashlightToggleBtn'); if (btn) { btn.classList.remove('active'); btn.innerHTML = '🔦'; } }
 
@@ -2434,28 +2262,17 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { 
-    var r = localStorage.getItem('currentUserRole') || 'user'; 
-    if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } 
-    document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); 
-    document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); 
-    document.getElementById(id).classList.add('active'); 
-    document.getElementById('btn-' + id).classList.add('active'); 
-    if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } 
-    if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } 
-    if (id === 'orders') { renderOrdersTab(); }
-    if (id === 'inventory') { renderInventoryTab(); }
-}
-
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); } }
 function loadPasswordsFromSupabase(callback) { supabase.from('settings').select('*').eq('id', 1).single().then(function(r) { if (r.data) { adminPassword = r.data.admin_password || ''; homePassword = r.data.staff_password || ''; specialPassword = r.data.special_password || ''; passwordsLoaded = true; lastKnownUpdate = r.data.updated_at || ''; } else { passwordsLoaded = true; } if (callback) callback(); }).catch(function(e) { passwordsLoaded = true; if (callback) callback(); }); }
-function updatePasswords() { var na = document.getElementById('new-admin-password').value.trim(), ns = document.getElementById('new-staff-password').value.trim(), nsp = document.getElementById('new-special-password').value.trim(); if (!na && !ns && !nsp) { showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false); return; } var ud = { updated_at: new Date().toISOString() }; if (na) ud.admin_password = na; if (ns) ud.staff_password = ns; if (nsp) ud.special_password = nsp; supabase.from('settings').update(ud).eq('id', 1).then(function(r) { if (!r.error) { showBigToast('✅ Password ပြောင်းပြီး', 'စနစ်အားလုံး log out', 'success', false); setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); window.location.reload(); }, 3000); } }).catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); }); }
-function checkUniversalLogin() { if (!passwordsLoaded) { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '⏳ စနစ် အဆင်သင့်မဖြစ်သေးပါ။'; return; } var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword || i === specialPassword) { var role = 'staff'; if (i === adminPassword) role = 'admin'; else if (i === specialPassword) role = 'special'; sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', role); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; } }
-function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'staff', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#10b981"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else { if (b) { b.innerText = r==='special'?"Special":"Staff"; b.style.display = "inline-block"; b.style.background = "#64748b"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
-function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }
-function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+function updatePasswords() { var na = document.getElementById('new-admin-password').value.trim(), ns = document.getElementById('new-staff-password').value.trim(), nsp = document.getElementById('new-special-password').value.trim(); if (!na && !ns && !nsp) { showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false); return; } var ud = { updated_at: new Date().toISOString() }; if (na) ud.admin_password = na; if (ns) ud.staff_password = ns; if (nsp) ud.special_password = nsp; supabase.from('settings').update(ud).eq('id', 1).then(function(r) { if (!r.error) { if (na) adminPassword = na; if (ns) homePassword = ns; if (nsp) specialPassword = nsp; showBigToast('✅ Password ပြောင်းပြီး', 'စနစ်အားလုံး log out', 'success', false); document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-special-password').value = ''; setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000); } else { showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false); } }).catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); }); }
+function setupSpecialRoleUI() { document.documentElement.setAttribute('data-role', 'special'); }
+function checkUniversalLogin() { if (!passwordsLoaded) { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '⏳ စနစ် အဆင်သင့်မဖြစ်သေးပါ။'; return; } var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword || i === specialPassword) { var role = 'staff'; if (i === adminPassword) role = 'admin'; else if (i === specialPassword) role = 'special'; sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', role); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); if (role === 'special') setupSpecialRoleUI(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '❌ Password မှားယွင်းနေပါသည်။'; } }
+function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'staff', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#10b981"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else if (r === 'special') { if (b) { b.innerText = "Special"; b.style.display = "inline-block"; b.style.background = "#8b5cf6"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } else { if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; b.style.background = "#64748b"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
+function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); document.documentElement.removeAttribute('data-role'); window.location.reload(); }
+function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
 
 // =====================================================================
-// DATA LOADING
+// ★★★ LOAD DATA - Cache Fix ★★★
 // =====================================================================
 function loadProductsFromSheet() {
     supabase.from('Products').select('*')
@@ -2463,55 +2280,105 @@ function loadProductsFromSheet() {
             if (r.data && r.data.length > 0) {
                 productsDB = r.data;
                 buildBarcodeIndex();
+                // ★★★ Always update cache when fresh data arrives ★★★
                 localStorage.setItem('productsCache', JSON.stringify(r.data));
                 localStorage.setItem('productsCacheTime', Date.now());
-                if (document.getElementById('admin').classList.contains('active')) { resetAdminProductList(); renderAdminProducts(productsDB); }
-                if (document.getElementById('inventory').classList.contains('active')) { renderInventoryTab(); }
+                
+                // Refresh UI if admin tab is open
+                if (document.getElementById('admin') && document.getElementById('admin').classList.contains('active')) {
+                    resetAdminProductList();
+                    renderAdminProducts(productsDB);
+                }
+                // Refresh search results
                 filterProductNames();
             }
         })
         .catch(function(e) {
+            console.log('Load products failed:', e);
+            // Only use cache if productsDB is empty
             if (productsDB.length === 0) {
                 var cached = localStorage.getItem('productsCache');
-                if (cached) { productsDB = JSON.parse(cached); buildBarcodeIndex(); }
+                if (cached) {
+                    productsDB = JSON.parse(cached);
+                    buildBarcodeIndex();
+                }
             }
         });
 }
 
 function loadSalesHistoryFromSheet() {
     supabase.from('SalesHistory').select('*').order('id', { ascending: false })
-        .then(function(r) { if (r.data && r.data.length > 0) { salesHistory = r.data; localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); } })
-        .catch(function(e) { var l = localStorage.getItem('salesHistory'); if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); } });
+        .then(function(r) {
+            if (r.data && r.data.length > 0) {
+                salesHistory = r.data;
+                localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+                displayHistory(salesHistory);
+            }
+        })
+        .catch(function(e) {
+            var l = localStorage.getItem('salesHistory');
+            if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); }
+        });
 }
 
 // =====================================================================
 // WINDOW ONLOAD
 // =====================================================================
 window.onload = function() {
-    var cached = localStorage.getItem('productsCache');
-    if (cached) { productsDB = JSON.parse(cached); buildBarcodeIndex(); renderCart(); updateScannerTotal(); }
+    var theme = document.documentElement.getAttribute('data-theme') || 'light';
+    document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
     
+    // Load from cache first for instant display
+    var cached = localStorage.getItem('productsCache');
+    if (cached) {
+        productsDB = JSON.parse(cached);
+        buildBarcodeIndex();
+        renderCart();
+        updateScannerTotal();
+    }
+    
+    // Then fetch fresh data from server (will overwrite if different)
     loadProductsFromSheet();
     loadSalesHistoryFromSheet();
     
     loadPasswordsFromSupabase(function() {
         if (sessionStorage.getItem('isAppUnlocked') === 'true') {
+            var role = localStorage.getItem('currentUserRole') || 'staff';
             setupRolePrivilegesUi();
+            if (role === 'special') setupSpecialRoleUI();
             document.getElementById('app-lock-screen').style.display = 'none';
             document.getElementById('app-main-content').style.display = 'block';
         }
     });
     
+    displayHistory(salesHistory);
+    
     var pw = document.getElementById('home-pass-input');
     if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
     
     var si = document.getElementById('name-search-input');
-    if (si) { si.addEventListener('input', filterProductNames); }
+    if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
     
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     
-    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function() { loadProductsFromSheet(); }).subscribe();
-    supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function() { loadSalesHistoryFromSheet(); }).subscribe();
+    if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); }
+    
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); });
+        });
+    }
+    
+    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
+    supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
+    supabase.channel('settings-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, function(payload) {
+        var newUpdateTime = payload.new.updated_at || '';
+        if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) {
+            showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
+            setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); document.documentElement.removeAttribute('data-role'); window.location.reload(); }, 3000);
+        }
+        lastKnownUpdate = newUpdateTime;
+    }).subscribe();
 };
 </script>
 </body>
