@@ -1329,8 +1329,9 @@ window.addEventListener('beforeinstallprompt', function(e) {
         <div class="mb-3"><span style="font-size:44px;">✨</span></div>
         <h4 class="fw-bold mb-1">ဝင်းသီရိ</h4>
         <p class="small mb-4 fw-bold" style="color:var(--accent-gold);">PREMIUM POS SYSTEM</p>
-        <input type="password" id="home-pass-input" class="form-control form-control-lg text-center mb-4" placeholder="••••" style="font-size:24px;letter-spacing:6px;">
-        <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
+        <input type="text" id="home-user-input" class="form-control form-control-lg mb-2" placeholder="Username" autocomplete="username">
+        <input type="password" id="home-pass-input" class="form-control form-control-lg mb-4" placeholder="Password" autocomplete="current-password">
+        <button class="btn btn-premium-gold btn-lg w-100 py-3 fs-6" id="login-btn" onclick="checkUniversalLogin()">🔓 စနစ်ထဲသို့ဝင်မည်</button>
         <div id="lock-error" class="text-danger small mt-3 fw-bold" style="display:none;">❌ Password မှားယွင်းနေပါသည်။</div>
     </div>
 </div>
@@ -1620,24 +1621,28 @@ window.addEventListener('beforeinstallprompt', function(e) {
         <!-- ===== PASSWORD TAB ===== -->
         <div id="password" class="tab-content">
             <div class="custom-card" style="border-top:4px solid #6366f1!important;">
+                <h6 class="fw-bold mb-3" style="color:#6366f1;">🔑 ကိုယ်ပိုင် Password ပြောင်းရန်</h6>
+                <div class="row g-3 align-items-end">
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Password အသစ်</label><input type="password" id="new-my-password" class="form-control" placeholder="Password အသစ် (အနည်းဆုံး ၆ လုံး)"></div>
+                    <div class="col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updateMyPassword()">💾 ပြောင်းမည်</button></div>
+                </div>
+            </div>
+            <div class="custom-card admin-only-feature" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold mb-0" style="color:#6366f1;">🔐 Password စီမံခန့်ခွဲရန်</h6>
+                    <h6 class="fw-bold mb-0" style="color:var(--accent-gold);">👥 ဝန်ထမ်းစာရင်း</h6>
                     <span class="badge rounded-pill bg-light text-dark border" style="font-size:10px;">Admin Only</span>
                 </div>
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4 col-6"><label class="text-secondary small fw-bold mb-1">👑 Admin</label><input type="text" id="new-admin-password" class="form-control" placeholder="Admin အသစ်"></div>
-                    <div class="col-md-4 col-6"><label class="text-secondary small fw-bold mb-1">👤 Staff</label><input type="text" id="new-staff-password" class="form-control" placeholder="Staff အသစ်"></div>
-                    <div class="col-md-4 col-12"><label class="text-secondary small fw-bold mb-1">⭐ Special</label><input type="text" id="new-special-password" class="form-control" placeholder="Special အသစ်"></div>
-                    <div class="col-12 mt-2"><button class="btn btn-premium-gold w-100 fw-bold py-2" onclick="updatePasswords()">💾 သိမ်းမည်</button></div>
+                <div id="staff-list-wrap" class="d-flex flex-column gap-2">
+                    <div class="text-center text-muted py-3">ဒေတာ တွက်ချက်နေပါသည်...</div>
                 </div>
             </div>
             <div class="custom-card">
-                <h6 class="fw-bold text-secondary mb-3">📋 Password ဆိုင်ရာ သတိပြုရန်များ</h6>
+                <h6 class="fw-bold text-secondary mb-3">📋 ဝန်ထမ်းအကောင့် အသစ်ထည့်ရန်</h6>
                 <ul class="small text-muted mb-0" style="padding-left:18px;">
-                    <li class="mb-2">Password ပြောင်းလိုက်ပါက <b>စနစ်သုံးနေသော ဖုန်းအားလုံး</b> အလိုအလျောက် Logout ဖြစ်ပါမည်။</li>
-                    <li class="mb-2">Password အသစ်ကို ဝန်ထမ်းများအား ပြန်လည်မျှဝေပေးပါ။</li>
-                    <li class="mb-2">Admin Password မေ့သွားပါက Supabase Dashboard မှတဆင့် ပြန်လည်ပြင်ဆင်နိုင်ပါသည်။</li>
-                    <li>Password အားလုံး မတူညီစေရန် သတ်မှတ်ပေးပါ။</li>
+                    <li class="mb-2">လုံခြုံရေးအရ ဝန်ထမ်းအကောင့်အသစ်ကို app ထဲကနေ ဖန်တီး၍ မရပါ — <b>Supabase Dashboard → Authentication → Add User</b> မှတဆင့်သာ ဖန်တီးပါ။</li>
+                    <li class="mb-2">Email နေရာတွင် <code>username@wintheri.local</code> ပုံစံဖြင့် ထည့်ပါ (ဥပမာ - <code>maung@wintheri.local</code>)။ Email confirmation ကို Auth Settings တွင် ပိတ်ထားရပါမည်။</li>
+                    <li class="mb-2">အကောင့်အသစ် ဖန်တီးပြီးပါက အောက်ပါ ဝန်ထမ်းစာရင်းတွင် role ကို staff/admin/special ရွေးပေးနိုင်ပါသည်။</li>
+                    <li>ဝန်ထမ်းက app ထဲသို့ ဝင်ရာတွင် username ကို <code>@wintheri.local</code> မပါဘဲ ရိုက်ထည့်ရုံသာလိုအပ်ပါသည်။</li>
                 </ul>
             </div>
         </div>
@@ -1655,7 +1660,7 @@ var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // =====================================================================
 // GLOBAL VARIABLES
 // =====================================================================
-var adminPassword = '', homePassword = '', specialPassword = '', passwordsLoaded = false;
+var currentStaffProfile = null;
 var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
@@ -2582,12 +2587,97 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
 function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); } }
-function loadPasswordsFromSupabase(callback) { supabase.from('settings').select('*').eq('id', 1).single().then(function(r) { if (r.data) { adminPassword = r.data.admin_password || ''; homePassword = r.data.staff_password || ''; specialPassword = r.data.special_password || ''; passwordsLoaded = true; lastKnownUpdate = r.data.updated_at || ''; } else { passwordsLoaded = true; } if (callback) callback(); }).catch(function(e) { passwordsLoaded = true; if (callback) callback(); }); }
-function updatePasswords() { var na = document.getElementById('new-admin-password').value.trim(), ns = document.getElementById('new-staff-password').value.trim(), nsp = document.getElementById('new-special-password').value.trim(); if (!na && !ns && !nsp) { showBigToast('⚠️ အနည်းဆုံး password တစ်ခုဖြည့်ပါ', '', 'danger', false); return; } var ud = { updated_at: new Date().toISOString() }; if (na) ud.admin_password = na; if (ns) ud.staff_password = ns; if (nsp) ud.special_password = nsp; supabase.from('settings').update(ud).eq('id', 1).then(function(r) { if (!r.error) { if (na) adminPassword = na; if (ns) homePassword = ns; if (nsp) specialPassword = nsp; showBigToast('✅ Password ပြောင်းပြီး', 'စနစ်အားလုံး log out', 'success', false); document.getElementById('new-admin-password').value = ''; document.getElementById('new-staff-password').value = ''; document.getElementById('new-special-password').value = ''; setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); window.location.reload(); }, 3000); } else { showBigToast('❌ မအောင်မြင်ပါ', '', 'danger', false); } }).catch(function(err) { showBigToast('❌ Error: ' + err.message, '', 'danger', false); }); }
+// =====================================================================
+// AUTH (Supabase Auth — per-staff login accounts)
+// =====================================================================
+function pseudoEmail(username) { return username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') + '@wintheri.local'; }
+
+function fetchMyProfile() {
+    return supabase.auth.getUser().then(function(r) {
+        var user = r.data && r.data.user;
+        if (!user) return null;
+        return supabase.from('profiles').select('*').eq('id', user.id).single().then(function(pr) {
+            return (pr.data) || null;
+        });
+    });
+}
+
+function applyLoggedInState(profile) {
+    currentStaffProfile = profile;
+    localStorage.setItem('currentUserRole', profile.role);
+    localStorage.setItem('currentUserName', profile.username || '');
+    document.getElementById('app-lock-screen').style.display = 'none';
+    document.getElementById('app-main-content').style.display = 'block';
+    document.getElementById('lock-error').style.display = 'none';
+    setupRolePrivilegesUi();
+    if (profile.role === 'special') setupSpecialRoleUI();
+    if (profile.role === 'admin') renderStaffList();
+    initAudio();
+}
+
+function checkUniversalLogin() {
+    var uname = document.getElementById('home-user-input').value.trim();
+    var pass = document.getElementById('home-pass-input').value;
+    var errEl = document.getElementById('lock-error');
+    if (!uname || !pass) { errEl.style.display = 'block'; errEl.textContent = '⚠️ Username, Password နှစ်ခုလုံး ဖြည့်ပါ'; return; }
+    var btn = document.getElementById('login-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ …'; }
+    supabase.auth.signInWithPassword({ email: pseudoEmail(uname), password: pass }).then(function(r) {
+        if (r.error || !r.data.user) {
+            errEl.style.display = 'block'; errEl.textContent = '❌ Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။';
+            if (btn) { btn.disabled = false; btn.textContent = '🔓 စနစ်ထဲသို့ဝင်မည်'; }
+            return;
+        }
+        fetchMyProfile().then(function(profile) {
+            if (btn) { btn.disabled = false; btn.textContent = '🔓 စနစ်ထဲသို့ဝင်မည်'; }
+            if (!profile) {
+                errEl.style.display = 'block'; errEl.textContent = '⚠️ Account အတွက် Profile မတွေ့ပါ — Admin ကို ဆက်သွယ်ပါ';
+                supabase.auth.signOut();
+                return;
+            }
+            applyLoggedInState(profile);
+        });
+    });
+}
+
+function updateMyPassword() {
+    var np = document.getElementById('new-my-password').value;
+    if (!np || np.length < 6) { showBigToast('⚠️ Password အနည်းဆုံး ၆ လုံး ထည့်ပါ', '', 'danger', false); return; }
+    supabase.auth.updateUser({ password: np }).then(function(r) {
+        if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
+        document.getElementById('new-my-password').value = '';
+        showBigToast('✅ Password ပြောင်းပြီးပါပြီ', '', 'success', false);
+    });
+}
+
+function renderStaffList() {
+    var wrap = document.getElementById('staff-list-wrap');
+    if (!wrap) return;
+    supabase.from('profiles').select('*').order('created_at', { ascending: true }).then(function(r) {
+        if (r.error || !r.data) { wrap.innerHTML = '<div class="text-center text-muted py-3">ဖတ်၍မရပါ</div>'; return; }
+        if (r.data.length === 0) { wrap.innerHTML = '<div class="text-center text-muted py-3">ဝန်ထမ်း မရှိသေးပါ</div>'; return; }
+        var roles = ['staff', 'admin', 'special'], h = '';
+        r.data.forEach(function(p) {
+            var opts = ''; roles.forEach(function(rl) { opts += '<option value="' + rl + '"' + (p.role === rl ? ' selected' : '') + '>' + rl + '</option>'; });
+            h += '<div class="d-flex justify-content-between align-items-center p-2 rounded-3 border" style="background:var(--bg-input);">' +
+                 '<div class="fw-bold" style="font-size:14px;">' + (p.username || p.id) + '</div>' +
+                 '<select class="form-control form-control-sm w-auto" onchange="updateStaffRole(\'' + p.id + '\', this.value)">' + opts + '</select></div>';
+        });
+        wrap.innerHTML = h;
+    });
+}
+
+function updateStaffRole(id, role) {
+    supabase.from('profiles').update({ role: role }).eq('id', id).then(function(r) {
+        if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
+        showBigToast('✅ Role ပြောင်းပြီး', '', 'success', false);
+    });
+}
+
+
 function setupSpecialRoleUI() { document.documentElement.setAttribute('data-role', 'special'); }
-function checkUniversalLogin() { if (!passwordsLoaded) { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '⏳ စနစ် အဆင်သင့်မဖြစ်သေးပါ။'; return; } var i = document.getElementById('home-pass-input').value.trim(); if (i === adminPassword || i === homePassword || i === specialPassword) { var role = 'staff'; if (i === adminPassword) role = 'admin'; else if (i === specialPassword) role = 'special'; sessionStorage.setItem('isAppUnlocked', 'true'); localStorage.setItem('currentUserRole', role); document.getElementById('app-lock-screen').style.display = 'none'; document.getElementById('app-main-content').style.display = 'block'; document.getElementById('lock-error').style.display = 'none'; setupRolePrivilegesUi(); if (role === 'special') setupSpecialRoleUI(); initAudio(); } else { document.getElementById('lock-error').style.display = 'block'; document.getElementById('lock-error').textContent = '❌ Password မှားယွင်းနေပါသည်။'; } }
 function setupRolePrivilegesUi() { var r = localStorage.getItem('currentUserRole') || 'staff', b = document.getElementById('role-badge'); if (r === 'admin') { if (b) { b.innerText = "Admin"; b.style.display = "inline-block"; b.style.background = "#10b981"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'block'; }); } else if (r === 'special') { if (b) { b.innerText = "Special"; b.style.display = "inline-block"; b.style.background = "#8b5cf6"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } else { if (b) { b.innerText = "Staff"; b.style.display = "inline-block"; b.style.background = "#64748b"; } document.querySelectorAll('.admin-only-feature').forEach(function(el) { el.style.display = 'none'; }); switchTab('sales'); } }
-function lockAppImmediate() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); document.documentElement.removeAttribute('data-role'); window.location.reload(); }
+function lockAppImmediate() { supabase.auth.signOut().then(function() { localStorage.removeItem('currentUserRole'); localStorage.removeItem('currentUserName'); document.documentElement.removeAttribute('data-role'); window.location.reload(); }); }
 function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
 
 // =====================================================================
@@ -2662,20 +2752,21 @@ window.onload = function() {
     loadProductsFromSheet();
     loadSalesHistoryFromSheet();
     
-    loadPasswordsFromSupabase(function() {
-        if (sessionStorage.getItem('isAppUnlocked') === 'true') {
-            var role = localStorage.getItem('currentUserRole') || 'staff';
-            setupRolePrivilegesUi();
-            if (role === 'special') setupSpecialRoleUI();
-            document.getElementById('app-lock-screen').style.display = 'none';
-            document.getElementById('app-main-content').style.display = 'block';
-        }
+    // Restore existing Supabase Auth session (if any) instead of the old shared-password flow
+    supabase.auth.getSession().then(function(r) {
+        var session = r.data && r.data.session;
+        if (!session) return;
+        fetchMyProfile().then(function(profile) {
+            if (profile) { applyLoggedInState(profile); }
+            else { supabase.auth.signOut(); }
+        });
     });
     
     displayHistory(salesHistory);
     
-    var pw = document.getElementById('home-pass-input');
+    var pw = document.getElementById('home-pass-input'), pu = document.getElementById('home-user-input');
     if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
+    if (pu) { pu.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
     
     var si = document.getElementById('name-search-input');
     if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
@@ -2693,14 +2784,17 @@ window.onload = function() {
     
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
-    supabase.channel('settings-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, function(payload) {
-        var newUpdateTime = payload.new.updated_at || '';
-        if (lastKnownUpdate && newUpdateTime !== lastKnownUpdate) {
-            showBigToast('🔐 Password ပြောင်းလဲသွားပါသည်', 'စနစ်မှ ထွက်ပါမည်...', 'danger', false);
-            setTimeout(function() { sessionStorage.removeItem('isAppUnlocked'); localStorage.removeItem('currentUserRole'); document.documentElement.removeAttribute('data-role'); window.location.reload(); }, 3000);
+    
+    // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
+    supabase.auth.onAuthStateChange(function(event) {
+        if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('currentUserRole');
+            localStorage.removeItem('currentUserName');
+            document.documentElement.removeAttribute('data-role');
+            document.getElementById('app-lock-screen').style.display = 'flex';
+            document.getElementById('app-main-content').style.display = 'none';
         }
-        lastKnownUpdate = newUpdateTime;
-    }).subscribe();
+    });
 };
 </script>
 </body>
