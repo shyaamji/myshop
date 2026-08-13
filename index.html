@@ -1535,11 +1535,11 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="small text-muted mb-1">စတင်မည့်ရက်</label>
-                        <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();renderStaffPerformance();">
+                        <input type="date" id="filter-start-date" class="form-control" onchange="onDashboardDateFilterChange();">
                     </div>
                     <div class="col-6">
                         <label class="small text-muted mb-1">နောက်ဆုံးရက်</label>
-                        <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();renderStaffPerformance();">
+                        <input type="date" id="filter-end-date" class="form-control" onchange="onDashboardDateFilterChange();">
                     </div>
                 </div>
             </div>
@@ -2183,7 +2183,7 @@ function checkout() {
         sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null };
     
     supabase.from('SalesHistory').insert([sd]).then(function() {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), staff_id: sd.staff_id });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
@@ -2212,7 +2212,7 @@ function checkout() {
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
         
     }).catch(function(err) {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), staff_id: sd.staff_id });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('⚠️ Offline သိမ်းပြီး', '', 'danger', false);
@@ -2871,10 +2871,15 @@ function loadProductsFromSheet() {
         });
 }
 
-function loadSalesHistoryFromSheet() {
-    supabase.from('SalesHistory').select('*').order('id', { ascending: false })
+// ★★★ Bandwidth-friendly load: only the last N days by default (not the whole table) ★★★
+function loadSalesHistoryFromSheet(daysBack) {
+    var days = daysBack || 90;
+    var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
+    supabase.from('SalesHistory').select('*')
+        .gte('created_at', cutoff.toISOString())
+        .order('created_at', { ascending: false })
         .then(function(r) {
-            if (r.data && r.data.length > 0) {
+            if (r.data) {
                 salesHistory = r.data;
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
                 displayHistory(salesHistory);
@@ -2884,6 +2889,37 @@ function loadSalesHistoryFromSheet() {
             var l = localStorage.getItem('salesHistory');
             if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); }
         });
+}
+
+// ★★★ On-demand fetch for a specific date range that falls OUTSIDE the default
+// 90-day window (e.g. an admin picking an older start date on the dashboard).
+// Merges the result into salesHistory instead of re-downloading everything. ★★★
+function loadSalesHistoryRange(startDate, endDate, callback) {
+    var q = supabase.from('SalesHistory').select('*').order('created_at', { ascending: false });
+    if (startDate) q = q.gte('created_at', new Date(startDate).toISOString());
+    if (endDate) { var e = new Date(endDate); e.setHours(23, 59, 59, 999); q = q.lte('created_at', e.toISOString()); }
+    q.then(function(r) {
+        if (r.data) {
+            var existing = {}; salesHistory.forEach(function(s) { existing[s.voucher_id] = true; });
+            r.data.forEach(function(s) { if (!existing[s.voucher_id]) { salesHistory.push(s); existing[s.voucher_id] = true; } });
+            salesHistory.sort(function(a, b) { return new Date(b.created_at || b.date) - new Date(a.created_at || a.date); });
+            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+        }
+        if (callback) callback(r.data || []);
+    }).catch(function() { if (callback) callback([]); });
+}
+
+// ★★★ Dashboard date-filter handler: uses the already-loaded 90-day window when
+// possible, and only reaches out to the server for older data when needed. ★★★
+function onDashboardDateFilterChange() {
+    var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value;
+    var ninetyDaysAgo = new Date(); ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    if (fs && new Date(fs) < ninetyDaysAgo) {
+        showBigToast('🔄 ရှေးရက်စွဲ ဒေတာ ရှာနေပါသည်...', '', 'success', false);
+        loadSalesHistoryRange(fs, fe, function() { calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance(); });
+    } else {
+        calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance();
+    }
 }
 
 // =====================================================================
