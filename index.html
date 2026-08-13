@@ -2616,9 +2616,14 @@ function renderStaffVoucherListBody() {
     var h = '';
     staffDrillVouchers.forEach(function(s, idx) {
         var totalNum = Number((s.total_amount || '0').toString().replace(/,/g, ''));
+        var items = s.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch (e) { items = []; } }
+        if (!Array.isArray(items)) items = [];
+        var itemCount = items.reduce(function(sum, it) { return sum + (Number(it.qty) || 0); }, 0);
         h += '<div class="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3 border" style="cursor:pointer;background:var(--bg-input);" onclick="openVoucherDetailFromDrill(' + idx + ')">' +
-             '<div><div class="fw-bold" style="font-size:14px;">' + (s.voucher_id || '') + '</div>' +
-             '<div class="text-muted" style="font-size:11px;">' + (s.customer_name || 'Customer') + ' • ' + (s.date || '') + '</div></div>' +
+             '<div><div class="d-flex align-items-center gap-2"><span class="fw-bold" style="font-size:14px;">' + (s.voucher_id || '') + '</span>' +
+             '<span class="badge bg-secondary-subtle text-secondary border" style="font-size:10px;">' + itemCount + ' ခု</span></div>' +
+             '<div style="font-size:12px;color:var(--accent-gold);font-weight:600;">' + (s.customer_name || 'Customer') + '</div>' +
+             '<div class="text-muted" style="font-size:11px;">' + (s.date || '') + '</div></div>' +
              '<div class="fw-bold text-success">' + totalNum.toLocaleString() + ' Ks</div></div>';
     });
     wrap.innerHTML = h;
@@ -2632,7 +2637,7 @@ function openVoucherDetailFromDrill(idx) {
     if (!Array.isArray(items)) items = [];
     document.getElementById('staff-drill-title').innerText = sale.voucher_id || 'Voucher';
     document.getElementById('staff-drill-back-btn').style.display = 'inline-block';
-    var h = '<div class="mb-3 small text-muted">' + (sale.customer_name || 'Customer') + ' • ' + (sale.date || '') + '</div>';
+    var h = '<div class="mb-3 small"><span style="color:var(--accent-gold);font-weight:700;">' + (sale.customer_name || 'Customer') + '</span> <span class="text-muted">• ' + (sale.date || '') + '</span></div>';
     h += '<div class="d-flex flex-column gap-2 mb-3">';
     items.forEach(function(it) {
         var unitPrice = Number(it.price), lineTotal = unitPrice * Number(it.qty);
