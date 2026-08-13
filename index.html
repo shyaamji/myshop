@@ -2486,13 +2486,13 @@ function displayHistory(data) {
         if (Array.isArray(items)) { items.forEach(function(item) { il += '<div class="history-item-row"><span class="history-item-name">' + item.name + '</span><span class="history-item-qty">(' + Number(item.price).toLocaleString() + ') x' + item.qty + '</span><span class="history-item-total font-monospace">' + (item.price * item.qty).toLocaleString() + ' Ks</span></div>'; }); }
         var vid = sale.voucher_id||'', cn = sale.customer_name||'', dt = sale.date||'', pm = sale.extra2||'Cash', disc = sale.extra1||'0', total = sale.total_amount||sale.total||'0';
         if (typeof total === 'number') total = String(total);
-        var sellerName = sale.staff_id ? (staffProfilesMap[sale.staff_id] || '') : '';
+        var sellerName = (role === 'admin' && sale.staff_id) ? (staffProfilesMap[sale.staff_id] || '') : '';
         var sellerLine = sellerName ? ' | 🧑‍💼 ရောင်းသူ: <b>' + sellerName + '</b>' : '';
         var db = role==='admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\''+vid+'\')">🗑️ ဖျက်</button>' : '';
         list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: '+vid+'</span><small class="text-muted font-monospace">'+dt+'</small></div><div class="small mb-1">ဝယ်သူ: <b>'+cn+'</b> | 💳 '+pm+sellerLine+'</div><div class="small mb-2 text-danger">Discount: <b>'+disc+'</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">'+il+'</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">'+(Number(total.replace(/,/g,''))||0).toLocaleString()+' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\''+vid+'\')">🖨️ ပြန်ထုတ်</button>'+db+'</div></div></div>';
     });
 }
-function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(); displayHistory(salesHistory.filter(function(s) { var vid=(s.voucher_id||'').toLowerCase(), cn=(s.customer_name||'').toLowerCase(), sn=(s.staff_id ? (staffProfilesMap[s.staff_id]||'') : '').toLowerCase(); return vid.includes(t)||cn.includes(t)||sn.includes(t); })); }
+function searchHistory() { var t = document.getElementById('search-input').value.toLowerCase(), role = localStorage.getItem('currentUserRole') || 'user'; displayHistory(salesHistory.filter(function(s) { var vid=(s.voucher_id||'').toLowerCase(), cn=(s.customer_name||'').toLowerCase(), sn=(role==='admin' && s.staff_id) ? (staffProfilesMap[s.staff_id]||'').toLowerCase() : ''; return vid.includes(t)||cn.includes(t)||sn.includes(t); })); }
 function deleteSaleFromSheet(vid) { if (!confirm("ဖျက်မှာသေချာလား?")) return; supabase.from('SalesHistory').delete().eq('voucher_id', vid.toString()).then(function() { salesHistory = salesHistory.filter(function(s) { return (s.voucher_id||'').toString()!==vid.toString(); }); localStorage.setItem('salesHistory', JSON.stringify(salesHistory)); displayHistory(salesHistory); showBigToast('🗑️ ဖျက်ပြီး', '', 'success', false); }).catch(function(err) { showBigToast('❌ Error: '+err.message, '', 'danger', false); }); }
 function clearAllSalesHistoryOnline(btn) { if (!confirm("အားလုံးဖျက်မှာသေချာလား?")) return; btn.disabled=true; btn.innerText="⏳"; supabase.from('SalesHistory').delete().neq('id',0).then(function() { localStorage.removeItem('salesHistory'); salesHistory=[]; displayHistory(salesHistory); btn.disabled=false; btn.innerText="⚠️ အားလုံးဖျက်မည်"; showBigToast('✅ ရှင်းပြီး', '', 'success', false); }).catch(function(err) { btn.disabled=false; btn.innerText="⚠️ အားလုံးဖျက်မည်"; showBigToast('❌ Error: '+err.message, '', 'danger', false); }); }
 
@@ -2767,8 +2767,7 @@ function applyLoggedInState(profile) {
     document.getElementById('lock-error').style.display = 'none';
     setupRolePrivilegesUi();
     if (profile.role === 'special') setupSpecialRoleUI();
-    loadStaffProfilesMap(function() { displayHistory(salesHistory); });
-    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); }); }
+    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); displayHistory(salesHistory); }); }
     initAudio();
 }
 
