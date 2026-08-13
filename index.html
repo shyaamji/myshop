@@ -1419,6 +1419,20 @@ window.addEventListener('beforeinstallprompt', function(e) {
         </div>
     </div>
 
+    <!-- ===== STAFF VOUCHER DRILL-DOWN MODAL ===== -->
+    <div id="staff-drill-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99998;align-items:center;justify-content:center;">
+        <div style="background:var(--bg-card);border-radius:20px;padding:1.5rem;width:92%;max-width:460px;max-height:85vh;overflow-y:auto;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-light" id="staff-drill-back-btn" style="display:none;" onclick="backToStaffVoucherList()">←</button>
+                    <h6 class="fw-bold mb-0" id="staff-drill-title">ဝန်ထမ်း</h6>
+                </div>
+                <button class="btn btn-sm btn-light" onclick="closeStaffDrillModal()">✕</button>
+            </div>
+            <div id="staff-drill-body"></div>
+        </div>
+    </div>
+
     <div class="container mt-4 pb-5">
         <!-- ===== SALES TAB ===== -->
         <div id="sales" class="tab-content active">
@@ -1521,11 +1535,11 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="small text-muted mb-1">စတင်မည့်ရက်</label>
-                        <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();">
+                        <input type="date" id="filter-start-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();renderStaffPerformance();">
                     </div>
                     <div class="col-6">
                         <label class="small text-muted mb-1">နောက်ဆုံးရက်</label>
-                        <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();">
+                        <input type="date" id="filter-end-date" class="form-control" onchange="calculateTodaySales();updateSalesChartLogic();renderStaffPerformance();">
                     </div>
                 </div>
             </div>
@@ -1543,6 +1557,14 @@ window.addEventListener('beforeinstallprompt', function(e) {
                         <h2 class="fw-bold my-2 fs-3 text-success" id="today-profit-summary">0 Ks</h2>
                         <small class="small text-muted" id="today-date-string"></small>
                     </div>
+                </div>
+            </div>
+            <div class="custom-card p-3 admin-only-feature" id="staff-performance-card" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0" style="color:var(--accent-gold);">👥 ဝန်ထမ်းအလိုက် ရောင်းအား</h6>
+                </div>
+                <div id="staff-performance-list" class="d-flex flex-column gap-2">
+                    <div class="text-center text-muted py-3">ဒေတာ တွက်ချက်နေပါသည်...</div>
                 </div>
             </div>
             <div class="custom-card p-3" id="sold-out-card">
@@ -1661,6 +1683,7 @@ var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // GLOBAL VARIABLES
 // =====================================================================
 var currentStaffProfile = null;
+var staffProfilesMap = {};
 var lastKnownUpdate = '';
 var canScan = false, isFullScannerActive = false, html5QrcodeScannerFull = null;
 var productsDB = [], salesHistory = [], audioCtx = null;
@@ -2157,10 +2180,10 @@ function checkout() {
     var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
     var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText,
         disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value,
-        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm };
+        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null };
     
     supabase.from('SalesHistory').insert([sd]).then(function() {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString() });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
@@ -2189,7 +2212,7 @@ function checkout() {
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
         
     }).catch(function(err) {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString() });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('⚠️ Offline သိမ်းပြီး', '', 'danger', false);
@@ -2523,6 +2546,118 @@ function filterAdminProductNames() {
 // =====================================================================
 // DASHBOARD
 // =====================================================================
+function loadStaffProfilesMap(callback) {
+    supabase.from('profiles').select('id, username').then(function(r) {
+        if (r.data) { staffProfilesMap = {}; r.data.forEach(function(p) { staffProfilesMap[p.id] = p.username || p.id; }); }
+        if (callback) callback();
+    }).catch(function() { if (callback) callback(); });
+}
+
+// Returns salesHistory entries within the dashboard's current date-filter range
+// (shared by renderStaffPerformance and the staff drill-down modal).
+function filterSalesByDashboardDate() {
+    var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value,
+        sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null,
+        now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(),
+        tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y;
+    return salesHistory.filter(function(sale) {
+        var dt = sale.date || '', sdte = new Date(dt), inside = true;
+        if (sts && sdte.getTime() < sts) inside = false; if (ets && sdte.getTime() > ets) inside = false;
+        if (!fs && !fe) { var so = dt ? dt.split(',')[0].trim() : ''; if (!(so.includes(tf1) || so.includes(tf2) || sdte.toLocaleDateString() === now.toLocaleDateString())) inside = false; }
+        return inside;
+    });
+}
+
+var staffPerformanceEntries = [];
+
+function renderStaffPerformance() {
+    var wrap = document.getElementById('staff-performance-list');
+    if (!wrap || !currentStaffProfile || currentStaffProfile.role !== 'admin') return;
+    var perStaff = {};
+    filterSalesByDashboardDate().forEach(function(sale) {
+        var sid = sale.staff_id || 'unknown', total = sale.total_amount || '0', ct = Number(total.toString().replace(/,/g, '')) || 0;
+        if (!perStaff[sid]) perStaff[sid] = { total: 0, count: 0 };
+        perStaff[sid].total += ct; perStaff[sid].count += 1;
+    });
+    var ids = Object.keys(perStaff).sort(function(a, b) { return perStaff[b].total - perStaff[a].total; });
+    if (ids.length === 0) { wrap.innerHTML = '<div class="text-center text-muted py-3">ဒေတာ မရှိသေးပါ</div>'; return; }
+    var h = '';
+    staffPerformanceEntries = [];
+    ids.forEach(function(sid, i) {
+        var name = sid === 'unknown' ? 'အမည်မသိ (ဟောင်း Sale)' : (staffProfilesMap[sid] || sid.slice(0, 8));
+        staffPerformanceEntries.push({ id: sid, name: name });
+        h += '<div class="d-flex justify-content-between align-items-center p-2 rounded-3 border" style="background:var(--bg-input);cursor:pointer;" onclick="openStaffVoucherModal(' + i + ')">' +
+             '<div><div class="fw-bold" style="font-size:14px;">' + name + '</div>' +
+             '<div class="text-muted" style="font-size:11px;">' + perStaff[sid].count + ' Order</div></div>' +
+             '<div class="fw-bold text-success">' + perStaff[sid].total.toLocaleString() + ' Ks</div></div>';
+    });
+    wrap.innerHTML = h;
+}
+
+// =====================================================================
+// STAFF VOUCHER DRILL-DOWN (staff -> voucher list -> voucher detail)
+// =====================================================================
+var staffDrillStaffName = '', staffDrillVouchers = [], staffDrillCurrentSale = null;
+
+function openStaffVoucherModal(i) {
+    var entry = staffPerformanceEntries[i];
+    if (!entry) return;
+    staffDrillStaffName = entry.name;
+    staffDrillVouchers = filterSalesByDashboardDate().filter(function(s) { return (s.staff_id || 'unknown') === entry.id; });
+    document.getElementById('staff-drill-title').innerText = entry.name + ' ရဲ့ ရောင်းအား';
+    document.getElementById('staff-drill-back-btn').style.display = 'none';
+    renderStaffVoucherListBody();
+    document.getElementById('staff-drill-modal').style.display = 'flex';
+}
+
+function renderStaffVoucherListBody() {
+    var wrap = document.getElementById('staff-drill-body');
+    if (!staffDrillVouchers.length) { wrap.innerHTML = '<div class="text-center text-muted py-4">Voucher မရှိပါ</div>'; return; }
+    var h = '';
+    staffDrillVouchers.forEach(function(s, idx) {
+        var totalNum = Number((s.total_amount || '0').toString().replace(/,/g, ''));
+        h += '<div class="d-flex justify-content-between align-items-center p-2 mb-2 rounded-3 border" style="cursor:pointer;background:var(--bg-input);" onclick="openVoucherDetailFromDrill(' + idx + ')">' +
+             '<div><div class="fw-bold" style="font-size:14px;">' + (s.voucher_id || '') + '</div>' +
+             '<div class="text-muted" style="font-size:11px;">' + (s.customer_name || 'Customer') + ' • ' + (s.date || '') + '</div></div>' +
+             '<div class="fw-bold text-success">' + totalNum.toLocaleString() + ' Ks</div></div>';
+    });
+    wrap.innerHTML = h;
+}
+
+function openVoucherDetailFromDrill(idx) {
+    var sale = staffDrillVouchers[idx];
+    if (!sale) return;
+    staffDrillCurrentSale = sale;
+    var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch (e) { items = []; } }
+    if (!Array.isArray(items)) items = [];
+    document.getElementById('staff-drill-title').innerText = sale.voucher_id || 'Voucher';
+    document.getElementById('staff-drill-back-btn').style.display = 'inline-block';
+    var h = '<div class="mb-3 small text-muted">' + (sale.customer_name || 'Customer') + ' • ' + (sale.date || '') + '</div>';
+    h += '<div class="d-flex flex-column gap-2 mb-3">';
+    items.forEach(function(it) {
+        var unitPrice = Number(it.price), lineTotal = unitPrice * Number(it.qty);
+        h += '<div class="d-flex justify-content-between p-2 rounded-3 border" style="background:var(--bg-input);">' +
+             '<div style="font-size:13px;">' + it.name + '<div class="text-muted" style="font-size:11px;">' + unitPrice.toLocaleString() + ' x ' + it.qty + '</div></div>' +
+             '<div class="fw-bold" style="font-size:13px;">' + lineTotal.toLocaleString() + '</div></div>';
+    });
+    h += '</div>';
+    h += '<div class="d-flex justify-content-between small mb-1"><span>Discount</span><span>' + (sale.extra1 || '0') + '</span></div>';
+    h += '<div class="d-flex justify-content-between small mb-2"><span>ငွေချေမှု</span><span>' + (sale.extra2 || 'Cash') + '</span></div>';
+    h += '<div class="d-flex justify-content-between fw-bold fs-6 mb-3"><span>စုစုပေါင်း</span><span>' + Number((sale.total_amount || '0').toString().replace(/,/g, '')).toLocaleString() + ' Ks</span></div>';
+    h += '<button class="btn btn-premium-gold w-100 fw-bold" onclick="printVoucher(staffDrillCurrentSale)">🖨️ ဘောက်ချာ ပြန်ထုတ်မည်</button>';
+    document.getElementById('staff-drill-body').innerHTML = h;
+}
+
+function backToStaffVoucherList() {
+    document.getElementById('staff-drill-title').innerText = staffDrillStaffName + ' ရဲ့ ရောင်းအား';
+    document.getElementById('staff-drill-back-btn').style.display = 'none';
+    renderStaffVoucherListBody();
+}
+
+function closeStaffDrillModal() {
+    document.getElementById('staff-drill-modal').style.display = 'none';
+}
+
 function calculateTodaySales() {
     var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value, sts = fs ? new Date(fs).setHours(0,0,0,0) : null, ets = fe ? new Date(fe).setHours(23,59,59,999) : null, now = new Date(), d = String(now.getDate()).padStart(2,'0'), m = String(now.getMonth()+1).padStart(2,'0'), y = now.getFullYear(), tf1 = d + '/' + m + '/' + y, tf2 = m + '/' + d + '/' + y;
     document.getElementById('today-date-string').innerText = fs ? fs : "ယနေ့ထိ";
@@ -2586,7 +2721,7 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } }
 // =====================================================================
 // AUTH (Supabase Auth — per-staff login accounts)
 // =====================================================================
@@ -2611,7 +2746,7 @@ function applyLoggedInState(profile) {
     document.getElementById('lock-error').style.display = 'none';
     setupRolePrivilegesUi();
     if (profile.role === 'special') setupSpecialRoleUI();
-    if (profile.role === 'admin') renderStaffList();
+    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); }); }
     initAudio();
 }
 
@@ -2773,7 +2908,7 @@ window.onload = function() {
     
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     
-    if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); }
+    if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance(); }
     renderSoldOutProducts();
     
     if ('serviceWorker' in navigator) {
