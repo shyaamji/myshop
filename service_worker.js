@@ -68,39 +68,3 @@ self.addEventListener('fetch', function(event) {
       })
   );
 });
-// =====================================================================
-// ဒီ code အပိုင်းကို သင့်ရဲ့ ရှိပြီးသား service-worker.js ဖိုင်ရဲ့
-// အောက်ဆုံးမှာ ထပ်ထည့်ပါ (ရှိပြီးသား cache/offline logic ကို မဖျက်ပါနဲ့)
-// =====================================================================
-
-// Push notification ရောက်လာချိန် ပြသဖို့
-self.addEventListener('push', function (event) {
-    var data = {};
-    try { data = event.data ? event.data.json() : {}; } catch (e) {
-        data = { title: 'ဝင်းသီရိ POS', body: event.data ? event.data.text() : '' };
-    }
-    var title = data.title || 'ဝင်းသီရိ POS';
-    var options = {
-        body: data.body || '',
-        icon: 'https://cdn-icons-png.flaticon.com/512/2489/2489756.png',
-        badge: 'https://cdn-icons-png.flaticon.com/512/2489/2489756.png',
-        tag: 'low-stock-alert',
-        vibrate: [200, 100, 200],
-        data: { url: '/' }
-    };
-    event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// Notification ကို နှိပ်လိုက်ရင် app ကို ပွင့်ခေါ်ဖို့
-self.addEventListener('notificationclick', function (event) {
-    event.notification.close();
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
-            for (var i = 0; i < clientList.length; i++) {
-                var client = clientList[i];
-                if ('focus' in client) return client.focus();
-            }
-            if (clients.openWindow) return clients.openWindow('/');
-        })
-    );
-});
