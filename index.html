@@ -1363,6 +1363,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <button class="audio-vib-btn active" id="audio-toggle-btn" onclick="toggleAudio()" title="အသံ ဖွင့်/ပိတ်">🔊</button>
                 <button class="audio-vib-btn active" id="vib-toggle-btn" onclick="toggleVibration()" title="တုန်ခါမှု ဖွင့်/ပိတ်">📳</button>
             </div>
+            <button class="theme-toggle-btn ms-1 admin-only-feature" style="display:none;" onclick="toggleLowStockNotifications()" id="notif-bell-btn" title="ကုန်ခန်း Notification">🔔</button>
             <button class="theme-toggle-btn ms-1" onclick="openPrinterSettings()" id="printer-settings-btn" title="Printer ချိတ်ဆက်ရန်">🖨️</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
@@ -1750,6 +1751,90 @@ function renderSoldOutProducts() {
              '<span class="badge bg-danger-subtle text-danger border px-2 py-1">🔴 ကုန်</span></div>';
     });
     wrap.innerHTML = h;
+}
+
+// =====================================================================
+// ★★★ LOW-STOCK / SOLD-OUT PUSH NOTIFICATIONS (Browser Notification API) ★★★
+// =====================================================================
+var lowStockNotifyEnabled = (localStorage.getItem('lowStockNotifyEnabled') === 'true');
+var lowStockLastNotifiedAt = 0;
+var LOW_STOCK_NOTIFY_COOLDOWN_MS = 10 * 60 * 1000; // 10 မိနစ်တစ်ခါပဲ notify (spam မဖြစ်စေရန်)
+
+// Products among current stock that are either sold-out (<=0) or below their
+// own configured min-stock threshold (extra2 field, default 5).
+function getLowStockProducts() {
+    return productsDB.filter(function(p) {
+        var st = getStockNumber(p), min = Number(p.extra2) || 5;
+        return st <= min;
+    });
+}
+
+function updateNotifBellIcon() {
+    var btn = document.getElementById('notif-bell-btn');
+    if (!btn) return;
+    var supported = ('Notification' in window);
+    if (!supported) { btn.title = 'ဤ Browser တွင် Notification မရပါ'; btn.style.opacity = '0.4'; return; }
+    if (Notification.permission === 'granted' && lowStockNotifyEnabled) {
+        btn.textContent = '🔔'; btn.style.opacity = '1'; btn.title = 'Low-stock Notification ON (နှိပ်ပြီး ပိတ်နိုင်ပါသည်)';
+    } else {
+        btn.textContent = '🔕'; btn.style.opacity = '0.6'; btn.title = 'Low-stock Notification OFF (နှိပ်ပြီး ဖွင့်နိုင်ပါသည်)';
+    }
+}
+
+function toggleLowStockNotifications() {
+    if (!('Notification' in window)) {
+        showBigToast('❌ ဤ Browser တွင် Notification မရပါ', '', 'danger', false);
+        return;
+    }
+    if (lowStockNotifyEnabled) {
+        lowStockNotifyEnabled = false;
+        localStorage.setItem('lowStockNotifyEnabled', 'false');
+        showBigToast('🔕 Low-stock Notification ပိတ်လိုက်ပါပြီ', '', 'success', false);
+        updateNotifBellIcon();
+        return;
+    }
+    if (Notification.permission === 'granted') {
+        lowStockNotifyEnabled = true;
+        localStorage.setItem('lowStockNotifyEnabled', 'true');
+        showBigToast('🔔 Low-stock Notification ဖွင့်လိုက်ပါပြီ', '', 'success', false);
+        updateNotifBellIcon();
+        checkLowStockAndNotify(true);
+        return;
+    }
+    Notification.requestPermission().then(function(perm) {
+        if (perm === 'granted') {
+            lowStockNotifyEnabled = true;
+            localStorage.setItem('lowStockNotifyEnabled', 'true');
+            showBigToast('🔔 Low-stock Notification ဖွင့်လိုက်ပါပြီ', '', 'success', false);
+            checkLowStockAndNotify(true);
+        } else {
+            showBigToast('⚠️ Notification ခွင့်ပြုချက် ငြင်းပယ်ခံရပါသည်', 'Browser Settings ထဲက ပြန်ဖွင့်ပေးပါ', 'danger', false);
+        }
+        updateNotifBellIcon();
+    });
+}
+
+// force=true ဆိုရင် cooldown ကို ကျော်ပြီး ချက်ချင်း notify မယ် (toggle on လုပ်တဲ့ခေတ်တစ်ခါတည်း)
+function checkLowStockAndNotify(force) {
+    if (!lowStockNotifyEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!currentStaffProfile || currentStaffProfile.role !== 'admin') return;
+    var now = Date.now();
+    if (!force && (now - lowStockLastNotifiedAt) < LOW_STOCK_NOTIFY_COOLDOWN_MS) return;
+    var lowItems = getLowStockProducts();
+    if (lowItems.length === 0) return;
+    lowStockLastNotifiedAt = now;
+    var soldOutCount = lowItems.filter(function(p) { return getStockNumber(p) <= 0; }).length;
+    var lowOnlyCount = lowItems.length - soldOutCount;
+    var titleTxt = '⚠️ ကုန်ခန်းသတိပေးချက် — ' + lowItems.length + ' ခု';
+    var bodyLines = [];
+    if (soldOutCount > 0) bodyLines.push('🔴 ကုန်သွားပြီး: ' + soldOutCount + ' ခု');
+    if (lowOnlyCount > 0) bodyLines.push('🟡 နည်းနေသည်: ' + lowOnlyCount + ' ခု');
+    var sampleNames = lowItems.slice(0, 3).map(function(p) { return p.name; }).join(', ');
+    bodyLines.push(sampleNames + (lowItems.length > 3 ? ' ...' : ''));
+    try {
+        var n = new Notification(titleTxt, { body: bodyLines.join('\n'), icon: 'https://cdn-icons-png.flaticon.com/512/2489/2489756.png', tag: 'low-stock-alert' });
+        n.onclick = function() { window.focus(); switchTab('dashboard'); n.close(); };
+    } catch (e) { /* some mobile browsers require a Service Worker registration for Notification() — silently ignore */ }
 }
 
 function buildBarcodeIndex() {
@@ -2767,7 +2852,7 @@ function applyLoggedInState(profile) {
     document.getElementById('lock-error').style.display = 'none';
     setupRolePrivilegesUi();
     if (profile.role === 'special') setupSpecialRoleUI();
-    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); displayHistory(salesHistory); }); }
+    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); displayHistory(salesHistory); }); updateNotifBellIcon(); checkLowStockAndNotify(false); }
     initAudio();
 }
 
@@ -2974,7 +3059,7 @@ window.onload = function() {
         });
     }
     
-    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
+    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); setTimeout(function() { checkLowStockAndNotify(false); }, 1500); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
     
     // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
