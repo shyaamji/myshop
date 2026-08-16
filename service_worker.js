@@ -1,5 +1,5 @@
 // service-worker.js
-var CACHE_NAME = 'winsithiri-v3';
+var CACHE_NAME = 'winsithiri-v4'; // ★ v3 → v4 (version တက်လိုက်တာ new SW ဖြစ်ကြောင်း browser ကို signal ပေးတာပါ)
 
 // Cache လုပ်မယ့်ဖိုင်တွေ (အင်တာနက်မရှိရင်ပြဖို့ အခြေခံဖိုင်တွေပဲ)
 var urlsToCache = [
@@ -10,6 +10,7 @@ var urlsToCache = [
 
 // Service Worker Install
 self.addEventListener('install', function(event) {
+  self.skipWaiting(); // ★★★ "waiting" state ကို ကျော်ပြီး ချက်ချင်း activate ဖြစ်စေရန် ★★★
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
@@ -22,16 +23,19 @@ self.addEventListener('install', function(event) {
 // Service Worker Activate - cache အဟောင်းတွေဖျက်
 self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            if (cacheName !== CACHE_NAME) {
+              console.log('Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      self.clients.claim() // ★★★ ဖွင့်ထားပြီးသား tab/PWA တွေအားလုံးကိုပါ ချက်ချင်း control လက်ခံစေရန် ★★★
+    ])
   );
 });
 
@@ -68,10 +72,6 @@ self.addEventListener('fetch', function(event) {
       })
   );
 });
-// =====================================================================
-// ဒီ code အပိုင်းကို သင့်ရဲ့ ရှိပြီးသား service-worker.js ဖိုင်ရဲ့
-// အောက်ဆုံးမှာ ထပ်ထည့်ပါ (ရှိပြီးသား cache/offline logic ကို မဖျက်ပါနဲ့)
-// =====================================================================
 
 // Push notification ရောက်လာချိန် ပြသဖို့
 self.addEventListener('push', function (event) {
