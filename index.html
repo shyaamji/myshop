@@ -2942,7 +2942,10 @@ function checkUniversalLogin() {
     if (btn) { btn.disabled = true; btn.textContent = '⏳ …'; }
     supabase.auth.signInWithPassword({ email: pseudoEmail(uname), password: pass }).then(function(r) {
         if (r.error || !r.data.user) {
-            errEl.style.display = 'block'; errEl.textContent = '❌ Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။';
+            var rawMsg = (r.error && r.error.message) ? r.error.message : 'Unknown error';
+            errEl.style.display = 'block';
+            errEl.textContent = '❌ Login မအောင်မြင်ပါ — ' + rawMsg;
+            console.log('LOGIN ERROR DETAIL:', r.error);
             if (btn) { btn.disabled = false; btn.textContent = '🔓 စနစ်ထဲသို့ဝင်မည်'; }
             return;
         }
