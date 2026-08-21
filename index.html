@@ -1363,7 +1363,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <button class="audio-vib-btn active" id="audio-toggle-btn" onclick="toggleAudio()" title="အသံ ဖွင့်/ပိတ်">🔊</button>
                 <button class="audio-vib-btn active" id="vib-toggle-btn" onclick="toggleVibration()" title="တုန်ခါမှု ဖွင့်/ပိတ်">📳</button>
             </div>
-            <button class="theme-toggle-btn ms-1 admin-only-feature" style="display:none;" onclick="toggleLowStockNotifications()" id="notif-bell-btn" title="ကုန်ခန်း Notification">🔔</button>
             <button class="theme-toggle-btn ms-1" onclick="openPrinterSettings()" id="printer-settings-btn" title="Printer ချိတ်ဆက်ရန်">🖨️</button>
             <button class="theme-toggle-btn ms-1" onclick="toggleTheme()" id="theme-btn">🌙</button>
         </div>
@@ -1753,163 +1752,6 @@ function renderSoldOutProducts() {
     wrap.innerHTML = h;
 }
 
-// =====================================================================
-// ★★★ LOW-STOCK / SOLD-OUT PUSH NOTIFICATIONS (Browser Notification API + Web Push) ★★★
-// =====================================================================
-var lowStockNotifyEnabled = (localStorage.getItem('lowStockNotifyEnabled') === 'true');
-var lowStockLastNotifiedAt = 0;
-var LOW_STOCK_NOTIFY_COOLDOWN_MS = 10 * 60 * 1000; // 10 မိနစ်တစ်ခါပဲ notify (spam မဖြစ်စေရန်)
-
-// Products among current stock that are either sold-out (<=0) or below their
-// own configured min-stock threshold (extra2 field, default 5).
-function getLowStockProducts() {
-    return productsDB.filter(function(p) {
-        var st = getStockNumber(p), min = Number(p.extra2) || 5;
-        return st <= min;
-    });
-}
-
-function updateNotifBellIcon() {
-    var btn = document.getElementById('notif-bell-btn');
-    if (!btn) return;
-    var supported = ('Notification' in window);
-    if (!supported) { btn.title = 'ဤ Browser တွင် Notification မရပါ'; btn.style.opacity = '0.4'; return; }
-    if (Notification.permission === 'granted' && lowStockNotifyEnabled) {
-        btn.textContent = '🔔'; btn.style.opacity = '1'; btn.title = 'Low-stock Notification ON (နှိပ်ပြီး ပိတ်နိုင်ပါသည်)';
-    } else {
-        btn.textContent = '🔕'; btn.style.opacity = '0.6'; btn.title = 'Low-stock Notification OFF (နှိပ်ပြီး ဖွင့်နိုင်ပါသည်)';
-    }
-}
-
-// ★★★ VAPID public key for Web Push (background notifications, even when app is closed) ★★★
-var VAPID_PUBLIC_KEY = 'BK3h3dRwk1m6Psimk6_ZqziXauLFOa1R6moaeAQ7FGvU_31B_b6gPHlK91Jwzj72KO7w0SCcGCAKYcRgWWDx2MI';
-
-function urlBase64ToUint8Array(base64String) {
-    var padding = '='.repeat((4 - base64String.length % 4) % 4);
-    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    var rawData = window.atob(base64), outputArray = new Uint8Array(rawData.length);
-    for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-    return outputArray;
-}
-
-// Subscribes this device to Web Push and saves the subscription to Supabase
-// so the Edge Function can find it later — this is what lets notifications
-// arrive even when the app/tab is fully closed.
-function subscribeToPush() {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        showBigToast('⚠️ ဤ Browser/Device တွင် Background Push မရပါ', 'Tab ဖွင့်ထားချိန်တွင်တော့ Notification ဆက်ရပါမည်', 'danger', false);
-        return Promise.resolve(null);
-    }
-    return navigator.serviceWorker.ready.then(function(registration) {
-        return registration.pushManager.getSubscription().then(function(existing) {
-            if (existing) return existing;
-            return registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-            });
-        });
-    }).then(function(sub) {
-        if (!sub || !currentStaffProfile) return sub;
-        var subJson = sub.toJSON();
-        return supabase.from('push_subscriptions').upsert({
-            staff_id: currentStaffProfile.id,
-            endpoint: subJson.endpoint,
-            p256dh: subJson.keys.p256dh,
-            auth: subJson.keys.auth
-        }, { onConflict: 'endpoint' }).then(function() { return sub; });
-    }).catch(function(e) {
-        console.log('Push subscribe failed:', e);
-        return null;
-    });
-}
-
-function unsubscribeFromPush() {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return Promise.resolve();
-    return navigator.serviceWorker.ready.then(function(registration) {
-        return registration.pushManager.getSubscription();
-    }).then(function(sub) {
-        if (!sub) return;
-        var endpoint = sub.endpoint;
-        return sub.unsubscribe().then(function() {
-            return supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
-        });
-    }).catch(function() {});
-}
-
-function toggleLowStockNotifications() {
-    if (!('Notification' in window)) {
-        showBigToast('❌ ဤ Browser တွင် Notification မရပါ', '', 'danger', false);
-        return;
-    }
-    if (lowStockNotifyEnabled) {
-        lowStockNotifyEnabled = false;
-        localStorage.setItem('lowStockNotifyEnabled', 'false');
-        unsubscribeFromPush();
-        showBigToast('🔕 Low-stock Notification ပိတ်လိုက်ပါပြီ', '', 'success', false);
-        updateNotifBellIcon();
-        return;
-    }
-    if (Notification.permission === 'granted') {
-        lowStockNotifyEnabled = true;
-        localStorage.setItem('lowStockNotifyEnabled', 'true');
-        subscribeToPush();
-        showBigToast('🔔 Low-stock Notification ဖွင့်လိုက်ပါပြီ', '', 'success', false);
-        updateNotifBellIcon();
-        checkLowStockAndNotify(true);
-        return;
-    }
-    Notification.requestPermission().then(function(perm) {
-        if (perm === 'granted') {
-            lowStockNotifyEnabled = true;
-            localStorage.setItem('lowStockNotifyEnabled', 'true');
-            subscribeToPush();
-            showBigToast('🔔 Low-stock Notification ဖွင့်လိုက်ပါပြီ', '', 'success', false);
-            checkLowStockAndNotify(true);
-        } else {
-            showBigToast('⚠️ Notification ခွင့်ပြုချက် ငြင်းပယ်ခံရပါသည်', 'Browser Settings ထဲက ပြန်ဖွင့်ပေးပါ', 'danger', false);
-        }
-        updateNotifBellIcon();
-    });
-}
-
-// force=true ဆိုရင် cooldown ကို ကျော်ပြီး ချက်ချင်း notify မယ် (toggle on လုပ်တဲ့ခေတ်တစ်ခါတည်း)
-function checkLowStockAndNotify(force) {
-    if (!lowStockNotifyEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
-    if (!currentStaffProfile || currentStaffProfile.role !== 'admin') return;
-    var now = Date.now();
-    if (!force && (now - lowStockLastNotifiedAt) < LOW_STOCK_NOTIFY_COOLDOWN_MS) return;
-    var lowItems = getLowStockProducts();
-    if (lowItems.length === 0) return;
-    lowStockLastNotifiedAt = now;
-    var soldOutCount = lowItems.filter(function(p) { return getStockNumber(p) <= 0; }).length;
-    var lowOnlyCount = lowItems.length - soldOutCount;
-    var titleTxt = '⚠️ ကုန်ခန်းသတိပေးချက် — ' + lowItems.length + ' ခု';
-    var bodyLines = [];
-    if (soldOutCount > 0) bodyLines.push('🔴 ကုန်သွားပြီး: ' + soldOutCount + ' ခု');
-    if (lowOnlyCount > 0) bodyLines.push('🟡 နည်းနေသည်: ' + lowOnlyCount + ' ခု');
-    var sampleNames = lowItems.slice(0, 3).map(function(p) { return p.name; }).join(', ');
-    bodyLines.push(sampleNames + (lowItems.length > 3 ? ' ...' : ''));
-    try {
-        var n = new Notification(titleTxt, { body: bodyLines.join('\n'), icon: 'https://cdn-icons-png.flaticon.com/512/2489/2489756.png', tag: 'low-stock-alert' });
-        n.onclick = function() { window.focus(); switchTab('dashboard'); n.close(); };
-    } catch (e) { /* some mobile browsers require a Service Worker registration for Notification() — silently ignore */ }
-}
-
-// ★★★ Fire-and-forget call to the Edge Function so BACKGROUND push (app fully
-// closed) can go out to admin's subscribed device(s). This never awaits or
-// throws into the caller — a failed/slow push check must NEVER affect the
-// stock update it's attached to. Deliberately NOT triggered by a Database
-// Webhook (that path caused stock-update instability before); the client
-// calls this directly right after a stock change succeeds. ★★★
-function triggerLowStockPushCheck() {
-    try {
-        fetch(SUPABASE_URL + '/functions/v1/send-low-stock-push', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' }
-        }).catch(function() { /* ignore - background push is best-effort */ });
-    } catch (e) { /* ignore */ }
-}
-
 function buildBarcodeIndex() {
     barcodeIndex = {};
     for (var i = 0; i < productsDB.length; i++) {
@@ -2169,7 +2011,9 @@ function filterProductNames() {
         else { sTxt = '🟢 ' + st; sCls = 'in-stock'; }
         var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
         var info = document.createElement('div'); info.className = 'item-info';
-        info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
+        var isAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin';
+        var costHtml = isAdmin ? '<div class="item-cost" style="font-size:11px;color:var(--text-muted);">အရင်း: ' + Number(prod.extra1 || 0).toLocaleString() + ' Ks</div>' : '';
+        info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div>' + costHtml + '<div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
         info.onclick = (function(p) { return function() { openQtyModal(p); }; })(prod);
         var act = document.createElement('div'); act.className = 'item-actions';
         if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
@@ -2364,9 +2208,6 @@ function checkout() {
         
         // ★★★ Refresh sold-out list immediately after stock deduction ★★★
         renderSoldOutProducts();
-        
-        // ★★★ Notify server-side (fire-and-forget, never blocks/breaks stock flow) ★★★
-        triggerLowStockPushCheck();
         
         // ★★★ Refresh from server after 2 sec ★★★
         clearTimeout(productsLoadTimer);
@@ -2680,7 +2521,6 @@ function uploadProductToSheet(productId) {
             // ★★★ Update local and cache immediately ★★★
             loadProductsFromSheet();
             showBigToast('✅ ပြင်ပြီး', '', 'success', false);
-            triggerLowStockPushCheck(); // fire-and-forget, never blocks save
         })
         .catch(function(err) { btn.disabled = false; btn.innerText = "💾 ပြင်"; showBigToast('❌ Error: ' + err.message, '', 'danger', false); });
 }
@@ -2892,7 +2732,7 @@ function closeFullScanner() { if (html5QrcodeScannerFull) { try { html5QrcodeSca
 function toggleFullScannerScan() { if (canScan) closeFullScanner(); else openFullScanner(); }
 function updateFullScannerStatus(s) { var b = document.getElementById('full-scanner-status-btn'), t = document.getElementById('full-scanner-status-text'); if (s) { b.className = "btn btn-sm btn-success py-1 px-3 fw-bold shadow-sm"; b.innerText = "🟢 Scanning"; t.textContent = "🔍 စကန်ဖတ်နေပါသည်..."; } else { b.className = "btn btn-sm btn-danger py-1 px-3 fw-bold shadow-sm"; b.innerText = "🔴 Paused"; t.textContent = "⏸️ ရပ်ထားပါသည်"; } }
 function onScanFailure(error) {}
-function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; var now = Date.now(); if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return; lastScannedBarcode = dt; lastScannedTime = now; playBeep(); var matchedProducts = barcodeIndex[dt.toString()] || []; if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } showBigToast('📦 ' + p.name, 'လက်ကျန် ' + st + ' ' + (p.unit||'ခု'), 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); return; } if (matchedProducts.length > 1) { var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions'); document.getElementById('toastBigMsg').textContent = '📦 Barcode: ' + dt; document.getElementById('toastBigSub').textContent = 'ပစ္စည်းအမျိုးအစား ရွေးပါ-'; toastEl.className = 'toast-big show success'; var html = ''; for (var i = 0; i < matchedProducts.length; i++) { var mp = matchedProducts[i]; var mpSt = getStockNumber(mp); var isOut = mpSt <= 0; html += '<button onclick="' + (isOut ? 'showBigToast(\'🔴 ကုန်သွားပါပြီ\',\'\',\'danger\',false);' : 'selectScanVariant(\'' + mp.id + '\',\'' + mp.barcode + '\',\'' + mp.name.replace(/'/g, "\\'") + '\',' + mp.price + ',' + mpSt + ')') + '" style="background:var(--accent-gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;' + (isOut ? 'opacity:0.5;' : '') + '">' + mp.name + ' - ' + Number(mp.price).toLocaleString() + ' Ks ' + (isOut ? '🔴' : '') + '</button>'; } html += '<button onclick="cancelScanVariant()" style="background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-color);border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;">⏹️ မရွေးတော့ပါ</button>'; actEl.innerHTML = html; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000); } }
+function onScanSuccessFull(dt) { if (!canScan || isScanPaused) return; var now = Date.now(); if (dt === lastScannedBarcode && (now - lastScannedTime) < 2000) return; lastScannedBarcode = dt; lastScannedTime = now; playBeep(); var matchedProducts = barcodeIndex[dt.toString()] || []; if (matchedProducts.length === 0) { pendingBarcode = dt; document.getElementById('confirmBarcode').textContent = dt; document.getElementById('adminConfirmOverlay').classList.add('active'); canScan = false; updateFullScannerStatus(false); return; } if (matchedProducts.length === 1) { var p = matchedProducts[0]; var st = getStockNumber(p); if (st <= 0) { showBigToast('🔴 "' + p.name + '" ကုန်သွားပါပြီ', '', 'danger', false); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { isScanPaused = false; canScan = true; updateFullScannerStatus(true); }, 5000); return; } var scanIsAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin'; var scanSub = 'လက်ကျန် ' + st + ' ' + (p.unit||'ခု') + (scanIsAdmin ? ' | အရင်း: ' + Number(p.extra1 || 0).toLocaleString() + ' Ks' : ''); showBigToast('📦 ' + p.name, scanSub, 'success', true, p); isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); return; } if (matchedProducts.length > 1) { var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions'); document.getElementById('toastBigMsg').textContent = '📦 Barcode: ' + dt; document.getElementById('toastBigSub').textContent = 'ပစ္စည်းအမျိုးအစား ရွေးပါ-'; toastEl.className = 'toast-big show success'; var html = ''; var variantIsAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin'; for (var i = 0; i < matchedProducts.length; i++) { var mp = matchedProducts[i]; var mpSt = getStockNumber(mp); var isOut = mpSt <= 0; var mpCostTxt = variantIsAdmin ? (' (အရင်း:' + Number(mp.extra1 || 0).toLocaleString() + ')') : ''; html += '<button onclick="' + (isOut ? 'showBigToast(\'🔴 ကုန်သွားပါပြီ\',\'\',\'danger\',false);' : 'selectScanVariant(\'' + mp.id + '\',\'' + mp.barcode + '\',\'' + mp.name.replace(/'/g, "\\'") + '\',' + mp.price + ',' + mpSt + ')') + '" style="background:var(--accent-gold);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;' + (isOut ? 'opacity:0.5;' : '') + '">' + mp.name + ' - ' + Number(mp.price).toLocaleString() + ' Ks' + mpCostTxt + ' ' + (isOut ? '🔴' : '') + '</button>'; } html += '<button onclick="cancelScanVariant()" style="background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-color);border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;margin:2px;">⏹️ မရွေးတော့ပါ</button>'; actEl.innerHTML = html; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000); } }
 function selectScanVariant(productId, barcode, name, price, stock) { var toastEl = document.getElementById('toastBig'), actEl = document.getElementById('toastBigActions'); toastProduct = { id: productId, barcode: barcode, name: name, price: price, stock: stock }; toastQty = 1; document.getElementById('toastBigMsg').textContent = '📦 ' + name; document.getElementById('toastBigSub').textContent = 'လက်ကျန် ' + stock; toastEl.className = 'toast-big show success'; var maxQty = Math.min(stock, 100), selHTML = ''; for (var i = 1; i <= maxQty; i++) selHTML += '<option value="' + i + '">' + i + '</option>'; actEl.innerHTML = '<select id="toastQtySelect" onchange="toastQtySelectChange(this.value)" style="width:100%;margin-bottom:8px;">' + selHTML + '</select><div style="display:flex;gap:6px;justify-content:center;"><button onclick="toastQtyChange(-1)">−</button><button onclick="toastQtyChange(1)">+</button><button class="btn-qty" onclick="toastQtyConfirm()">✅ အတည်ပြု</button></div>'; actEl.style.display = 'flex'; isScanPaused = true; canScan = false; updateFullScannerStatus(false); clearTimeout(scanPauseTimer); scanPauseTimer = setTimeout(function() { if (isScanPaused) { isScanPaused = false; canScan = true; updateFullScannerStatus(true); } }, 5000); clearTimeout(toastEl._hideTimer); toastEl._hideTimer = setTimeout(function() { cancelScanVariant(); }, 30000); }
 function cancelScanVariant() { var actEl = document.getElementById('toastBigActions'); actEl.style.display = 'none'; actEl.innerHTML = ''; clearTimeout(document.getElementById('toastBig')._hideTimer); clearTimeout(scanPauseTimer); document.getElementById('toastBig').classList.remove('show'); toastProduct = null; isScanPaused = false; canScan = true; updateFullScannerStatus(true); }
 function confirmAddProduct() { document.getElementById('adminConfirmOverlay').classList.remove('active'); closeFullScanner(); switchTab('admin'); document.getElementById('new-barcode').value = pendingBarcode; document.getElementById('new-name').focus(); pendingBarcode = null; }
@@ -2929,7 +2769,7 @@ function applyLoggedInState(profile) {
     document.getElementById('lock-error').style.display = 'none';
     setupRolePrivilegesUi();
     if (profile.role === 'special') setupSpecialRoleUI();
-    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); displayHistory(salesHistory); }); updateNotifBellIcon(); checkLowStockAndNotify(false); }
+    if (profile.role === 'admin') { renderStaffList(); loadStaffProfilesMap(function() { renderStaffPerformance(); displayHistory(salesHistory); }); }
     initAudio();
 }
 
@@ -2942,10 +2782,7 @@ function checkUniversalLogin() {
     if (btn) { btn.disabled = true; btn.textContent = '⏳ …'; }
     supabase.auth.signInWithPassword({ email: pseudoEmail(uname), password: pass }).then(function(r) {
         if (r.error || !r.data.user) {
-            var rawMsg = (r.error && r.error.message) ? r.error.message : 'Unknown error';
-            errEl.style.display = 'block';
-            errEl.textContent = '❌ Login မအောင်မြင်ပါ — ' + rawMsg;
-            console.log('LOGIN ERROR DETAIL:', r.error);
+            errEl.style.display = 'block'; errEl.textContent = '❌ Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။';
             if (btn) { btn.disabled = false; btn.textContent = '🔓 စနစ်ထဲသို့ဝင်မည်'; }
             return;
         }
@@ -3139,7 +2976,7 @@ window.onload = function() {
         });
     }
     
-    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); setTimeout(function() { checkLowStockAndNotify(false); }, 1500); }).subscribe();
+    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
     
     // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
