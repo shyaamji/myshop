@@ -1693,6 +1693,32 @@ window.addEventListener('beforeinstallprompt', function(e) {
 
 <script>
 // =====================================================================
+// ★★★ APP VERSION CHECK - Forces stale phones to refresh cache/SW ★★★
+// Bump APP_VERSION string on every future update so ALL phones auto-sync.
+// =====================================================================
+(function() {
+    var APP_VERSION = 'v3-pending-item-edit';
+    if (localStorage.getItem('appVersion') !== APP_VERSION) {
+        localStorage.setItem('appVersion', APP_VERSION);
+        var cleanupTasks = [];
+        if ('serviceWorker' in navigator) {
+            cleanupTasks.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(reg) { reg.unregister(); });
+            }).catch(function() {}));
+        }
+        if ('caches' in window) {
+            cleanupTasks.push(caches.keys().then(function(names) {
+                return Promise.all(names.map(function(name) { return caches.delete(name); }));
+            }).catch(function() {}));
+        }
+        if (!sessionStorage.getItem('justReloadedForVersion')) {
+            sessionStorage.setItem('justReloadedForVersion', '1');
+            Promise.all(cleanupTasks).then(function() { window.location.reload(true); });
+        }
+    }
+})();
+
+// =====================================================================
 // SUPABASE CONFIG
 // =====================================================================
 var SUPABASE_URL = 'https://winthiri-proxy.simple-aryal86.workers.dev';
@@ -2658,10 +2684,15 @@ function showPendingOrderDetails(voucherId) {
     items.forEach(function(item, idx) {
         m += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border-color);">' +
             '<div style="flex:1;"><div class="small fw-bold">' + item.name + '</div><div class="small text-muted">' + Number(item.price).toLocaleString() + ' Ks x ' + item.qty + '</div></div>' +
-            '<input type="number" min="1" value="' + item.qty + '" style="width:55px;padding:4px;border:1px solid var(--border-color);border-radius:6px;text-align:center;background:var(--bg-input);color:var(--text-main);" onchange="updatePendingItemQty(\'' + voucherId + '\',' + idx + ',this.value)">' +
+            '<input type="number" min="1" value="' + item.qty + '" style="width:50px;padding:4px;border:1px solid var(--border-color);border-radius:6px;text-align:center;background:var(--bg-input);color:var(--text-main);" onchange="updatePendingItemQty(\'' + voucherId + '\',' + idx + ',this.value)">' +
+            '<span style="font-size:18px;color:var(--accent-danger);cursor:pointer;font-weight:700;padding:0 4px;" onclick="removePendingOrderItem(\'' + voucherId + '\',' + idx + ')">✕</span>' +
             '</div>';
     });
     m += '<div class="d-flex justify-content-between fw-bold mb-3"><span>စုစုပေါင်း</span><span>' + totalNum.toLocaleString() + ' Ks</span></div>';
+    m += '<div style="position:relative;margin-bottom:12px;">' +
+        '<input type="text" id="pending-add-search-input" placeholder="➕ ပစ္စည်းအမျိုးအစားအသစ် ထည့်ရန် ရှာပါ..." style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-main);" oninput="searchPendingAddItem(\'' + voucherId + '\', this.value)">' +
+        '<div id="pending-add-search-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;max-height:180px;overflow-y:auto;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>' +
+        '</div>';
     if (isAdmin) { m += '<button class="btn btn-success w-100 mb-2" onclick="confirmPaymentAndPrint(\'' + voucherId + '\')">💰 ငွေရှင်းပြီး + ဘောက်ချာထုတ်မည်</button>'; }
     m += '<button class="btn btn-outline-danger w-100 mb-2" onclick="cancelPendingOrder(\'' + voucherId + '\')">❌ Cancel</button>' +
         '<button class="btn btn-secondary w-100" onclick="document.getElementById(\'pending-details-modal\').remove()">ပိတ်မည်</button>' +
@@ -2700,6 +2731,95 @@ function updatePendingItemQty(voucherId, itemIdx, newQtyStr) {
     renderSoldOutProducts();
     renderPendingOrders();
     showPendingOrderDetails(voucherId);
+}
+
+function removePendingOrderItem(voucherId, itemIdx) {
+    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
+    if (!po) return;
+    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
+    if (!items[itemIdx]) return;
+    if (items.length <= 1) { showBigToast('⚠️ ပစ္စည်း အနည်းဆုံး တစ်ခု ကျန်ရပါမည်', 'တစ်ခုလုံးဖျက်ရန် Cancel ခလုတ်ကို သုံးပါ', 'danger', false); return; }
+    if (!confirm('"' + items[itemIdx].name + '" ကို ပစ္စည်းစာရင်းမှ ဖျက်မှာ သေချာပါသလား?')) return;
+
+    var item = items[itemIdx], prod = null;
+    for (var j = 0; j < productsDB.length; j++) {
+        if (item.id && productsDB[j].id === item.id) { prod = productsDB[j]; break; }
+        else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === (item.barcode || '').toString()) { prod = productsDB[j]; break; }
+    }
+    var currentStock = prod ? getStockNumber(prod) : 0;
+    var ns = currentStock + item.qty;
+    if (item.id) { supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {}); }
+    else if (item.barcode) { supabase.from('Products').update({ stock: String(ns) }).eq('barcode', item.barcode.toString()).then(function() {}); }
+    if (prod) prod.stock = String(ns);
+    localStorage.setItem('productsCache', JSON.stringify(productsDB));
+
+    items.splice(itemIdx, 1);
+    po.items = JSON.stringify(items);
+    var total = 0; items.forEach(function(it) { total += it.price * it.qty; });
+    po.total_amount = total.toString();
+
+    localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
+    supabase.from('PendingOrders').update({ items: po.items, total_amount: po.total_amount }).eq('voucher_id', voucherId).then(function() {}).catch(function() {});
+
+    renderSoldOutProducts();
+    renderPendingOrders();
+    showPendingOrderDetails(voucherId);
+    showBigToast('✅ ပစ္စည်း ဖျက်ပြီး', 'Stock ပြန်ထည့်ပြီး', 'success', false);
+}
+
+function searchPendingAddItem(voucherId, query) {
+    var box = document.getElementById('pending-add-search-results');
+    if (!box) return;
+    var inp = (query || '').trim().toLowerCase();
+    if (!inp) { box.innerHTML = ''; box.style.display = 'none'; return; }
+    var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); }).slice(0, 8);
+    if (!f.length) { box.innerHTML = '<div class="small text-muted p-2">မတွေ့ပါ</div>'; box.style.display = 'block'; return; }
+    box.innerHTML = '';
+    f.forEach(function(p) {
+        var st = getStockNumber(p);
+        var d = document.createElement('div');
+        d.className = 'small p-2';
+        d.style.cssText = 'border-bottom:1px solid var(--border-color);' + (st <= 0 ? 'opacity:0.5;' : 'cursor:pointer;');
+        d.innerHTML = '<strong>' + p.name + '</strong> - ' + Number(p.price).toLocaleString() + ' Ks (လက်ကျန်: ' + st + ')';
+        if (st > 0) { d.onclick = function() { addItemToPendingOrder(voucherId, p.id); }; }
+        box.appendChild(d);
+    });
+    box.style.display = 'block';
+}
+
+function addItemToPendingOrder(voucherId, productId) {
+    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
+    if (!po) return;
+    var prod = productsDB.find(function(p) { return p.id === productId; });
+    if (!prod) return;
+    var st = getStockNumber(prod);
+    if (st <= 0) { showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false); return; }
+
+    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
+    var existing = null;
+    for (var i = 0; i < items.length; i++) {
+        if ((prod.id && items[i].id === prod.id) || (!prod.id && items[i].barcode && items[i].barcode.toString() === (prod.barcode || '').toString())) { existing = items[i]; break; }
+    }
+    if (existing) { existing.qty += 1; }
+    else { items.push({ id: prod.id, barcode: prod.barcode, name: prod.name, price: Number(prod.price), qty: 1, unit: prod.unit || '' }); }
+
+    var ns = Math.max(0, st - 1);
+    if (prod.id) { supabase.from('Products').update({ stock: String(ns) }).eq('id', prod.id).then(function() {}); }
+    else if (prod.barcode) { supabase.from('Products').update({ stock: String(ns) }).eq('barcode', prod.barcode.toString()).then(function() {}); }
+    prod.stock = String(ns);
+    localStorage.setItem('productsCache', JSON.stringify(productsDB));
+
+    po.items = JSON.stringify(items);
+    var total = 0; items.forEach(function(it) { total += it.price * it.qty; });
+    po.total_amount = total.toString();
+
+    localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
+    supabase.from('PendingOrders').update({ items: po.items, total_amount: po.total_amount }).eq('voucher_id', voucherId).then(function() {}).catch(function() {});
+
+    renderSoldOutProducts();
+    renderPendingOrders();
+    showPendingOrderDetails(voucherId);
+    showBigToast('✅ ' + prod.name + ' ထည့်ပြီး', '', 'success', false);
 }
 
 function confirmPaymentAndPrint(voucherId) {
