@@ -2827,7 +2827,7 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password' || id === 'unpaid') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } if (id === 'unpaid') { renderUnpaidSales(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password' || id === 'unpaid') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } if (id === 'unpaid') { renderPendingOrders(); renderUnpaidSales(); } }
 // =====================================================================
 // AUTH (Supabase Auth — per-staff login accounts)
 // =====================================================================
@@ -3028,6 +3028,7 @@ window.onload = function() {
     // Then fetch fresh data from server (will overwrite if different)
     loadProductsFromSheet();
     loadSalesHistoryFromSheet();
+    loadPendingOrders();
     
     // Restore existing Supabase Auth session (if any) instead of the old shared-password flow
     supabase.auth.getSession().then(function(r) {
@@ -3040,6 +3041,7 @@ window.onload = function() {
     });
     
     displayHistory(salesHistory);
+    renderPendingOrders();
     
     var pw = document.getElementById('home-pass-input'), pu = document.getElementById('home-user-input');
     if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
@@ -3061,6 +3063,7 @@ window.onload = function() {
     
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
+    supabase.channel('pending-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'PendingOrders' }, function(p) { loadPendingOrders(); if (document.getElementById('unpaid').classList.contains('active')) { renderPendingOrders(); } }).subscribe();
     
     // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
     supabase.auth.onAuthStateChange(function(event) {
