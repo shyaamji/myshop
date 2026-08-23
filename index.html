@@ -1274,9 +1274,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
             <button class="btn btn-premium-gold w-100 py-2 fw-bold" onclick="checkoutFromPopCart()">
                 🧾 Voucher ထုတ်မည် ➡️
             </button>
-            <button class="btn btn-outline-warning w-100 py-2 fw-bold" style="margin-top:8px;" onclick="savePendingOrder()">
-                📝 Pending Order သိမ်းမည်
-            </button>
         </div>
     </div>
 </div>
@@ -1357,7 +1354,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
         <div class="nav-tabs-custom" role="group">
             <button id="btn-sales" class="btn active" onclick="switchTab('sales')">🛒 အရောင်း</button>
             <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
-            <button id="btn-unpaid" class="btn admin-only-feature" onclick="switchTab('unpaid')">💰 ငွေမရှင်း</button>
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
             <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
@@ -1530,27 +1526,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
             </div>
             <div id="history-list"><div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div></div>
-        </div>
-
-        <!-- ===== UNPAID SALES TAB ===== -->
-        <div id="unpaid" class="tab-content">
-            <!-- PENDING ORDERS SECTION -->
-            <div class="custom-card" style="margin-bottom:16px;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold text-secondary mb-0">🕐 Pending Orders (အော်ဒါထည့်သွင်းထားပြီး)</h6>
-                    <span class="badge bg-warning" id="pending-count">0</span>
-                </div>
-                <div id="pending-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
-            </div>
-
-            <!-- UNPAID SALES SECTION -->
-            <div class="custom-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold text-secondary mb-0">💰 ငွေမရှင်းသေးတဲ့ အရောင်း</h6>
-                    <span class="badge bg-danger" id="unpaid-count">0</span>
-                </div>
-                <div id="unpaid-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
-            </div>
         </div>
 
         <!-- ===== DASHBOARD TAB ===== -->
@@ -2207,10 +2182,10 @@ function checkout() {
     var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
     var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText,
         disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value,
-        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null, payment_status: 'unpaid' };
+        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null };
     
     supabase.from('SalesHistory').insert([sd]).then(function() {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id, payment_status: 'unpaid' });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
@@ -2239,7 +2214,7 @@ function checkout() {
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
         
     }).catch(function(err) {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id, payment_status: 'unpaid' });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('⚠️ Offline သိမ်းပြီး', '', 'danger', false);
@@ -2573,239 +2548,6 @@ function filterAdminProductNames() {
 }
 
 // =====================================================================
-// PENDING ORDERS
-// =====================================================================
-var pendingOrders = [];
-
-function savePendingOrder() {
-    var cart = carts[activeCartIndex];
-    if (!cart || !cart.length) {
-        showBigToast('ပစ္စည်းမရှိပါ', '', 'danger', false);
-        return;
-    }
-    var cn = prompt("ဝယ်သူအမည်:", "") || "Customer";
-    var vid = "PO-" + Date.now().toString().slice(-6);
-    var total = document.getElementById('cart-total').innerText.replace(/,/g, '');
-    var disc = document.getElementById('cart-discount-input').value.trim() || "0";
-    var pm = document.getElementById('cart-payment-mode').value;
-    var po = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total, discount: disc, payment_mode: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-    var stockUpdatePromises = cart.map(function(item) {
-        var currentStock = 0;
-        var prod = productsDB.find(function(p) { return p.id === item.id; });
-        if (prod) currentStock = getStockNumber(prod);
-        var newQty = Math.max(0, currentStock - item.qty);
-        return supabase.from('Products').update({ extra3: newQty }).eq('id', item.id).catch(function(e) { return null; });
-    });
-    supabase.from('PendingOrders').insert([po]).then(function(r) {
-        Promise.all(stockUpdatePromises).then(function() {
-            pendingOrders.unshift(po);
-            localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-            carts[activeCartIndex] = [];
-            updateCartUI();
-            loadProducts();
-            showBigToast('✅ ' + vid + ' Pending Order သိမ်းပြီး', cn, 'success', true, po);
-            renderPendingOrders();
-        }).catch(function(err) { showBigToast('⚠️ Stock error', '', 'warning', false); });
-    }).catch(function(err) { showBigToast('❌ Save error', err.message, 'danger', false); });
-}
-
-function renderPendingOrders() {
-    var listEl = document.getElementById('pending-list');
-    var countEl = document.getElementById('pending-count');
-    if (!listEl || !countEl) return;
-    if (!pendingOrders || !pendingOrders.length) {
-        listEl.innerHTML = '<div class="text-center text-muted py-4" style="grid-column:1/-1;">Pending Order မရှိပါ</div>';
-        countEl.textContent = '0';
-        return;
-    }
-    countEl.textContent = pendingOrders.length;
-    listEl.innerHTML = '';
-    pendingOrders.forEach(function(po) {
-        var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-        var itemCount = (Array.isArray(items) ? items.length : 0);
-        var isAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin';
-        var card = document.createElement('div');
-        card.style.cssText = 'background:var(--bg-card);border-radius:12px;padding:12px;border:2px solid var(--accent-warning);';
-        var cardHTML = '<div class="small fw-bold mb-1" style="color:var(--accent-warning);">' + po.voucher_id + '</div><div class="small mb-1">' + po.customer_name + '</div><div class="small text-muted mb-2">' + itemCount + ' ပစ္စည်း</div><div class="fw-bold mb-2">' + Number(po.total_amount || 0).toLocaleString() + ' Ks</div><button class="btn btn-sm btn-info w-100 mb-1" style="font-size:10px;" onclick="showPendingOrderDetails(\'' + po.voucher_id + '\')">✏️ အသေးစိတ်</button>';
-        if (isAdmin) { cardHTML += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;"><button class="btn btn-sm btn-success" style="font-size:9px;" onclick="confirmPaymentAndPrint(\'' + po.voucher_id + '\')">💰 ငွေရှင်း</button><button class="btn btn-sm btn-danger" style="font-size:9px;" onclick="cancelPendingOrder(\'' + po.voucher_id + '\')">❌ Cancel</button></div>'; }
-        card.innerHTML = cardHTML;
-        listEl.appendChild(card);
-    });
-}
-
-function showPendingOrderDetails(voucherId) {
-    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
-    if (!po) return;
-    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-    var isAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin';
-    var modalHTML = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;" id="pending-details-modal" onclick="if(event.target.id===\'pending-details-modal\') this.remove();"><div style="background:var(--bg-card);border-radius:12px;padding:16px;max-width:380px;max-height:80vh;overflow-y:auto;width:90%;"><div class="d-flex justify-content-between align-items-center mb-3"><h6 class="mb-0 fw-bold">' + voucherId + '</h6><span style="font-size:18px;cursor:pointer;" onclick="document.getElementById(\'pending-details-modal\').remove();">✕</span></div><div style="padding-bottom:12px;border-bottom:1px solid var(--border-color);margin-bottom:12px;"><div class="small text-muted mb-1">ဝယ်သူ</div><div class="small fw-bold">' + po.customer_name + '</div></div>';
-    items.forEach(function(item, idx) {
-        var qtyInput = isAdmin ? '<input type="number" min="1" value="' + item.qty + '" style="width:50px;padding:4px;border:1px solid var(--border-color);border-radius:4px;text-align:center;" onchange="updatePendingItemQty(\'' + po.voucher_id + '\',' + idx + ', this.value)">' : '<div class="small">' + item.qty + '</div>';
-        modalHTML += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color);"><div><div class="small fw-bold">' + item.name + '</div><div class="small text-muted">' + Number(item.price).toLocaleString() + ' Ks</div></div><div style="text-align:center;">' + qtyInput + '</div><div class="small fw-bold" style="text-align:right;">' + Number(item.price * item.qty).toLocaleString() + ' Ks</div></div>';
-    });
-    modalHTML += '<div style="background:var(--bg-input);border-radius:8px;padding:12px;margin-bottom:12px;"><div class="d-flex justify-content-between align-items-center mb-2"><div class="small">စုစုပေါင်း</div><div class="fw-bold">' + Number(po.total_amount || 0).toLocaleString() + ' Ks</div></div>' + (po.discount && po.discount !== '0' ? '<div class="d-flex justify-content-between align-items-center mb-2"><div class="small">ဆုံးမ</div><div class="small">' + po.discount + ' Ks</div></div>' : '') + '<div class="d-flex justify-content-between align-items-center"><div class="small">ငွေပေးချေမှု</div><div class="small text-muted">' + (po.payment_mode || 'Cash') + '</div></div></div><button class="btn btn-secondary w-100" onclick="document.getElementById(\'pending-details-modal\').remove()">အပြီးသတ်</button></div></div>';
-    var modal = document.createElement('div');
-    modal.innerHTML = modalHTML;
-    document.body.appendChild(modal);
-}
-
-function updatePendingItemQty(voucherId, itemIdx, newQty) {
-    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
-    if (!po) return;
-    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-    if (items[itemIdx]) {
-        var oldQty = items[itemIdx].qty;
-        items[itemIdx].qty = Math.max(1, parseInt(newQty) || 1);
-        var prod = productsDB.find(function(p) { return p.id === items[itemIdx].id; });
-        if (prod) {
-            var currentStock = getStockNumber(prod);
-            var qtyDiff = oldQty - items[itemIdx].qty;
-            var newStock = currentStock + qtyDiff;
-            supabase.from('Products').update({ extra3: Math.max(0, newStock) }).eq('id', items[itemIdx].id).catch(function(e) { });
-        }
-        var total = 0;
-        items.forEach(function(i) { total += (i.price * i.qty); });
-        po.items = JSON.stringify(items);
-        po.total_amount = total.toString();
-        po.updated_at = new Date().toISOString();
-        localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-        supabase.from('PendingOrders').update({ items: po.items, total_amount: po.total_amount, updated_at: po.updated_at }).eq('voucher_id', voucherId).then(function() { showBigToast('✅ ပြင်ဆင်ပြီး', '', 'success', false); renderPendingOrders(); }).catch(function(err) { showBigToast('❌ Error', '', 'danger', false); });
-    }
-}
-
-function confirmPaymentAndPrint(voucherId) {
-    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
-    if (!po) return;
-    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-    var sd = { voucher_id: voucherId, customer_name: po.customer_name, items: po.items, total_amount: po.total_amount, date: new Date().toLocaleString(), extra1: po.discount || '0', extra2: po.payment_mode || 'Cash', staff_id: po.staff_id, payment_status: 'paid' };
-    supabase.from('SalesHistory').insert([sd]).then(function() {
-        supabase.from('PendingOrders').delete().eq('voucher_id', voucherId).then(function() {
-            var idx = pendingOrders.findIndex(function(p) { return p.voucher_id === voucherId; });
-            if (idx > -1) pendingOrders.splice(idx, 1);
-            salesHistory.unshift(sd);
-            localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-            printVoucher(voucherId, po.customer_name, items, po.total_amount, po.discount, po.payment_mode);
-            renderPendingOrders();
-            renderUnpaidSales();
-            showBigToast('✅ ' + voucherId + ' ပြီးစီး', '', 'success', true, sd);
-        }).catch(function(err) { showBigToast('❌ Error', err.message, 'danger', false); });
-    }).catch(function(err) { showBigToast('❌ Error', err.message, 'danger', false); });
-}
-
-function cancelPendingOrder(voucherId) {
-    if (!confirm(voucherId + ' cancel လုပ်ရစ်သုံးပါသည်။ သေချာပါသည်လား?')) return;
-    var po = pendingOrders.find(function(p) { return p.voucher_id === voucherId; });
-    if (!po) return;
-    var items = po.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-    var stockUpdatePromises = items.map(function(item) {
-        var prod = productsDB.find(function(p) { return p.id === item.id; });
-        if (prod) {
-            var currentStock = getStockNumber(prod);
-            var newQty = currentStock + item.qty;
-            return supabase.from('Products').update({ extra3: newQty }).eq('id', item.id).catch(function(e) { return null; });
-        }
-        return Promise.resolve();
-    });
-    Promise.all(stockUpdatePromises).then(function() {
-        supabase.from('PendingOrders').delete().eq('voucher_id', voucherId).then(function() {
-            var idx = pendingOrders.findIndex(function(p) { return p.voucher_id === voucherId; });
-            if (idx > -1) pendingOrders.splice(idx, 1);
-            localStorage.setItem('pendingOrders', JSON.stringify(pendingOrders));
-            loadProducts();
-            renderPendingOrders();
-            showBigToast('✅ Cancel ပြီး', 'Stock ပြန်ထည့်ပြီး', 'success', false);
-        }).catch(function(err) { showBigToast('❌ Error', err.message, 'danger', false); });
-    }).catch(function(err) { showBigToast('❌ Error', err.message, 'danger', false); });
-}
-
-function printVoucher(voucherId, customerName, items, total, discount, paymentMode) {
-    var printWindow = window.open('', '', 'width=400,height=600');
-    var html = '<html><head><style>body{font-family:monospace;font-size:12px;padding:10px;}</style></head><body><div style="text-align:center;margin-bottom:10px;"><strong>🧾 ငွေတောင်း</strong></div><div>━━━━━━━━━━━━━━━━━━━━━━</div><div>အမှတ်: ' + voucherId + '</div><div>ဝယ်သူ: ' + customerName + '</div><div>' + new Date().toLocaleString('my-MM') + '</div><div>━━━━━━━━━━━━━━━━━━━━━━</div>';
-    items.forEach(function(item) { html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:4px;margin:4px 0;"><div>' + item.name + '</div><div style="text-align:right;">' + item.qty + ' x</div><div style="text-align:right;">' + Number(item.price * item.qty).toLocaleString() + '</div></div>'; });
-    html += '<div>━━━━━━━━━━━━━━━━━━━━━━</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:8px 0;"><strong>စုစုပေါင်း</strong><strong style="text-align:right;">' + Number(total).toLocaleString() + ' Ks</strong></div>' + (discount && discount !== '0' ? '<div>ဆုံးမ: ' + discount + ' Ks</div>' : '') + '<div>ငွေပေးချေမှု: ' + (paymentMode || 'Cash') + '</div><div style="text-align:center;margin-top:20px;"><strong>ကျေးဇူးတင်ပါသည်</strong></div></body></html>';
-    printWindow.document.write(html);
-    printWindow.document.close();
-    setTimeout(function() { printWindow.print(); }, 250);
-}
-
-function loadPendingOrders() {
-    var saved = localStorage.getItem('pendingOrders');
-    if (saved) { try { pendingOrders = JSON.parse(saved); } catch(e) { pendingOrders = []; } }
-}
-
-// =====================================================================
-// UNPAID SALES (Admin-only)
-// =====================================================================
-function renderUnpaidSales() {
-    var unpaidSales = salesHistory.filter(function(s) { return s.payment_status === 'unpaid'; });
-    var countEl = document.getElementById('unpaid-count');
-    var listEl = document.getElementById('unpaid-list');
-    
-    if (countEl) countEl.textContent = unpaidSales.length;
-    
-    if (!unpaidSales.length) {
-        listEl.innerHTML = '<div class="text-center text-muted py-4">ငွေမရှင်းသေးတဲ့ အရောင်း မရှိပါ</div>';
-        return;
-    }
-    
-    listEl.innerHTML = '';
-    unpaidSales.forEach(function(sale) {
-        var card = document.createElement('div');
-        card.style.cssText = 'background:var(--bg-card);border-radius:12px;padding:12px;border:2px solid var(--accent-danger);cursor:pointer;';
-        var total = sale.total_amount || sale.total || '0';
-        var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
-        var itemCount = (Array.isArray(items) ? items.length : 0);
-        
-        card.innerHTML = '<div class="small fw-bold mb-1" style="color:var(--accent-danger);">' + (sale.voucher_id || 'N/A') + '</div>' +
-            '<div class="small mb-1">' + (sale.customer_name || 'Customer') + '</div>' +
-            '<div class="small text-muted mb-2">' + itemCount + ' ပစ္စည်း</div>' +
-            '<div class="fw-bold mb-2">' + Number(total).toLocaleString() + ' Ks</div>' +
-            '<button class="btn btn-sm btn-success w-100" style="font-size:11px;" onclick="markSaleAsPaid(\'' + (sale.voucher_id || '').replace(/'/g, "\\'") + '\')">✓ ငွေရှင်းပြီး</button>';
-        
-        listEl.appendChild(card);
-    });
-}
-
-function markSaleAsPaid(voucherId) {
-    if (!voucherId) return;
-    
-    var saleIndex = -1;
-    for (var i = 0; i < salesHistory.length; i++) {
-        if ((salesHistory[i].voucher_id || '').toString() === voucherId.toString()) {
-            saleIndex = i;
-            break;
-        }
-    }
-    
-    if (saleIndex === -1) {
-        showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false);
-        return;
-    }
-    
-    var sale = salesHistory[saleIndex];
-    
-    // Update Supabase
-    supabase.from('SalesHistory')
-        .update({ payment_status: 'paid' })
-        .eq('voucher_id', voucherId)
-        .then(function(r) {
-            // Update local cache
-            sale.payment_status = 'paid';
-            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-            renderUnpaidSales();
-            showBigToast('✅ ' + voucherId + ' ငွေရှင်းပြီး', '', 'success', false);
-        })
-        .catch(function(err) {
-            // Even if Supabase fails, update locally for offline resilience
-            sale.payment_status = 'paid';
-            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
-            renderUnpaidSales();
-            showBigToast('✅ Offline သိမ်းပြီး - ပြန်ထည့်သွင်းမည်', '', 'warning', false);
-        });
-}
-
-// =====================================================================
 // DASHBOARD
 // =====================================================================
 function loadStaffProfilesMap(callback) {
@@ -3002,7 +2744,7 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password' || id === 'unpaid') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } if (id === 'unpaid') { renderPendingOrders(); renderUnpaidSales(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } }
 // =====================================================================
 // AUTH (Supabase Auth — per-staff login accounts)
 // =====================================================================
@@ -3203,7 +2945,6 @@ window.onload = function() {
     // Then fetch fresh data from server (will overwrite if different)
     loadProductsFromSheet();
     loadSalesHistoryFromSheet();
-    loadPendingOrders();
     
     // Restore existing Supabase Auth session (if any) instead of the old shared-password flow
     supabase.auth.getSession().then(function(r) {
@@ -3216,7 +2957,6 @@ window.onload = function() {
     });
     
     displayHistory(salesHistory);
-    renderPendingOrders();
     
     var pw = document.getElementById('home-pass-input'), pu = document.getElementById('home-user-input');
     if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
@@ -3238,7 +2978,6 @@ window.onload = function() {
     
     supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
     supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
-    supabase.channel('pending-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'PendingOrders' }, function(p) { loadPendingOrders(); if (document.getElementById('unpaid').classList.contains('active')) { renderPendingOrders(); } }).subscribe();
     
     // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
     supabase.auth.onAuthStateChange(function(event) {
