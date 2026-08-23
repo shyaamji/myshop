@@ -1354,6 +1354,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
         <div class="nav-tabs-custom" role="group">
             <button id="btn-sales" class="btn active" onclick="switchTab('sales')">🛒 အရောင်း</button>
             <button id="btn-history" class="btn" onclick="switchTab('history')">📜 မှတ်တမ်း</button>
+            <button id="btn-unpaid" class="btn admin-only-feature" onclick="switchTab('unpaid')">💰 ငွေမရှင်း</button>
             <button id="btn-dashboard" class="btn admin-only-feature" onclick="switchTab('dashboard')">📊 ဒိုင်ခွက်</button>
             <button id="btn-admin" class="btn admin-only-feature" onclick="switchTab('admin')">⚙️ စီမံ</button>
             <button id="btn-password" class="btn admin-only-feature" onclick="switchTab('password')">🔐 Password</button>
@@ -1526,6 +1527,17 @@ window.addEventListener('beforeinstallprompt', function(e) {
                 <button id="clear-all-history-btn" class="btn btn-sm btn-outline-danger fw-bold py-2.5 admin-only-feature" style="border-radius:12px;" onclick="clearAllSalesHistoryOnline(this)">⚠️ မှတ်တမ်းအားလုံးကို ဖျက်မည်</button>
             </div>
             <div id="history-list"><div class="text-center text-muted py-4">မှတ်တမ်းများကို ဆွဲယူနေပါသည်...</div></div>
+        </div>
+
+        <!-- ===== UNPAID SALES TAB ===== -->
+        <div id="unpaid" class="tab-content">
+            <div class="custom-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-secondary mb-0">💰 ငွေမရှင်းသေးတဲ့ အရောင်း</h6>
+                    <span class="badge bg-danger" id="unpaid-count">0</span>
+                </div>
+                <div id="unpaid-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;"></div>
+            </div>
         </div>
 
         <!-- ===== DASHBOARD TAB ===== -->
@@ -2182,10 +2194,10 @@ function checkout() {
     var cn = prompt("ဝယ်သူအမည် (ချန်ထားခဲ့ပါက Customer ဟုပေါ်မည်) -", "") || "Customer";
     var vid = "WM-" + Date.now().toString().slice(-6), total = document.getElementById('cart-total').innerText,
         disc = document.getElementById('cart-discount-input').value.trim() || "0", pm = document.getElementById('cart-payment-mode').value,
-        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null };
+        sd = { voucher_id: vid, customer_name: cn, items: JSON.stringify(cart), total_amount: total.replace(/,/g, ''), date: new Date().toLocaleString(), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null, payment_status: 'unpaid' };
     
     supabase.from('SalesHistory').insert([sd]).then(function() {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id, payment_status: 'unpaid' });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ထုတ်ပြီး', '', 'success', false);
@@ -2214,7 +2226,7 @@ function checkout() {
         productsLoadTimer = setTimeout(function() { loadProductsFromSheet(); }, 2000);
         
     }).catch(function(err) {
-        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id });
+        salesHistory.unshift({ voucher_id: vid, customer_name: cn, items: cart, total_amount: total, extra1: disc, extra2: pm, date: new Date().toLocaleString(), created_at: new Date().toISOString(), staff_id: sd.staff_id, payment_status: 'unpaid' });
         localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
         displayHistory(salesHistory);
         showBigToast('⚠️ Offline သိမ်းပြီး', '', 'danger', false);
@@ -2548,6 +2560,77 @@ function filterAdminProductNames() {
 }
 
 // =====================================================================
+// UNPAID SALES (Admin-only)
+// =====================================================================
+function renderUnpaidSales() {
+    var unpaidSales = salesHistory.filter(function(s) { return s.payment_status === 'unpaid'; });
+    var countEl = document.getElementById('unpaid-count');
+    var listEl = document.getElementById('unpaid-list');
+    
+    if (countEl) countEl.textContent = unpaidSales.length;
+    
+    if (!unpaidSales.length) {
+        listEl.innerHTML = '<div class="text-center text-muted py-4">ငွေမရှင်းသေးတဲ့ အရောင်း မရှိပါ</div>';
+        return;
+    }
+    
+    listEl.innerHTML = '';
+    unpaidSales.forEach(function(sale) {
+        var card = document.createElement('div');
+        card.style.cssText = 'background:var(--bg-card);border-radius:12px;padding:12px;border:2px solid var(--accent-danger);cursor:pointer;';
+        var total = sale.total_amount || sale.total || '0';
+        var items = sale.items; if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
+        var itemCount = (Array.isArray(items) ? items.length : 0);
+        
+        card.innerHTML = '<div class="small fw-bold mb-1" style="color:var(--accent-danger);">' + (sale.voucher_id || 'N/A') + '</div>' +
+            '<div class="small mb-1">' + (sale.customer_name || 'Customer') + '</div>' +
+            '<div class="small text-muted mb-2">' + itemCount + ' ပစ္စည်း</div>' +
+            '<div class="fw-bold mb-2">' + Number(total).toLocaleString() + ' Ks</div>' +
+            '<button class="btn btn-sm btn-success w-100" style="font-size:11px;" onclick="markSaleAsPaid(\'' + (sale.voucher_id || '').replace(/'/g, "\\'") + '\')">✓ ငွေရှင်းပြီး</button>';
+        
+        listEl.appendChild(card);
+    });
+}
+
+function markSaleAsPaid(voucherId) {
+    if (!voucherId) return;
+    
+    var saleIndex = -1;
+    for (var i = 0; i < salesHistory.length; i++) {
+        if ((salesHistory[i].voucher_id || '').toString() === voucherId.toString()) {
+            saleIndex = i;
+            break;
+        }
+    }
+    
+    if (saleIndex === -1) {
+        showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false);
+        return;
+    }
+    
+    var sale = salesHistory[saleIndex];
+    
+    // Update Supabase
+    supabase.from('SalesHistory')
+        .update({ payment_status: 'paid' })
+        .eq('voucher_id', voucherId)
+        .then(function(r) {
+            // Update local cache
+            sale.payment_status = 'paid';
+            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+            renderUnpaidSales();
+            showBigToast('✅ ' + voucherId + ' ငွေရှင်းပြီး', '', 'success', false);
+        })
+        .catch(function(err) {
+            // Even if Supabase fails, update locally for offline resilience
+            sale.payment_status = 'paid';
+            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+            renderUnpaidSales();
+            showBigToast('✅ Offline သိမ်းပြီး - ပြန်ထည့်သွင်းမည်', '', 'warning', false);
+        });
+}
+
+// =====================================================================
 // DASHBOARD
 // =====================================================================
 function loadStaffProfilesMap(callback) {
@@ -2744,7 +2827,7 @@ function resetFlashlight() { if (isFlashlightOn && currentVideoTrack) { try { cu
 // THEME / TAB / PASSWORD / LOCK
 // =====================================================================
 function toggleTheme() { var c = document.documentElement.getAttribute('data-theme') || 'light', n = c === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', n); localStorage.setItem('theme', n); document.getElementById('theme-btn').innerHTML = n === 'dark' ? '☀️' : '🌙'; if (document.getElementById('dashboard').classList.contains('active')) updateSalesChartLogic(); }
-function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } }
+function switchTab(id) { var r = localStorage.getItem('currentUserRole') || 'user'; if ((id === 'admin' || id === 'dashboard' || id === 'password' || id === 'unpaid') && r !== 'admin') { showBigToast('🔒 Admin လုပ်ပိုင်ခွင့်မရှိပါ', '', 'danger', false); return; } document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); }); document.querySelectorAll('.nav-tabs-custom .btn').forEach(function(el) { el.classList.remove('active'); }); document.getElementById(id).classList.add('active'); document.getElementById('btn-' + id).classList.add('active'); if (id === 'admin') { resetAdminProductList(); setTimeout(function() { renderAdminProducts(productsDB); }, 50); } else { cleanupAdminScroll(); } if (id === 'dashboard') { calculateTodaySales(); updateSalesChartLogic(); renderSoldOutProducts(); renderStaffPerformance(); } if (id === 'unpaid') { renderUnpaidSales(); } }
 // =====================================================================
 // AUTH (Supabase Auth — per-staff login accounts)
 // =====================================================================
