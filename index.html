@@ -2080,7 +2080,7 @@ function filterProductNames(isAutoRefresh) {
         var isAdmin = (localStorage.getItem('currentUserRole') || 'user') === 'admin';
         var costHtml = isAdmin ? '<div class="item-cost" style="font-size:11px;color:var(--text-muted);">အရင်း: ' + Number(prod.extra1 || 0).toLocaleString() + ' Ks</div>' : '';
         info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div>' + costHtml + '<div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
-        info.onclick = (function(p) { return function() { openQtyModal(p); }; })(prod);
+        info.onmousedown = (function(p) { return function(e) { e.preventDefault(); e.stopPropagation(); openQtyModal(p); }; })(prod);
         var act = document.createElement('div'); act.className = 'item-actions';
         if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
         else {
@@ -2118,7 +2118,7 @@ function changeQtyFromSearch(bc, delta) {
         return;
     }
     if (idx === -1) return;
-    var st = getStockNumber(cart[idx]), nq = cart[idx].qty + delta;
+    var st = getStockNumber(findProductByItem(cart[idx])), nq = cart[idx].qty + delta;
     if (nq <= 0) { cart.splice(idx, 1); updateSearchQtyDisplay(bStr, 0); }
     else if (nq > st) { showBigToast('⚠️ ' + st + ' ' + (cart[idx].unit || 'ခု') + ' သာ', '', 'danger', false); return; }
     else { cart[idx].qty = nq; updateSearchQtyDisplay(bStr, nq); }
@@ -2189,7 +2189,7 @@ function changeCartItemPrice(index, newPrice) {
 
 function changeQty(i, c) {
     playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return;
-    var st = getStockNumber(cart[i]), nq = cart[i].qty + c;
+    var st = getStockNumber(findProductByItem(cart[i])), nq = cart[i].qty + c;
     if (nq <= 0) cart.splice(i, 1);
     else if (nq > st) { showBigToast('⚠️ ' + st + ' ' + (cart[i].unit||'ခု') + ' သာ', '', 'danger', false); return; }
     else cart[i].qty = nq;
@@ -2197,7 +2197,7 @@ function changeQty(i, c) {
 }
 function changeQtySelectFromCart(i, nq) {
     playBeep(); var cart = carts[activeCartIndex]; if (!cart[i]) return;
-    var st = getStockNumber(cart[i]), tq = parseInt(nq) || 1;
+    var st = getStockNumber(findProductByItem(cart[i])), tq = parseInt(nq) || 1;
     if (tq > st) { showBigToast('⚠️ ' + st + ' ' + (cart[i].unit||'ခု') + ' သာ', '', 'danger', false); return; }
     cart[i].qty = tq; renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal(); filterProductNames();
 }
