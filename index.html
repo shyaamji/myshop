@@ -2343,7 +2343,8 @@ function saveAsPendingOrder() {
         itemsSnapshot = cart.map(function(it) { return { id: it.id, barcode: it.barcode, name: it.name, price: it.price, qty: it.qty, unit: it.unit }; });
     var od = { order_id: oid, customer_name: cn, items: JSON.stringify(itemsSnapshot), total_amount: total.replace(/,/g, ''), extra1: disc, extra2: pm, staff_id: currentStaffProfile ? currentStaffProfile.id : null, status: 'pending' };
 
-    supabase.from('PendingOrders').insert([od]).then(function() {
+    supabase.from('PendingOrders').insert([od]).then(function(r) {
+        if (r.error) { showBigToast('❌ Server Error', r.error.message || 'PendingOrders table စစ်ပါ', 'danger', false); return; }
         showBigToast('⏳ ' + oid + ' Pending Order အဖြစ် သိမ်းပြီး', '', 'success', false);
     }).catch(function(err) {
         showBigToast('⚠️ Offline သိမ်းပြီး', '', 'danger', false);
@@ -2366,6 +2367,7 @@ function saveAsPendingOrder() {
 function loadPendingOrdersFromSheet() {
     supabase.from('PendingOrders').select('*').order('created_at', { ascending: false })
         .then(function(r) {
+            if (r.error) { console.log('PendingOrders load error:', r.error.message); return; }
             if (r.data) {
                 pendingOrders = r.data;
                 localStorage.setItem('pendingOrdersCache', JSON.stringify(pendingOrders));
@@ -2478,15 +2480,16 @@ function removePendingItem(i) {
 }
 function filterPendingItemSearch() {
     var q = document.getElementById('pending-item-search-input').value.trim().toLowerCase(), box = document.getElementById('pending-item-search-results');
-    if (!q) { box.innerHTML = ''; return; }
+    if (!q) { box.innerHTML = ''; box.style.display = 'none'; return; }
     var matches = productsDB.filter(function(p) { return (p.name || '').toLowerCase().includes(q) || (p.barcode || '').toString().includes(q); }).slice(0, 8);
-    if (!matches.length) { box.innerHTML = '<div class="text-center text-muted small py-2">မတွေ့ပါ</div>'; return; }
+    if (!matches.length) { box.innerHTML = '<div class="text-center text-muted small py-2">မတွေ့ပါ</div>'; box.style.display = 'block'; return; }
     var h = '';
     matches.forEach(function(p) {
         var st = getStockNumber(p);
         h += '<div class="p-2 border-bottom" style="cursor:pointer;' + (st <= 0 ? 'opacity:0.5;' : '') + '" onclick="' + (st <= 0 ? "showBigToast('🔴 ကုန်သွားပါပြီ','','danger',false)" : "addItemToPendingOrder('" + p.id + "')") + '"><div class="d-flex justify-content-between"><span class="fw-bold small">' + p.name + '</span><span class="small text-muted">လက်ကျန်: ' + st + '</span></div></div>';
     });
     box.innerHTML = h;
+    box.style.display = 'block';
 }
 function addItemToPendingOrder(productId) {
     var o = getCurrentPendingOrder(); if (!o) return;
@@ -2505,6 +2508,7 @@ function addItemToPendingOrder(productId) {
     renderSoldOutProducts(); filterProductNames();
     document.getElementById('pending-item-search-input').value = '';
     document.getElementById('pending-item-search-results').innerHTML = '';
+    document.getElementById('pending-item-search-results').style.display = 'none';
     syncPendingOrderToSheet();
     renderPendingOrderDetail();
     playBeep();
@@ -2515,7 +2519,9 @@ function syncPendingOrderToSheet() {
     var disc = document.getElementById('pending-detail-discount').value.trim() || '0';
     var pm = document.getElementById('pending-detail-payment').value;
     o.extra1 = disc; o.extra2 = pm; o.total_amount = totalTxt.replace(/,/g, '');
-    supabase.from('PendingOrders').update({ items: JSON.stringify(o.items), total_amount: o.total_amount, extra1: disc, extra2: pm }).eq('order_id', o.order_id).then(function() {}).catch(function() {});
+    supabase.from('PendingOrders').update({ items: JSON.stringify(o.items), total_amount: o.total_amount, extra1: disc, extra2: pm }).eq('order_id', o.order_id).then(function(r) {
+        if (r.error) showBigToast('❌ Sync မအောင်မြင်ပါ', r.error.message || '', 'danger', false);
+    }).catch(function() { showBigToast('⚠️ Offline - နောက်မှ sync ဖြစ်ပါမည်', '', 'danger', false); });
     localStorage.setItem('pendingOrdersCache', JSON.stringify(pendingOrders));
     renderPendingOrdersList();
     updatePendingOrderBadge();
@@ -2524,7 +2530,9 @@ function cancelPendingOrder() {
     var o = getCurrentPendingOrder(); if (!o) return;
     if (!confirm('Order ကို ဖျက်မှာ သေချာလား? Stock အားလုံး ပြန်တိုးပါမည်။')) return;
     restoreStockForItems(o.items);
-    supabase.from('PendingOrders').delete().eq('order_id', o.order_id).then(function() {}).catch(function() {});
+    supabase.from('PendingOrders').delete().eq('order_id', o.order_id).then(function(r) {
+        if (r.error) { showBigToast('❌ Server Error', r.error.message || '', 'danger', false); }
+    }).catch(function() {});
     pendingOrders = pendingOrders.filter(function(x) { return (x.order_id || '').toString() !== (o.order_id || '').toString(); });
     localStorage.setItem('pendingOrdersCache', JSON.stringify(pendingOrders));
     renderPendingOrdersList();
@@ -2550,7 +2558,9 @@ function settlePendingOrder() {
         displayHistory(salesHistory);
         showBigToast('✅ ' + vid + ' ငွေရှင်းပြီး', '', 'success', false);
 
-        supabase.from('PendingOrders').delete().eq('order_id', o.order_id).then(function() {}).catch(function() {});
+        supabase.from('PendingOrders').delete().eq('order_id', o.order_id).then(function(r) {
+            if (r.error) showBigToast('⚠️ Pending list sync issue', r.error.message || '', 'danger', false);
+        }).catch(function() {});
         pendingOrders = pendingOrders.filter(function(x) { return (x.order_id || '').toString() !== (o.order_id || '').toString(); });
         localStorage.setItem('pendingOrdersCache', JSON.stringify(pendingOrders));
         renderPendingOrdersList();
