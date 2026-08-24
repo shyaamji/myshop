@@ -2051,9 +2051,15 @@ function checkoutFromPopCart() { if (!carts[activeCartIndex].length) { showBigTo
 // =====================================================================
 // SEARCH FUNCTIONS
 // =====================================================================
-function filterProductNames() {
-    var inp = document.getElementById('name-search-input').value.toLowerCase().trim();
+var searchBoxTouchActive = false;
+var pendingSearchAutoRefresh = false;
+function filterProductNames(isAutoRefresh) {
     var box = document.getElementById('search-suggestions'), cb = document.getElementById('close-search-btn');
+    // Skip a background/auto refresh while the user's finger is still on the
+    // suggestion list - rebuilding the DOM under an in-progress tap is what
+    // causes taps to silently fail. We'll retry right after the touch ends.
+    if (isAutoRefresh && searchBoxTouchActive) { pendingSearchAutoRefresh = true; return; }
+    var inp = document.getElementById('name-search-input').value.toLowerCase().trim();
     if (!inp) { box.style.display = 'none'; if (cb) cb.style.display = 'none'; return; }
     if (cb) cb.style.display = 'block';
     var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); });
@@ -2312,9 +2318,17 @@ function adjustProductStock(item, qtyChange) {
     return ns;
 }
 function findProductByItem(item) {
-    for (var j = 0; j < productsDB.length; j++) {
-        if (item.id && productsDB[j].id === item.id) return productsDB[j];
-        if (!item.id && productsDB[j].barcode && item.barcode && productsDB[j].barcode.toString() === item.barcode.toString()) return productsDB[j];
+    // Match by id first (toString() so "123" and 123 still match)
+    if (item.id !== undefined && item.id !== null) {
+        for (var j = 0; j < productsDB.length; j++) {
+            if (productsDB[j].id !== undefined && productsDB[j].id !== null && productsDB[j].id.toString() === item.id.toString()) return productsDB[j];
+        }
+    }
+    // Always fall back to barcode match, even if item.id was set but didn't match anything
+    if (item.barcode !== undefined && item.barcode !== null) {
+        for (var j = 0; j < productsDB.length; j++) {
+            if (productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) return productsDB[j];
+        }
     }
     return item;
 }
@@ -2525,10 +2539,14 @@ function addItemToPendingOrder(productId) {
 }
 function syncPendingOrderToSheet() {
     var o = getCurrentPendingOrder(); if (!o) return;
-    var totalTxt = document.getElementById('pending-detail-total') ? document.getElementById('pending-detail-total').textContent : '0';
     var disc = document.getElementById('pending-detail-discount').value.trim() || '0';
     var pm = document.getElementById('pending-detail-payment').value;
-    o.extra1 = disc; o.extra2 = pm; o.total_amount = totalTxt.replace(/,/g, '');
+    // Compute total directly from the items instead of reading the DOM text,
+    // since this can be called before the on-screen total has been re-rendered.
+    var rawTotal = 0; o.items.forEach(function(it) { rawTotal += Number(it.price) * Number(it.qty); });
+    var dAmt = disc.indexOf('%') > -1 ? rawTotal * (parseFloat(disc.replace('%', '')) / 100) : (Number(disc) || 0);
+    var totalTxt = String(Math.max(0, Math.round(rawTotal - dAmt)));
+    o.extra1 = disc; o.extra2 = pm; o.total_amount = totalTxt;
     supabase.from('PendingOrders').update({ items: JSON.stringify(o.items), total_amount: o.total_amount, extra1: disc, extra2: pm }).eq('order_id', o.order_id).then(function(r) {
         if (r.error) showBigToast('❌ Sync မအောင်မြင်ပါ', r.error.message || '', 'danger', false);
     }).catch(function() { showBigToast('⚠️ Offline - နောက်မှ sync ဖြစ်ပါမည်', '', 'danger', false); });
@@ -3207,8 +3225,8 @@ function loadProductsFromSheet() {
                     resetAdminProductList();
                     renderAdminProducts(productsDB);
                 }
-                // Refresh search results
-                filterProductNames();
+                // Refresh search results (deferred if the user is mid-tap on a suggestion)
+                filterProductNames(true);
                 // Refresh sold-out list
                 renderSoldOutProducts();
             }
@@ -3319,7 +3337,23 @@ window.onload = function() {
     if (pu) { pu.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
     
     var si = document.getElementById('name-search-input');
-    if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
+    if (si) { si.addEventListener('input', function() { filterProductNames(false); }); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
+
+    // Track when the user's finger/mouse is actively pressing something inside the
+    // suggestion list, so a background data refresh doesn't rebuild the DOM mid-tap.
+    var sBox = document.getElementById('search-suggestions');
+    if (sBox) {
+        var markTouchStart = function() { searchBoxTouchActive = true; };
+        var markTouchEnd = function() {
+            searchBoxTouchActive = false;
+            if (pendingSearchAutoRefresh) { pendingSearchAutoRefresh = false; setTimeout(function() { filterProductNames(true); }, 50); }
+        };
+        sBox.addEventListener('touchstart', markTouchStart, { passive: true });
+        sBox.addEventListener('mousedown', markTouchStart);
+        sBox.addEventListener('touchend', markTouchEnd, { passive: true });
+        sBox.addEventListener('touchcancel', markTouchEnd, { passive: true });
+        sBox.addEventListener('mouseup', markTouchEnd);
+    }
     
     updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
     
