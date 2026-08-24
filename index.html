@@ -3170,7 +3170,7 @@ function lockAppImmediate() { supabase.auth.signOut().then(function() { localSto
 function initAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e) {} }
 
 // =====================================================================
-// ★★★ LOAD DATA - Cache File fix ★★★
+// ★★★ LOAD DATA - Cache Fix ★★★
 // =====================================================================
 function loadProductsFromSheet() {
     supabase.from('Products').select('*')
@@ -3219,5 +3219,114 @@ function loadSalesHistoryFromSheet(daysBack) {
                 localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
                 displayHistory(salesHistory);
             }
+        })
+        .catch(function(e) {
+            var l = localStorage.getItem('salesHistory');
+            if (l) { salesHistory = JSON.parse(l); displayHistory(salesHistory); }
+        });
+}
+
+// ★★★ On-demand fetch for a specific date range that falls OUTSIDE the default
+// 90-day window (e.g. an admin picking an older start date on the dashboard).
+// Merges the result into salesHistory instead of re-downloading everything. ★★★
+function loadSalesHistoryRange(startDate, endDate, callback) {
+    var q = supabase.from('SalesHistory').select('*').order('created_at', { ascending: false });
+    if (startDate) q = q.gte('created_at', new Date(startDate).toISOString());
+    if (endDate) { var e = new Date(endDate); e.setHours(23, 59, 59, 999); q = q.lte('created_at', e.toISOString()); }
+    q.then(function(r) {
+        if (r.data) {
+            var existing = {}; salesHistory.forEach(function(s) { existing[s.voucher_id] = true; });
+            r.data.forEach(function(s) { if (!existing[s.voucher_id]) { salesHistory.push(s); existing[s.voucher_id] = true; } });
+            salesHistory.sort(function(a, b) { return new Date(b.created_at || b.date) - new Date(a.created_at || a.date); });
+            localStorage.setItem('salesHistory', JSON.stringify(salesHistory));
+        }
+        if (callback) callback(r.data || []);
+    }).catch(function() { if (callback) callback([]); });
+}
+
+// ★★★ Dashboard date-filter handler: uses the already-loaded 90-day window when
+// possible, and only reaches out to the server for older data when needed. ★★★
+function onDashboardDateFilterChange() {
+    var fs = document.getElementById('filter-start-date').value, fe = document.getElementById('filter-end-date').value;
+    var ninetyDaysAgo = new Date(); ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    if (fs && new Date(fs) < ninetyDaysAgo) {
+        showBigToast('🔄 ရှေးရက်စွဲ ဒေတာ ရှာနေပါသည်...', '', 'success', false);
+        loadSalesHistoryRange(fs, fe, function() { calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance(); });
+    } else {
+        calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance();
+    }
+}
+
+// =====================================================================
+// WINDOW ONLOAD
+// =====================================================================
+window.onload = function() {
+    var theme = document.documentElement.getAttribute('data-theme') || 'light';
+    document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    
+    // Load from cache first for instant display
+    var cached = localStorage.getItem('productsCache');
+    if (cached) {
+        productsDB = JSON.parse(cached);
+        buildBarcodeIndex();
+        renderCart();
+        updateScannerTotal();
+    }
+    
+    // Then fetch fresh data from server (will overwrite if different)
+    loadProductsFromSheet();
+    loadSalesHistoryFromSheet();
+
+    // Pending orders: cache first, then fresh
+    var cachedPending = localStorage.getItem('pendingOrdersCache');
+    if (cachedPending) { pendingOrders = JSON.parse(cachedPending); renderPendingOrdersList(); updatePendingOrderBadge(); }
+    loadPendingOrdersFromSheet();
+    
+    // Restore existing Supabase Auth session (if any) instead of the old shared-password flow
+    supabase.auth.getSession().then(function(r) {
+        var session = r.data && r.data.session;
+        if (!session) return;
+        fetchMyProfile().then(function(profile) {
+            if (profile) { applyLoggedInState(profile); }
+            else { supabase.auth.signOut(); }
+        });
+    });
+    
+    displayHistory(salesHistory);
+    
+    var pw = document.getElementById('home-pass-input'), pu = document.getElementById('home-user-input');
+    if (pw) { pw.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
+    if (pu) { pu.addEventListener("keypress", function(e) { if (e.key === "Enter") { e.preventDefault(); checkUniversalLogin(); } }); }
+    
+    var si = document.getElementById('name-search-input');
+    if (si) { si.addEventListener('input', filterProductNames); si.addEventListener('focus', function() { setTimeout(function() { document.getElementById('main-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); }); }
+    
+    updateCartBadges(); renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
+    
+    if (document.getElementById('dashboard').classList.contains('active')) { calculateTodaySales(); updateSalesChartLogic(); renderStaffPerformance(); }
+    renderSoldOutProducts();
+    
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./service-worker.js').then(function(r) { console.log('✅ SW'); }).catch(function(e) { console.log('❌ SW'); });
+        });
+    }
+    
+    supabase.channel('products-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'Products' }, function(p) { loadProductsFromSheet(); }).subscribe();
+    supabase.channel('sales-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'SalesHistory' }, function(p) { loadSalesHistoryFromSheet(); }).subscribe();
+    supabase.channel('pending-orders-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'PendingOrders' }, function(p) { loadPendingOrdersFromSheet(); }).subscribe();
+    
+    // Sign the user out everywhere if their Supabase Auth session ends (e.g. token revoked)
+    supabase.auth.onAuthStateChange(function(event) {
+        if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('currentUserRole');
+            localStorage.removeItem('currentUserName');
+            document.documentElement.removeAttribute('data-role');
+            document.getElementById('app-lock-screen').style.display = 'flex';
+            document.getElementById('app-main-content').style.display = 'none';
+        }
+    });
+};
+</script>
 </body>
 </html>
