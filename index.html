@@ -1530,8 +1530,18 @@ window.addEventListener('beforeinstallprompt', function(e) {
         </div>
 
         <!-- ===== ORDER TAB ===== -->
-        <div id="order" class="tab-content">
+        <div id="order" class="tab-content" style="padding-bottom:90px;">
             <div class="sales-grid-layout">
+                <div class="custom-card p-0 overflow-hidden border-0" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
+                    <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
+                        <h6 class="fw-bold mb-0">📋 Order စာရင်း</h6>
+                        <span class="badge rounded-pill bg-light text-dark border font-monospace" id="order-list-count-badge" style="font-size:12px;padding:6px 12px;">0</span>
+                    </div>
+                    <div id="order-list-container" class="px-3 py-3" style="max-height:320px;overflow-y:auto;">
+                        <div class="text-center text-muted py-4 small">Order မရှိသေးပါ</div>
+                    </div>
+                </div>
+
                 <div class="custom-card search-container-box search-card-box" id="order-search-card">
                     <h6 class="fw-bold mb-2 text-secondary">🔍 Order - ပစ္စည်းအမည်ဖြင့် ရှာဖွေရန်</h6>
                     <div class="position-relative">
@@ -1571,16 +1581,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
                         </div>
                     </div>
                 </div>
-
-                <div class="custom-card p-0 overflow-hidden border-0" style="background:var(--bg-card);border:1px solid var(--border-color)!important;">
-                    <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:var(--bg-input);border-bottom:1px solid var(--border-color);">
-                        <h6 class="fw-bold mb-0">📋 Order စာရင်း</h6>
-                        <span class="badge rounded-pill bg-light text-dark border font-monospace" id="order-list-count-badge" style="font-size:12px;padding:6px 12px;">0</span>
-                    </div>
-                    <div id="order-list-container" class="px-3 py-3">
-                        <div class="text-center text-muted py-4 small">Order မရှိသေးပါ</div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -1588,6 +1588,10 @@ window.addEventListener('beforeinstallprompt', function(e) {
         <div class="modal-overlay" id="orderEditModal">
             <div class="modal-box" style="max-width:420px;width:92%;max-height:85vh;overflow-y:auto;text-align:left;">
                 <div class="modal-title" style="margin-bottom:10px;">Order အသေးစိတ် - <span id="order-edit-no"></span></div>
+                <div class="position-relative mb-2">
+                    <input type="search" id="order-edit-search-input" class="form-control form-control-sm" placeholder="🔍 item အသစ်ထပ်ဖြည့်ရန် ရှာပါ..." autocomplete="off" oninput="filterOrderEditProductNames()">
+                    <div id="order-edit-search-suggestions" class="search-results" style="position:absolute;z-index:50;width:100%;"></div>
+                </div>
                 <div id="order-edit-items"></div>
                 <div class="d-flex justify-content-between align-items-center py-2 border-top mt-2">
                     <span class="fw-bold text-secondary small">စုစုပေါင်း</span>
@@ -1597,6 +1601,7 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <button class="btn-cancel" onclick="closeOrderEditModal()">✕ ပိတ်မည်</button>
                     <button class="btn-cancel" style="background:var(--accent-danger);color:#fff;" onclick="cancelOrder(currentEditingOrderId)">🗑️ Order Cancel</button>
                     <button class="btn-confirm-qty" onclick="saveOrderEdits()">💾 ပြင်ဆင်ချက် သိမ်းမည်</button>
+                    <button class="btn-confirm-qty" style="background:#2563eb;" onclick="printOrderVoucherOnly(currentEditingOrderId)">🖨️ ဘောက်ချာ ထုတ်မည်</button>
                     <button class="btn-confirm-qty admin-only-feature" style="background:var(--accent-success);" onclick="confirmOrderPaymentAndPrint(currentEditingOrderId)">✅ ငွေရှင်းပြီး</button>
                 </div>
             </div>
@@ -2323,23 +2328,30 @@ function filterOrderProductNames() {
         info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks</div><div class="stock-badge ' + sCls + '">' + sTxt + '</div>';
         var act = document.createElement('div'); act.className = 'item-actions';
         if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
-        else { var btnAdd = document.createElement('button'); btnAdd.className = 'confirm-btn-sm'; btnAdd.innerText = '✅ ထည့်မည်'; btnAdd.onclick = (function(p) { return function() { addToOrderCart(p); }; })(prod); act.appendChild(btnAdd); }
+        else {
+            var maxQ = Math.min(st, 100), opts = ''; for (var k = 1; k <= maxQ; k++) opts += '<option value="' + k + '">' + k + '</option>';
+            var sel = document.createElement('select'); sel.className = 'suggestion-qty-select'; sel.innerHTML = opts;
+            var btnAdd = document.createElement('button'); btnAdd.className = 'confirm-btn-sm'; btnAdd.innerText = '✅ ထည့်မည်';
+            btnAdd.onclick = (function(p, s) { return function() { addToOrderCart(p, parseInt(s.value) || 1); }; })(prod, sel);
+            act.appendChild(sel); act.appendChild(btnAdd);
+        }
         div.appendChild(info); div.appendChild(act); box.appendChild(div);
     });
     box.style.display = 'block';
 }
 function clearOrderSearchInputAndBox() { document.getElementById('order-search-input').value = ''; document.getElementById('order-search-suggestions').style.display = 'none'; document.getElementById('order-close-search-btn').style.display = 'none'; }
-function addToOrderCart(prod) {
+function addToOrderCart(prod, qtyToAdd) {
+    qtyToAdd = qtyToAdd || 1;
     playBeep();
     var idx = -1; for (var i = 0; i < orderCart.length; i++) { if ((orderCart[i].id && orderCart[i].id === prod.id) || (!orderCart[i].id && orderCart[i].barcode.toString() === prod.barcode.toString())) { idx = i; break; } }
     if (idx > -1) {
-        if (orderCart[idx].qty + 1 > getStockNumber(prod)) { showBigToast('⚠️ လက်ကျန် ' + getStockNumber(prod) + ' ' + (prod.unit || 'ခု') + ' သာ', '', 'danger', false); return; }
-        orderCart[idx].qty++;
+        if (orderCart[idx].qty + qtyToAdd > getStockNumber(prod)) { showBigToast('⚠️ လက်ကျန် ' + getStockNumber(prod) + ' ' + (prod.unit || 'ခု') + ' သာ', '', 'danger', false); return; }
+        orderCart[idx].qty += qtyToAdd;
     } else {
-        if (getStockNumber(prod) <= 0) { showBigToast('🔴 ကုန်သွားပါပြီ', '', 'danger', false); return; }
-        orderCart.push({ id: prod.id, barcode: prod.barcode, name: prod.name, price: prod.price, qty: 1, unit: prod.unit || 'ခု' });
+        if (getStockNumber(prod) < qtyToAdd) { showBigToast('⚠️ လက်ကျန် ' + getStockNumber(prod) + ' ' + (prod.unit || 'ခု') + ' သာ', '', 'danger', false); return; }
+        orderCart.push({ id: prod.id, barcode: prod.barcode, name: prod.name, price: prod.price, qty: qtyToAdd, unit: prod.unit || 'ခု' });
     }
-    showBigToast('✅ ' + prod.name + ' ထည့်ပြီး', '', 'success', false);
+    showBigToast('✅ ' + prod.name + ' ×' + qtyToAdd + ' ထည့်ပြီး', '', 'success', false);
     renderOrderCart(); clearOrderSearchInputAndBox();
 }
 function renderOrderCart() {
@@ -2462,7 +2474,8 @@ function editOrderItemQty(i, c) {
     var o = getEditingOrder(); if (!o || !o.items[i]) return;
     var item = o.items[i];
     var prod = productsDB.find(function(p) { return (item.id && p.id === item.id) || (!item.id && p.barcode && p.barcode.toString() === item.barcode.toString()); });
-    var availableStock = getStockNumber(prod) + item.qty; // stock already deducted for this order's current qty, so it's "returnable" headroom
+    var origQty = 0; (o._origItems || []).forEach(function(it) { if ((it.id && item.id && it.id === item.id) || (!it.id && !item.id && it.barcode.toString() === item.barcode.toString())) origQty = it.qty; });
+    var availableStock = getStockNumber(prod) + origQty; // origQty is what's already reserved/deducted for this line; current stock excludes it
     var nq = item.qty + c;
     if (nq <= 0) { o.items.splice(i, 1); }
     else if (nq > availableStock) { showBigToast('⚠️ ' + availableStock + ' ' + (item.unit || 'ခု') + ' သာ', '', 'danger', false); return; }
@@ -2479,6 +2492,46 @@ function removeOrderEditItem(i) {
     o.items.splice(i, 1); renderOrderEditItems(o.items);
 }
 function closeOrderEditModal() { document.getElementById('orderEditModal').classList.remove('active'); currentEditingOrderId = null; loadOrdersFromSheet(); }
+
+function filterOrderEditProductNames() {
+    var inp = document.getElementById('order-edit-search-input').value.toLowerCase().trim();
+    var box = document.getElementById('order-edit-search-suggestions');
+    if (!inp) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    var f = productsDB.filter(function(p) { return p.name.toLowerCase().includes(inp); });
+    box.innerHTML = '';
+    if (!f.length) { box.innerHTML = '<div class="text-center text-muted py-3 small">မတွေ့ပါ</div>'; box.style.display = 'block'; return; }
+    f.forEach(function(prod) {
+        var st = getStockNumber(prod);
+        var div = document.createElement('div'); div.className = 'search-item d-flex justify-content-between align-items-center';
+        var info = document.createElement('div'); info.className = 'item-info';
+        info.innerHTML = '<div class="item-name">' + prod.name + '</div><div class="item-price">' + Number(prod.price).toLocaleString() + ' Ks — လက်ကျန် ' + st + '</div>';
+        var act = document.createElement('div'); act.className = 'item-actions';
+        if (st <= 0) { act.innerHTML = '<span class="text-danger fw-bold small">ကုန်သွားပြီ</span>'; }
+        else { var btnAdd = document.createElement('button'); btnAdd.className = 'confirm-btn-sm'; btnAdd.innerText = '✅ ထပ်ဖြည့်'; btnAdd.onclick = (function(p) { return function() { addItemToEditingOrder(p); }; })(prod); act.appendChild(btnAdd); }
+        div.appendChild(info); div.appendChild(act); box.appendChild(div);
+    });
+    box.style.display = 'block';
+}
+function addItemToEditingOrder(prod) {
+    var o = getEditingOrder(); if (!o) return;
+    var idx = -1; for (var i = 0; i < o.items.length; i++) { if ((o.items[i].id && o.items[i].id === prod.id) || (!o.items[i].id && o.items[i].barcode.toString() === prod.barcode.toString())) { idx = i; break; } }
+    var reservedQty = idx > -1 ? o.items[idx].qty : 0;
+    var origQty = 0; (o._origItems || []).forEach(function(it) { if ((it.id && it.id === prod.id) || (!it.id && it.barcode.toString() === prod.barcode.toString())) origQty = it.qty; });
+    var headroom = getStockNumber(prod) + origQty - reservedQty;
+    if (headroom <= 0) { showBigToast('🔴 လက်ကျန်မလုံလောက်ပါ', '', 'danger', false); return; }
+    if (idx > -1) o.items[idx].qty += 1;
+    else o.items.push({ id: prod.id, barcode: prod.barcode, name: prod.name, price: prod.price, qty: 1, unit: prod.unit || 'ခု' });
+    document.getElementById('order-edit-search-input').value = ''; document.getElementById('order-edit-search-suggestions').style.display = 'none';
+    renderOrderEditItems(o.items);
+    showBigToast('✅ ' + prod.name + ' ထပ်ဖြည့်ပြီး', '', 'success', false);
+}
+
+// Prints the order's voucher without recording payment or touching the order/stock — for a preview/customer copy.
+function printOrderVoucherOnly(id) {
+    var o = ordersDB.find(function(x) { return String(x.id) === String(id); });
+    if (!o || !o.items.length) return;
+    printVoucher({ voucher_id: o.order_no || '', customer_name: o.customer_name || 'Customer', items: o.items, total_amount: String(o.total_amount || 0), extra1: '0', extra2: 'Cash', date: new Date().toLocaleString() });
+}
 
 // Persists edits: reconciles stock difference vs the order's last-saved qty snapshot, updates the Orders row.
 function saveOrderEdits() {
