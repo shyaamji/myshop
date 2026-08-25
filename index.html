@@ -1767,7 +1767,8 @@ window.addEventListener('beforeinstallprompt', function(e) {
 // =====================================================================
 var SUPABASE_URL = 'https://winthiri-proxy.simple-aryal86.workers.dev';
 var SUPABASE_KEY = 'sb_publishable_pSE6Dtsb-QQfZdODBqTxEw_ydLGlZUN';
-var supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var supabaseLib = supabase; // keep a reference to the library before it gets shadowed below
+var supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // =====================================================================
 // GLOBAL VARIABLES
@@ -3248,7 +3249,7 @@ function addNewStaffAccount() {
     if (!uname) { showBigToast('Username ဖြည့်ပါ', '', 'danger', false); return; }
     if (!pass || pass.length < 6) { showBigToast('Password အနည်းဆုံး ၆ လုံး ဖြစ်ရပါမည်', '', 'danger', false); return; }
     var btn = document.getElementById('add-staff-btn'); btn.disabled = true; btn.innerText = '⏳ ဖန်တီးနေသည်...';
-    var isoClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+    var isoClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
     isoClient.auth.signUp({ email: pseudoEmail(uname), password: pass, options: { data: { username: uname } } }).then(function(r) {
         if (r.error) { btn.disabled = false; btn.innerText = '➕ အကောင့်ဖွင့်မည်'; showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
         var newId = r.data && r.data.user && r.data.user.id;
