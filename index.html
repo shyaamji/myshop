@@ -1741,14 +1741,21 @@ window.addEventListener('beforeinstallprompt', function(e) {
                     <div class="text-center text-muted py-3">ဒေတာ တွက်ချက်နေပါသည်...</div>
                 </div>
             </div>
-            <div class="custom-card">
-                <h6 class="fw-bold text-secondary mb-3">📋 ဝန်ထမ်းအကောင့် အသစ်ထည့်ရန်</h6>
-                <ul class="small text-muted mb-0" style="padding-left:18px;">
-                    <li class="mb-2">လုံခြုံရေးအရ ဝန်ထမ်းအကောင့်အသစ်ကို app ထဲကနေ ဖန်တီး၍ မရပါ — <b>Supabase Dashboard → Authentication → Add User</b> မှတဆင့်သာ ဖန်တီးပါ။</li>
-                    <li class="mb-2">Email နေရာတွင် <code>username@wintheri.local</code> ပုံစံဖြင့် ထည့်ပါ (ဥပမာ - <code>maung@wintheri.local</code>)။ Email confirmation ကို Auth Settings တွင် ပိတ်ထားရပါမည်။</li>
-                    <li class="mb-2">အကောင့်အသစ် ဖန်တီးပြီးပါက အောက်ပါ ဝန်ထမ်းစာရင်းတွင် role ကို staff/admin/special ရွေးပေးနိုင်ပါသည်။</li>
-                    <li>ဝန်ထမ်းက app ထဲသို့ ဝင်ရာတွင် username ကို <code>@wintheri.local</code> မပါဘဲ ရိုက်ထည့်ရုံသာလိုအပ်ပါသည်။</li>
-                </ul>
+            <div class="custom-card admin-only-feature" style="display:none;">
+                <h6 class="fw-bold text-secondary mb-3">➕ ဝန်ထမ်းအကောင့် အသစ်ထည့်ရန်</h6>
+                <div class="row g-3 align-items-end">
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Username</label><input type="text" id="new-staff-username" class="form-control" placeholder="ဥပမာ - maung" autocomplete="off"></div>
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Password</label><input type="password" id="new-staff-password" class="form-control" placeholder="Password (အနည်းဆုံး ၆ လုံး)"></div>
+                    <div class="col-12"><label class="text-secondary small fw-bold mb-1">Role</label>
+                        <select id="new-staff-role" class="form-control">
+                            <option value="staff">staff</option>
+                            <option value="admin">admin</option>
+                            <option value="special">special</option>
+                        </select>
+                    </div>
+                    <div class="col-12"><button class="btn btn-premium-gold w-100 fw-bold py-2" id="add-staff-btn" onclick="addNewStaffAccount()">➕ အကောင့်ဖွင့်မည်</button></div>
+                </div>
+                <div class="small text-muted mt-3">ဝန်ထမ်းက app ထဲသို့ ဝင်ရာတွင် username ကို <code>@wintheri.local</code> မပါဘဲ ရိုက်ထည့်ရုံသာ လိုအပ်ပါသည်။</div>
             </div>
         </div>
     </div>
@@ -3231,6 +3238,31 @@ function updateStaffRole(id, role) {
         if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
         showBigToast('✅ Role ပြောင်းပြီး', '', 'success', false);
     });
+}
+
+// Uses a separate, isolated Supabase client for signUp so the admin's own logged-in session is never replaced.
+function addNewStaffAccount() {
+    var uname = document.getElementById('new-staff-username').value.trim();
+    var pass = document.getElementById('new-staff-password').value;
+    var role = document.getElementById('new-staff-role').value;
+    if (!uname) { showBigToast('Username ဖြည့်ပါ', '', 'danger', false); return; }
+    if (!pass || pass.length < 6) { showBigToast('Password အနည်းဆုံး ၆ လုံး ဖြစ်ရပါမည်', '', 'danger', false); return; }
+    var btn = document.getElementById('add-staff-btn'); btn.disabled = true; btn.innerText = '⏳ ဖန်တီးနေသည်...';
+    var isoClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+    isoClient.auth.signUp({ email: pseudoEmail(uname), password: pass, options: { data: { username: uname } } }).then(function(r) {
+        if (r.error) { btn.disabled = false; btn.innerText = '➕ အကောင့်ဖွင့်မည်'; showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
+        var newId = r.data && r.data.user && r.data.user.id;
+        if (!newId) { btn.disabled = false; btn.innerText = '➕ အကောင့်ဖွင့်မည်'; showBigToast('❌ User ID မရပါ', '', 'danger', false); return; }
+        // upsert covers both cases: a DB trigger already created the profiles row (update), or it didn't (insert)
+        supabase.from('profiles').upsert({ id: newId, username: uname, role: role }, { onConflict: 'id' }).then(function(pr) {
+            btn.disabled = false; btn.innerText = '➕ အကောင့်ဖွင့်မည်';
+            if (pr.error) { showBigToast('⚠️ Account ဖန်တီးပြီး၊ Role/Profile သိမ်းရာတွင် error', pr.error.message || '', 'danger', false); return; }
+            document.getElementById('new-staff-username').value = ''; document.getElementById('new-staff-password').value = '';
+            showBigToast('✅ "' + uname + '" အကောင့်အသစ် ဖန်တီးပြီး', '', 'success', false);
+            renderStaffList();
+        });
+        isoClient.auth.signOut();
+    }).catch(function(err) { btn.disabled = false; btn.innerText = '➕ အကောင့်ဖွင့်မည်'; showBigToast('❌ Error', err.message || '', 'danger', false); });
 }
 
 
