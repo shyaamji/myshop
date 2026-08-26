@@ -3254,16 +3254,23 @@ function updateStaffRole(id, role) {
     });
 }
 
-// Removes the profiles row so the account can no longer log in to the app.
-// Note: this does NOT delete the underlying Supabase Auth user (that needs the service_role key,
-// which cannot safely live in the browser) — it just revokes app access by removing their profile.
-// fetchMyProfile() blocks login and force-signs-out anyone whose profile row is missing (see checkUniversalLogin).
+// Admin-triggered full account deletion, via the Worker's service_role-backed endpoint
+// (never exposed to the browser). Deletes the actual Supabase Auth user, not just the profile row.
 function deleteStaffAccount(id, uname) {
-    if (!confirm('"' + uname + '" အကောင့်ကို ဖျက်မှာ သေချာပါသလား? (App ထဲကို ထပ်ဝင်လို့ မရတော့ပါ)')) return;
-    supabase.from('profiles').delete().eq('id', id).then(function(r) {
-        if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
-        showBigToast('✅ "' + uname + '" အကောင့် ဖျက်ပြီး', '', 'success', false);
-        renderStaffList();
+    if (!confirm('"' + uname + '" အကောင့်ကို အပြီးတိုင် ဖျက်မှာ သေချာပါသလား? (ဒါကို ပြန်ဖြစ်အောင် လုပ်လို့ မရတော့ပါ)')) return;
+    supabase.auth.getSession().then(function(s) {
+        var token = s.data && s.data.session && s.data.session.access_token;
+        if (!token) { showBigToast('❌ Session မရှိပါ', '', 'danger', false); return; }
+        fetch(SUPABASE_URL + '/custom/delete-staff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ userId: id })
+        }).then(function(res) { return res.json().then(function(j) { return { ok: res.ok, body: j }; }); })
+          .then(function(res) {
+            if (!res.ok) { showBigToast('❌ မအောင်မြင်ပါ', res.body.error || '', 'danger', false); return; }
+            showBigToast('✅ "' + uname + '" အကောင့် အပြီးတိုင် ဖျက်ပြီး', '', 'success', false);
+            renderStaffList();
+          }).catch(function(err) { showBigToast('❌ Error', err.message || '', 'danger', false); });
     });
 }
 
