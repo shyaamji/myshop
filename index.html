@@ -2414,33 +2414,42 @@ function saveOrderToList() {
     }).catch(function(err) { btn.disabled = false; showBigToast('❌ Error', err.message || '', 'danger', false); });
 }
 
+// Uses atomic DB-side RPC functions (see fix_security_and_stock.sql) instead of
+// "read stock, subtract in JS, write it back" — prevents two simultaneous
+// checkouts from overwriting each other's stock update.
 function deductStockForItems(items) {
     items.forEach(function(item) {
-        var prod = productsDB.find(function(p) { return (item.id && p.id === item.id) || (!item.id && p.barcode && p.barcode.toString() === item.barcode.toString()); });
-        var ns = Math.max(0, getStockNumber(prod) - item.qty);
-        if (item.id) supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {});
-        else supabase.from('Products').update({ stock: String(ns) }).eq('barcode', item.barcode.toString()).then(function() {});
-        for (var j = 0; j < productsDB.length; j++) {
-            if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = String(ns); break; }
-            else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) { productsDB[j].stock = String(ns); break; }
-        }
+        var call = item.id
+            ? supabase.rpc('decrement_stock_by_id', { p_id: item.id, p_qty: item.qty })
+            : supabase.rpc('decrement_stock_by_barcode', { p_barcode: item.barcode.toString(), p_qty: item.qty });
+        call.then(function(r) {
+            if (r.error) { console.error('Stock deduct failed', r.error); return; }
+            var ns = r.data;
+            for (var j = 0; j < productsDB.length; j++) {
+                if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = ns; break; }
+                else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) { productsDB[j].stock = ns; break; }
+            }
+            localStorage.setItem('productsCache', JSON.stringify(productsDB));
+            renderSoldOutProducts();
+        });
     });
-    localStorage.setItem('productsCache', JSON.stringify(productsDB));
-    renderSoldOutProducts();
 }
 function restoreStockForItems(items) {
     items.forEach(function(item) {
-        var prod = productsDB.find(function(p) { return (item.id && p.id === item.id) || (!item.id && p.barcode && p.barcode.toString() === item.barcode.toString()); });
-        var ns = getStockNumber(prod) + Number(item.qty);
-        if (item.id) supabase.from('Products').update({ stock: String(ns) }).eq('id', item.id).then(function() {});
-        else supabase.from('Products').update({ stock: String(ns) }).eq('barcode', item.barcode.toString()).then(function() {});
-        for (var j = 0; j < productsDB.length; j++) {
-            if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = String(ns); break; }
-            else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) { productsDB[j].stock = String(ns); break; }
-        }
+        var call = item.id
+            ? supabase.rpc('increment_stock_by_id', { p_id: item.id, p_qty: Number(item.qty) })
+            : supabase.rpc('increment_stock_by_barcode', { p_barcode: item.barcode.toString(), p_qty: Number(item.qty) });
+        call.then(function(r) {
+            if (r.error) { console.error('Stock restore failed', r.error); return; }
+            var ns = r.data;
+            for (var j = 0; j < productsDB.length; j++) {
+                if (item.id && productsDB[j].id === item.id) { productsDB[j].stock = ns; break; }
+                else if (!item.id && productsDB[j].barcode && productsDB[j].barcode.toString() === item.barcode.toString()) { productsDB[j].stock = ns; break; }
+            }
+            localStorage.setItem('productsCache', JSON.stringify(productsDB));
+            renderSoldOutProducts();
+        });
     });
-    localStorage.setItem('productsCache', JSON.stringify(productsDB));
-    renderSoldOutProducts();
 }
 
 function loadOrdersFromSheet() {
