@@ -3226,9 +3226,13 @@ function renderStaffList() {
         var roles = ['staff', 'admin', 'special'], h = '';
         r.data.forEach(function(p) {
             var opts = ''; roles.forEach(function(rl) { opts += '<option value="' + rl + '"' + (p.role === rl ? ' selected' : '') + '>' + rl + '</option>'; });
-            h += '<div class="d-flex justify-content-between align-items-center p-2 rounded-3 border" style="background:var(--bg-input);">' +
+            h += '<div class="d-flex justify-content-between align-items-center p-2 rounded-3 border gap-2" style="background:var(--bg-input);">' +
                  '<div class="fw-bold" style="font-size:14px;">' + (p.username || p.id) + '</div>' +
-                 '<select class="form-control form-control-sm w-auto" onchange="updateStaffRole(\'' + p.id + '\', this.value)">' + opts + '</select></div>';
+                 '<div class="d-flex align-items-center gap-2">' +
+                 '<select class="form-control form-control-sm w-auto" onchange="updateStaffRole(\'' + p.id + '\', this.value)">' + opts + '</select>' +
+                 '<button class="btn btn-sm btn-outline-warning" onclick="resetStaffPassword(\'' + p.id + '\', \'' + (p.username || '').replace(/'/g, "\\'") + '\')" title="Password Reset">🔑</button>' +
+                 '<button class="btn btn-sm btn-outline-danger" onclick="deleteStaffAccount(\'' + p.id + '\', \'' + (p.username || '').replace(/'/g, "\\'") + '\')" title="အကောင့်ဖျက်မည်">🗑️</button>' +
+                 '</div></div>';
         });
         wrap.innerHTML = h;
     });
@@ -3238,6 +3242,39 @@ function updateStaffRole(id, role) {
     supabase.from('profiles').update({ role: role }).eq('id', id).then(function(r) {
         if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
         showBigToast('✅ Role ပြောင်းပြီး', '', 'success', false);
+    });
+}
+
+// Removes the profiles row so the account can no longer log in to the app.
+// Note: this does NOT delete the underlying Supabase Auth user (that needs the service_role key,
+// which cannot safely live in the browser) — it just revokes app access by removing their profile.
+// fetchMyProfile() blocks login and force-signs-out anyone whose profile row is missing (see checkUniversalLogin).
+function deleteStaffAccount(id, uname) {
+    if (!confirm('"' + uname + '" အကောင့်ကို ဖျက်မှာ သေချာပါသလား? (App ထဲကို ထပ်ဝင်လို့ မရတော့ပါ)')) return;
+    supabase.from('profiles').delete().eq('id', id).then(function(r) {
+        if (r.error) { showBigToast('❌ မအောင်မြင်ပါ', r.error.message || '', 'danger', false); return; }
+        showBigToast('✅ "' + uname + '" အကောင့် ဖျက်ပြီး', '', 'success', false);
+        renderStaffList();
+    });
+}
+
+// Admin-triggered password reset, via the Worker's service_role-backed endpoint (never exposed to the browser).
+function resetStaffPassword(id, uname) {
+    var newPass = prompt('"' + uname + '" အတွက် Password အသစ် (၆ လုံးအနည်းဆုံး) ထည့်ပါ:');
+    if (!newPass) return;
+    if (newPass.length < 6) { showBigToast('⚠️ Password အနည်းဆုံး ၆ လုံး ဖြစ်ရပါမည်', '', 'danger', false); return; }
+    supabase.auth.getSession().then(function(s) {
+        var token = s.data && s.data.session && s.data.session.access_token;
+        if (!token) { showBigToast('❌ Session မရှိပါ', '', 'danger', false); return; }
+        fetch(SUPABASE_URL + '/custom/reset-staff-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ userId: id, newPassword: newPass })
+        }).then(function(res) { return res.json().then(function(j) { return { ok: res.ok, body: j }; }); })
+          .then(function(res) {
+            if (!res.ok) { showBigToast('❌ မအောင်မြင်ပါ', res.body.error || '', 'danger', false); return; }
+            showBigToast('✅ "' + uname + '" Password ပြောင်းပြီး', '', 'success', false);
+          }).catch(function(err) { showBigToast('❌ Error', err.message || '', 'danger', false); });
     });
 }
 
