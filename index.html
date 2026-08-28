@@ -3213,8 +3213,6 @@ window.addEventListener('beforeinstallprompt', function(e) {
 
                     <button class="btn-confirm-qty" style="background:#2563eb;" onclick="printOrderVoucherOnly(currentEditingOrderId)">🖨️ ဘောက်ချာ ထုတ်မည်</button>
 
-                    <button class="btn-confirm-qty" style="background:#16a34a;" onclick="saveVoucherAsImageForOrder(currentEditingOrderId)">📷 ဓာတ်ပုံ Save</button>
-
                     <button class="btn-confirm-qty admin-only-feature" style="background:var(--accent-success);" onclick="confirmOrderPaymentAndPrint(currentEditingOrderId)">✅ ငွေရှင်းပြီး</button>
 
                 </div>
@@ -4894,12 +4892,6 @@ function printOrderVoucherOnly(id) {
     printVoucher({ voucher_id: o.order_no || '', customer_name: o.customer_name || 'Customer', items: o.items, total_amount: String(o.total_amount || 0), extra1: '0', extra2: 'Cash', date: new Date().toLocaleString() });
 }
 
-function saveVoucherAsImageForOrder(id) {
-    var o = ordersDB.find(function(x) { return String(x.id) === String(id); });
-    if (!o || !o.items.length) return;
-    saveVoucherAsImage({ voucher_id: o.order_no || '', customer_name: o.customer_name || 'Customer', items: o.items, total_amount: String(o.total_amount || 0), extra1: '0', extra2: 'Cash', date: new Date().toLocaleString() });
-}
-
 // Persists edits: reconciles stock difference vs the order's last-saved qty snapshot, updates the Orders row.
 function saveOrderEdits() {
     var o = getEditingOrder(); if (!o) return;
@@ -5148,62 +5140,6 @@ function renderReceiptToCanvas(sale, paperWidth) {
 
 
     return canvas;
-
-}
-
-
-
-// Renders the receipt to an image (reusing the same canvas as thermal
-
-// printing) and lets the person save/share it as a photo. Opens the native
-
-// Share sheet when available (so "Save Image" / gallery / chat apps all show
-
-// up as options on mobile) — falls back to a plain file download otherwise.
-
-function saveVoucherAsImage(sale) {
-
-    if (typeof sale === 'string') {
-
-        var f = null;
-
-        for (var i = 0; i < salesHistory.length; i++) {
-
-            if ((salesHistory[i].voucher_id || '').toString() === sale.toString()) { f = salesHistory[i]; break; }
-
-        }
-
-        if (!f) { showBigToast('မှတ်တမ်းမတွေ့ပါ', '', 'danger', false); return; }
-
-        sale = f;
-
-    }
-
-    if (!sale || !sale.items) return;
-
-    var canvas = renderReceiptToCanvas(sale, printerSettings.paperWidth || 384);
-
-    var vid = sale.voucher_id || 'voucher';
-
-    canvas.toBlob(function(blob) {
-
-        if (!blob) { showBigToast('❌ ဓာတ်ပုံ ဖန်တီး၍ မရပါ', '', 'danger', false); return; }
-
-        var fileName = 'voucher-' + vid + '.png';
-
-        var url = URL.createObjectURL(blob);
-
-        var a = document.createElement('a');
-
-        a.href = url; a.download = fileName;
-
-        document.body.appendChild(a); a.click();
-
-        setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-
-        showBigToast('✅ ဓာတ်ပုံ Save လုပ်ပြီး', 'Downloads folder ထဲ ရှာပါ', 'success', false);
-
-    }, 'image/png');
 
 }
 
@@ -5549,7 +5485,7 @@ function displayHistory(data) {
 
         var db = role==='admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\''+vid+'\')">🗑️ ဖျက်</button>' : '';
 
-        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: '+vid+srcBadge+'</span><small class="text-muted font-monospace">'+dt+'</small></div><div class="small mb-1">ဝယ်သူ: <b>'+cn+'</b> | 💳 '+pm+sellerLine+'</div><div class="small mb-2 text-danger">Discount: <b>'+disc+'</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">'+il+'</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">'+(Number(total.replace(/,/g,''))||0).toLocaleString()+' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\''+vid+'\')">🖨️ ပြန်ထုတ်</button><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="saveVoucherAsImage(\''+vid+'\')">📷</button>'+db+'</div></div></div>';
+        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: '+vid+srcBadge+'</span><small class="text-muted font-monospace">'+dt+'</small></div><div class="small mb-1">ဝယ်သူ: <b>'+cn+'</b> | 💳 '+pm+sellerLine+'</div><div class="small mb-2 text-danger">Discount: <b>'+disc+'</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">'+il+'</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">'+(Number(total.replace(/,/g,''))||0).toLocaleString()+' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\''+vid+'\')">🖨️ ပြန်ထုတ်</button>'+db+'</div></div></div>';
 
     });
 
@@ -5890,8 +5826,6 @@ function openVoucherDetailFromDrill(idx) {
     h += '<div class="d-flex justify-content-between fw-bold fs-6 mb-3"><span>စုစုပေါင်း</span><span>' + Number((sale.total_amount || '0').toString().replace(/,/g, '')).toLocaleString() + ' Ks</span></div>';
 
     h += '<button class="btn btn-premium-gold w-100 fw-bold" onclick="printVoucher(staffDrillCurrentSale)">🖨️ ဘောက်ချာ ပြန်ထုတ်မည်</button>';
-
-    h += '<button class="btn btn-outline-success w-100 fw-bold mt-2" onclick="saveVoucherAsImage(staffDrillCurrentSale)">📷 ဓာတ်ပုံအဖြစ် Save</button>';
 
     document.getElementById('staff-drill-body').innerHTML = h;
 
