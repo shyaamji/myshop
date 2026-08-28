@@ -5191,27 +5191,17 @@ function saveVoucherAsImage(sale) {
 
         var fileName = 'voucher-' + vid + '.png';
 
-        var file = (window.File) ? new File([blob], fileName, { type: 'image/png' }) : null;
+        var url = URL.createObjectURL(blob);
 
-        if (navigator.share && navigator.canShare && file && navigator.canShare({ files: [file] })) {
+        var a = document.createElement('a');
 
-            navigator.share({ files: [file], title: 'Voucher ' + vid }).catch(function() {});
+        a.href = url; a.download = fileName;
 
-        } else {
+        document.body.appendChild(a); a.click();
 
-            var url = URL.createObjectURL(blob);
+        setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
 
-            var a = document.createElement('a');
-
-            a.href = url; a.download = fileName;
-
-            document.body.appendChild(a); a.click();
-
-            setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-
-            showBigToast('✅ ဓာတ်ပုံ Save လုပ်ပြီး', fileName, 'success', false);
-
-        }
+        showBigToast('✅ ဓာတ်ပုံ Save လုပ်ပြီး', 'Downloads folder ထဲ ရှာပါ', 'success', false);
 
     }, 'image/png');
 
@@ -5559,7 +5549,7 @@ function displayHistory(data) {
 
         var db = role==='admin' ? '<button class="btn btn-sm btn-outline-danger px-3" style="border-radius:8px;" onclick="deleteSaleFromSheet(\''+vid+'\')">🗑️ ဖျက်</button>' : '';
 
-        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: '+vid+srcBadge+'</span><small class="text-muted font-monospace">'+dt+'</small></div><div class="small mb-1">ဝယ်သူ: <b>'+cn+'</b> | 💳 '+pm+sellerLine+'</div><div class="small mb-2 text-danger">Discount: <b>'+disc+'</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">'+il+'</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">'+(Number(total.replace(/,/g,''))||0).toLocaleString()+' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\''+vid+'\')">🖨️ ပြန်ထုတ်</button><button class=\"btn btn-sm btn-light border px-3 me-1\" style=\"border-radius:8px;\" onclick=\"saveVoucherAsImage(\\\''+vid+'\\\')\">📷</button>'+db+'</div></div></div>';
+        list.innerHTML += '<div class="custom-card"><div class="d-flex justify-content-between mb-2"><span class="fw-bold" style="color:var(--accent-gold);">ID: '+vid+srcBadge+'</span><small class="text-muted font-monospace">'+dt+'</small></div><div class="small mb-1">ဝယ်သူ: <b>'+cn+'</b> | 💳 '+pm+sellerLine+'</div><div class="small mb-2 text-danger">Discount: <b>'+disc+'</b></div><hr class="my-2" style="border-style:dashed;"><div class="py-1">'+il+'</div><hr class="my-2" style="border-style:dashed;"><div class="d-flex justify-content-between align-items-center mt-3"><h5 class="fw-bold text-success mb-0 font-monospace">'+(Number(total.replace(/,/g,''))||0).toLocaleString()+' Ks</h5><div><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="printVoucher(\''+vid+'\')">🖨️ ပြန်ထုတ်</button><button class="btn btn-sm btn-light border px-3 me-1" style="border-radius:8px;" onclick="saveVoucherAsImage(\''+vid+'\')">📷</button>'+db+'</div></div></div>';
 
     });
 
