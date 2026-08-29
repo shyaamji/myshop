@@ -4220,21 +4220,21 @@ function filterProductNames() {
 
         else {
 
-            var btnMinus = document.createElement('button'); btnMinus.className = 'qty-btn-sm'; btnMinus.innerText = '−';
+            var maxQ = Math.min(st, 100), opts = '<option value="0">0</option>';
 
-            btnMinus.onmousedown = (function(b) { return function(e) { e.preventDefault(); e.stopPropagation(); playBeep(); changeQtyFromSearch(b, -1); }; })(bStr);
+            for (var k = 1; k <= maxQ; k++) opts += '<option value="' + k + '"' + (k === cq ? ' selected' : '') + '>' + k + '</option>';
 
-            var qtySpan = document.createElement('span'); qtySpan.className = 'qty-display-sm'; qtySpan.id = 'search-qty-' + bStr; qtySpan.innerText = cq > 0 ? cq : 0;
+            var sel = document.createElement('select'); sel.className = 'suggestion-qty-select'; sel.id = 'search-qty-' + bStr; sel.innerHTML = opts;
 
-            var btnPlus = document.createElement('button'); btnPlus.className = 'qty-btn-sm'; btnPlus.innerText = '+';
+            sel.onclick = function(e) { e.stopPropagation(); };
 
-            btnPlus.onmousedown = (function(b) { return function(e) { e.preventDefault(); e.stopPropagation(); playBeep(); changeQtyFromSearch(b, 1); }; })(bStr);
+            sel.onchange = (function(b, p, s) { return function(e) { e.stopPropagation(); playBeep(); setQtyFromSearch(b, p, parseInt(s.value) || 0); }; })(bStr, prod, sel);
 
             var btnConfirm = document.createElement('button'); btnConfirm.className = 'confirm-btn-sm'; btnConfirm.innerText = '✅';
 
             btnConfirm.onmousedown = (function(b, p) { return function(e) { e.preventDefault(); e.stopPropagation(); confirmFromSearch(b, p); }; })(bStr, prod);
 
-            act.appendChild(btnMinus); act.appendChild(qtySpan); act.appendChild(btnPlus); act.appendChild(btnConfirm);
+            act.appendChild(sel); act.appendChild(btnConfirm);
 
         }
 
@@ -4306,6 +4306,34 @@ function updateSearchQtyDisplay(barcode, qty) { var s = document.getElementById(
 
 
 
+function setQtyFromSearch(barcode, product, qty) {
+
+    var bStr = barcode.toString(), cart = carts[activeCartIndex], idx = -1;
+
+    for (var i = 0; i < cart.length; i++) { if (cart[i].barcode.toString() === bStr) { idx = i; break; } }
+
+    if (qty <= 0) {
+
+        if (idx > -1) cart.splice(idx, 1);
+
+    } else {
+
+        var st = getStockNumber(product);
+
+        if (qty > st) { showBigToast('⚠️ ' + st + ' ' + (product.unit || 'ခု') + ' သာ', '', 'danger', false); filterProductNames(); return; }
+
+        if (idx > -1) cart[idx].qty = qty;
+
+        else cart.push({ id: product.id, barcode: product.barcode, name: product.name, price: product.price, stock: product.stock, qty: qty, unit: product.unit || 'ခု' });
+
+    }
+
+    renderCart(); updateScannedPreview(); updatePopCartContent(); updateScannerTotal();
+
+}
+
+
+
 function confirmFromSearch(barcode, product) {
 
     playBeep();
@@ -4320,7 +4348,7 @@ function confirmFromSearch(barcode, product) {
 
         cart.push({ id: product.id, barcode: product.barcode, name: product.name, price: product.price, stock: product.stock, qty: 1, unit: product.unit || 'ခု' });
 
-        updateSearchQtyDisplay(bStr, 1); showBigToast('✅ ' + product.name + ' ×1 ထည့်ပြီး', '', 'success', false);
+        showBigToast('✅ ' + product.name + ' ×1 ထည့်ပြီး', '', 'success', false);
 
     } else { showBigToast('✅ ' + product.name + ' ×' + cart[idx].qty + ' ထည့်ပြီး', '', 'success', false); }
 
