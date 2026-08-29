@@ -5055,7 +5055,7 @@ function renderReceiptToCanvas(sale, paperWidth) {
 
 
 
-    var estH = pad + 24 + 14 + 18 + 8 + (lineH * 5) + 8 + lineH + (lineH * itemsArr.length) + 8 + (lineH * 3) + 12 + 30 + pad;
+    var estH = pad + 24 + 14 + 18 + 8 + (lineH * 5) + 8 + (lineH * itemsArr.length * 2) + 8 + (lineH * 3) + 12 + 30 + pad;
 
     var canvas = document.createElement('canvas');
 
@@ -5107,17 +5107,15 @@ function renderReceiptToCanvas(sale, paperWidth) {
 
 
 
-    ctx.font = fontHead;
-
-    row(y, 'ပစ္စည်း', 'သင့်ငွေ'); y += lineH;
-
     ctx.font = fontMain;
 
     itemsArr.forEach(function(it) {
 
         var lineTotal = Number(it.price) * Number(it.qty), u = it.unit || '';
 
-        row(y, it.name + ' x' + it.qty + (u ? (' ' + u) : ''), Number(lineTotal).toLocaleString());
+        ctx.textAlign = 'left'; ctx.fillText(it.name, pad, y); y += lineH;
+
+        row(y, Number(it.price).toLocaleString() + ' x ' + it.qty + (u ? (' ' + u) : ''), Number(lineTotal).toLocaleString());
 
         y += lineH;
 
