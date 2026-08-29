@@ -5055,7 +5055,7 @@ function renderReceiptToCanvas(sale, paperWidth) {
 
 
 
-    var estH = pad + 24 + 14 + 18 + 8 + (lineH * 5) + 8 + (lineH * itemsArr.length * 2) + 8 + (lineH * 3) + 12 + 30 + pad;
+    var estH = pad + 24 + 14 + 18 + 8 + (lineH * 5) + 8 + lineH + (lineH * itemsArr.length) + 8 + (lineH * 3) + 12 + 30 + pad;
 
     var canvas = document.createElement('canvas');
 
@@ -5072,6 +5072,32 @@ function renderReceiptToCanvas(sale, paperWidth) {
     function dashed(y) { ctx.save(); ctx.strokeStyle = '#000'; ctx.setLineDash([2, 2]); ctx.beginPath(); ctx.moveTo(4, y); ctx.lineTo(W - 4, y); ctx.stroke(); ctx.restore(); }
 
     function row(y, label, value) { ctx.textAlign = 'left'; ctx.fillText(label, pad, y); ctx.textAlign = 'right'; ctx.fillText(value, W - pad, y); }
+
+    var colPriceR = W * 0.57, colQtyC = W * 0.635, colTotalR = W - pad, colItemMaxW = W * 0.35 - pad;
+
+    function truncateToWidth(text, maxW) {
+
+        if (ctx.measureText(text).width <= maxW) return text;
+
+        var t = text;
+
+        while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+
+        return t + '…';
+
+    }
+
+    function itemRow(y, name, price, qty, unit, lineTotal) {
+
+        ctx.textAlign = 'left'; ctx.fillText(truncateToWidth(name, colItemMaxW), pad, y);
+
+        ctx.textAlign = 'right'; ctx.fillText(Number(price).toLocaleString(), colPriceR, y);
+
+        ctx.textAlign = 'center'; ctx.fillText(qty + (unit ? (' ' + unit) : ''), colQtyC, y);
+
+        ctx.textAlign = 'right'; ctx.fillText(Number(lineTotal).toLocaleString(), colTotalR, y);
+
+    }
 
 
 
@@ -5107,15 +5133,25 @@ function renderReceiptToCanvas(sale, paperWidth) {
 
 
 
+    ctx.font = fontHead;
+
+    ctx.textAlign = 'left'; ctx.fillText('ပစ္စည်း', pad, y);
+
+    ctx.textAlign = 'right'; ctx.fillText('ဈေး', colPriceR, y);
+
+    ctx.textAlign = 'center'; ctx.fillText('ခု', colQtyC, y);
+
+    ctx.textAlign = 'right'; ctx.fillText('သင့်ငွေ', colTotalR, y);
+
+    y += lineH;
+
     ctx.font = fontMain;
 
     itemsArr.forEach(function(it) {
 
         var lineTotal = Number(it.price) * Number(it.qty), u = it.unit || '';
 
-        ctx.textAlign = 'left'; ctx.fillText(it.name, pad, y); y += lineH;
-
-        row(y, Number(it.price).toLocaleString() + ' x ' + it.qty + (u ? (' ' + u) : ''), Number(lineTotal).toLocaleString());
+        itemRow(y, it.name, it.price, it.qty, u, lineTotal);
 
         y += lineH;
 
